@@ -6,7 +6,7 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { concatFrames, DG_URL, LOCAL_STT_DOWN, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
+import { concatFrames, DG_URL, LOCAL_STT_DOWN, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
 
 type Call = { url: string; init?: RequestInit };
 
@@ -49,6 +49,17 @@ describe("transcribeLocal", () => {
 		assert.equal(f.calls[0]!.init?.method, "POST");
 		const body = f.calls[0]!.init?.body as Uint8Array;
 		assert.deepEqual([...new Int16Array(body.buffer, body.byteOffset, 3)], [1, 2, 3]);
+	});
+
+	it("a server-side timeout says the transcription took too long (final review I1)", async () => {
+		const f = fakeFetch(() => Response.json({ message: "stt-timeout" }, { status: 504 }));
+		await assert.rejects(transcribeLocal([frame(1)], f.fetch), { message: LOCAL_STT_SLOW });
+	});
+
+	it("never posts more than the server's cap (final review C2)", async () => {
+		const f = fakeFetch(() => Response.json({ text: "" }));
+		await transcribeLocal([new ArrayBuffer(MAX_LOCAL_BYTES), new ArrayBuffer(4096)], f.fetch);
+		assert.equal((f.calls[0]!.init?.body as Uint8Array).byteLength, MAX_LOCAL_BYTES);
 	});
 
 	it("another server failure keeps its message", async () => {

@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 
 const route = await import("../app/api/stt/local/route.ts");
+const { transcribeTimeoutMs } = await import("../src/server/stt-local.ts");
 const realFetch = globalThis.fetch;
 type Call = { url: string; init?: RequestInit };
 
@@ -77,5 +78,28 @@ describe("GET /api/stt/local", () => {
 		const res = await route.GET();
 		assert.deepEqual(await res.json(), { ok: true, loaded: true, device: "cuda" });
 		assert.equal(calls[0]!.url, "http://127.0.0.1:8765/health");
+	});
+});
+
+describe("POST /api/stt/local — slow transcriptions (final review I1)", () => {
+	it("a timeout is 504 stt-timeout, not stt-down", async () => {
+		stubFetch(() => {
+			throw new DOMException("The operation was aborted due to timeout", "TimeoutError");
+		});
+		const res = await post(new Uint8Array([0, 0]));
+		assert.equal(res.status, 504);
+		assert.deepEqual(await res.json(), { message: "stt-timeout" });
+	});
+
+	it("the timeout scales with the audio: 10 minutes get far more than 2 minutes", () => {
+		assert.ok(transcribeTimeoutMs(19_200_000) >= 30 * 60_000);
+		assert.equal(transcribeTimeoutMs(0), 120_000);
+	});
+});
+
+describe("the proxy body cap (final review C1)", () => {
+	it("next.config lets a full 10-minute recording through the proxy", async () => {
+		const config = (await import("../next.config.ts")).default as { experimental?: { proxyClientMaxBodySize?: number } };
+		assert.ok((config.experimental?.proxyClientMaxBodySize ?? 10 * 1024 * 1024) >= 19_200_000);
 	});
 });

@@ -4,10 +4,13 @@
  * the `learn` launcher). The renderer POSTs the run's raw PCM (Int16 LE,
  * 16 kHz, mono) once the mic stops; GET is the settings row's health line.
  *
- * Unreachable server → 503 "stt-down" (the client maps it to its own short
- * line); the server answering non-2xx → 502. GET never errors: an absent
+ * Unreachable server → 503 "stt-down", a timed-out transcription → 504
+ * "stt-timeout" (the client maps both to its own short lines); the server
+ * answering non-2xx → 502. GET never errors: an absent
  * server is a status, {ok:false}, not a failure.
  */
+
+import { transcribeTimeoutMs } from "@/src/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +24,13 @@ export async function POST(request: Request) {
 			method: "POST",
 			body,
 			headers: { "Content-Type": "application/octet-stream" },
-			signal: AbortSignal.timeout(120_000),
+			signal: AbortSignal.timeout(transcribeTimeoutMs(body.byteLength)),
 		});
-	} catch {
+	} catch (e) {
+		// A timeout means the server is alive but slow — never "not running".
+		if (e instanceof DOMException && e.name === "TimeoutError") {
+			return Response.json({ message: "stt-timeout" }, { status: 504 });
+		}
 		return Response.json({ message: "stt-down" }, { status: 503 });
 	}
 	const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };

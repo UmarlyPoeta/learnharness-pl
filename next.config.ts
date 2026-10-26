@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
 	// The manual copies the docs require — public/ and .next/static — are
 	// done by scripts/build-server.mjs.
 	output: "standalone",
+	// Local dictation (final review C1): the proxy (proxy.ts, matcher
+	// /api/:path*) clones request bodies and TRUNCATES past this cap
+	// (default 10 MiB ≈ 5.5 min of 16 kHz PCM) — /api/stt/local takes up to
+	// 10 minutes (19.2 MB), so the cap sits above that.
+	experimental: { proxyClientMaxBodySize: 20 * 1024 * 1024 },
 	// SAFETY (empirically verified 2026-09-17): without this, output file
 	// tracing sweeps the repo's real data/ — chat records, graph ledgers —
 	// INTO the standalone bundle. A shipped desktop app would carry the

@@ -125,6 +125,9 @@ export const DICTATION_KEYLESS = "Dictation needs a Deepgram key";
 /** The client-authored line for an unreachable local server (the route's 503). */
 export const LOCAL_STT_DOWN = "Lokalny Whisper nie działa — uruchom learn";
 
+/** The line for a transcription that outlived the route's wait (its 504). */
+export const LOCAL_STT_SLOW = "Przepisywanie trwa za długo — spróbuj krótszego nagrania";
+
 /** 10 minutes of 16 kHz Int16 mono — the server's cap; the run auto-stops at it. */
 export const MAX_LOCAL_BYTES = 19_200_000;
 
@@ -140,7 +143,9 @@ export function concatFrames(frames: ArrayBuffer[]): Uint8Array<ArrayBuffer> {
 
 /** One-shot transcription of a finished run. No audio → "" without a request. */
 export async function transcribeLocal(frames: ArrayBuffer[], fetchImpl: typeof fetch = fetch): Promise<string> {
-	const body = concatFrames(frames);
+	// Frames are 4096 bytes and the cap isn't a multiple of that: trim, or
+	// the last frame tips a full 10-minute run into the server's 413.
+	const body = concatFrames(frames).subarray(0, MAX_LOCAL_BYTES);
 	if (body.byteLength === 0) return "";
 	const res = await fetchImpl("/api/stt/local", {
 		method: "POST",
@@ -149,6 +154,7 @@ export async function transcribeLocal(frames: ArrayBuffer[], fetchImpl: typeof f
 	});
 	const data = (await res.json().catch(() => ({}))) as { text?: string; message?: string };
 	if (res.status === 503) throw new Error(LOCAL_STT_DOWN);
+	if (res.status === 504) throw new Error(LOCAL_STT_SLOW);
 	if (!res.ok) throw new Error(data.message ?? "transkrypcja nie powiodła się");
 	return (data.text ?? "").trim();
 }
@@ -359,6 +365,9 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 	/** The dictation engine — a ref for the async paths, state for the bar. */
 	const [engine, setEngine] = useState<DictationEngine>("local");
 	const engineRef = useRef<DictationEngine>("local");
+	/** The engine THIS run started with — a settings save mid-run must not
+	 *  reroute its stop (final review I2). */
+	const runEngineRef = useRef<DictationEngine>("local");
 	/** Local engine: the run's PCM frames and their byte total. */
 	const localFramesRef = useRef<ArrayBuffer[]>([]);
 	const localBytesRef = useRef(0);
@@ -486,7 +495,8 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 		localFramesRef.current = [];
 		localBytesRef.current = 0;
 		const gen = ++genRef.current;
-		const local = engineRef.current === "local";
+		runEngineRef.current = engineRef.current;
+		const local = runEngineRef.current === "local";
 
 		// Mitigation D: the warm token (pre-minted at mount / after the last
 		// run) resolves ~instantly; a cold/keyless mint surfaces below. The
@@ -589,7 +599,7 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 		workletRef.current?.disconnect();
 		workletRef.current = null;
 
-		if (engineRef.current === "local") {
+		if (runEngineRef.current === "local") {
 			// One request for the whole run; a cancel (Esc) or a newer run
 			// bumps the generation and the late result is dropped.
 			transcribeLocal(localFramesRef.current)
