@@ -59,6 +59,16 @@ All three platforms support in-app updates.
 - **External services.** Models run through your configured providers. Model requests send the context needed for the task; web research and dictation also contact external services. Local storage does not mean offline processing.
 - **Inspectable behavior.** System prompts are visible and editable. The app is open source under the AGPL-3.0 license.
 
+## Dyktowanie lokalne (Whisper)
+
+Domyślny silnik dyktowania to lokalny [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (`large-v3-turbo`, język polski) na GPU, z fallbackiem na CPU. Jednorazowo:
+
+```bash
+scripts/stt-setup.sh   # venv w ~/.local/share/learnharness/stt-venv
+```
+
+Komenda `learn` (`scripts/learn-pl.sh`) sama uruchamia serwer `stt/server.py` na `127.0.0.1:8765`. Silnik (Lokalny Whisper / Deepgram) wybierasz w Ustawienia → Dostawcy AI → Dyktowanie. Zmienne: `LH_STT_PORT`, `LH_STT_MODEL`, `LH_STT_IDLE_S` (zwolnienie modelu z GPU po bezczynności, domyślnie 600 s), `LH_STT_URL` (adres serwera dla aplikacji).
+
 ## Development and support
 
 ```bash

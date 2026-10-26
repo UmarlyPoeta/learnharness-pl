@@ -9,6 +9,17 @@ LOG="${XDG_CACHE_HOME:-$HOME/.cache}/learnharness.log"
 cd "$APP"
 [ -d node_modules ] || npm install
 [ -f .next/BUILD_ID ] || npm run build
+# Local dictation server (stt/server.py) — started once, survives the app.
+STT_PORT="${LH_STT_PORT:-8765}"
+STT_VENV="${LH_STT_VENV:-$HOME/.local/share/learnharness/stt-venv}"
+if [ -x "$STT_VENV/bin/python" ]; then
+	if ! curl -fsS -o /dev/null "http://127.0.0.1:$STT_PORT/health" 2>/dev/null; then
+		mkdir -p "$(dirname "$LOG")"
+		nohup "$APP/scripts/stt-serve.sh" >"$(dirname "$LOG")/learnharness-stt.log" 2>&1 &
+	fi
+else
+	echo "Dyktowanie lokalne: uruchom $APP/scripts/stt-setup.sh"
+fi
 if ! curl -fsS -o /dev/null "$URL" 2>/dev/null; then
 	mkdir -p "$(dirname "$LOG")"
 	nohup npx next start -p "$PORT" >"$LOG" 2>&1 &
