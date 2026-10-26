@@ -54,7 +54,7 @@ describe("SettingsDialog (the designed surface, SSR)", () => {
 		assert.ok(html.indexOf('data-testid="settings-nav-keys"') < html.indexOf('data-testid="settings-nav-general"'));
 		assert.ok(tagOf(html, "settings-nav-keyboard").includes('aria-current="false"'));
 		// Fetches don't run under SSR — the loading state IS the SSR state.
-		assert.ok(html.includes("Loading settings…"));
+		assert.ok(html.includes("Wczytywanie ustawień…"));
 		// Modal-only doctrine: no link back to /settings anywhere in it.
 		assert.ok(!html.includes('href="/settings"'));
 	});
@@ -70,7 +70,7 @@ describe("AgentSection (thin SSR)", () => {
 			assert.ok(html.includes(`data-testid="slot-model-${slot}"`), `${slot} model trigger`);
 			assert.ok(html.includes(`data-testid="slot-thinking-${slot}"`), `${slot} thinking trigger`);
 			// the roster hint rides every row
-			assert.ok(html.includes("The main model for your sessions") || slot !== "strong", "strong roster");
+			assert.ok(html.includes("Główny model twoich sesji") || slot !== "strong", "strong roster");
 		}
 		// Fix wave: no Default anywhere — an unpicked slot reads "—"
 		// (the owner's no-factory-fallback language), and no menu
@@ -84,7 +84,7 @@ describe("AgentSection (thin SSR)", () => {
 		}
 		assert.ok(html.includes('data-testid="group-models"'), "Models sub-group");
 		assert.ok(html.includes('data-testid="group-tools"'), "Tools sub-group");
-		assert.ok(html.includes('data-testid="group-prompts"'), "System prompts sub-group");
+		assert.ok(html.includes('data-testid="group-prompts"'), "Prompty systemowe sub-group");
 	});
 
 	it("the search-engine row renders with its live reason (search wave 2026-09-20)", () => {
@@ -92,7 +92,7 @@ describe("AgentSection (thin SSR)", () => {
 		assert.ok(html.includes('data-testid="search-engine-row"'), "the row");
 		assert.ok(html.includes('data-testid="search-engine-trigger"'), "the trigger");
 		// SSR: /api/search never fired → no reason line yet, trigger reads Automatic
-		assert.ok(html.includes("Automatic"), "unset engine reads Automatic");
+		assert.ok(html.includes("Automatycznie"), "unset engine reads Automatic");
 		// the explicit preference shows the chosen engine in the trigger
 		const html2 = renderToStaticMarkup(
 			<AgentSection agent={{ search: { engine: "tavily" } }} models={undefined} graph={undefined} onSectionChange={() => {}} onModelsChange={() => {}} />,
@@ -108,7 +108,7 @@ describe("AgentSection (thin SSR)", () => {
 		const rows = [...toolsGroup.matchAll(/data-testid="(graph-tools-row|tool-row-\w+)"/g)].map((m) => m[1]);
 		assert.equal(rows[0], "graph-tools-row", "graph tools is the FIRST row of the Tools group");
 		// (the apostrophe in "sessions'" HTML-escapes — match up to it)
-		assert.ok(html.includes("Lets the tutor consult your knowledge map between sessions"), "the describing hint");
+		assert.ok(html.includes("Pozwala nauczycielowi korzystać z twojej mapy wiedzy między sesjami"), "the describing hint");
 		assert.ok((html.split('data-testid="graph-tools-row"')[1] ?? "").includes('aria-checked="true"'), "absent = on");
 		const rowHtml = html.split('data-testid="graph-tools-row"')[1]?.split('data-testid="tool-row-')[0] ?? "";
 		assert.ok(!rowHtml.includes("opacity-40"), "lit while the graph is on (the search row may dim — no keys in SSR)");
@@ -120,7 +120,7 @@ describe("AgentSection (thin SSR)", () => {
 		);
 		const row = html.split('data-testid="graph-tools-row"')[1]?.split('data-testid="tool-row-')[0] ?? "";
 		assert.ok(row.includes("opacity-40"), "row dims when the graph is off");
-		assert.ok(row.includes("Graph is disabled"), "the reason hint replaces the description");
+		assert.ok(row.includes("Graf jest wyłączony"), "the reason hint replaces the description");
 		assert.ok(row.includes("disabled"), "toggle untouchable while the graph is off");
 	});
 
@@ -163,7 +163,7 @@ describe("AgentSection (thin SSR)", () => {
 
 	it("prompts show the loading state under SSR (effects never fire)", () => {
 		const html = renderToStaticMarkup(<AgentSection agent={undefined} models={undefined} graph={undefined} onSectionChange={() => {}} onModelsChange={() => {}} />);
-		assert.ok(html.includes("Loading prompt segments"));
+		assert.ok(html.includes("Wczytywanie segmentów promptu"));
 	});
 });
 
@@ -178,7 +178,7 @@ describe("GraphSection — master switch + chunk budget (wave 7 + 2026-10-02)", 
 	it("renders the master-switch row — EXTRACTION since 2026-10-06 (the data channel, renamed when rendering split off)", () => {
 		const html = renderToStaticMarkup(<GraphSection graph={undefined} onSectionChange={() => {}} />);
 		assert.ok(html.includes('data-testid="graph-row-enabled"'));
-		assert.ok(html.includes(">Extraction<"), "the row names the DATA channel, not 'Graph'");
+		assert.ok(html.includes(">Ekstrakcja<"), "the row names the DATA channel, not 'Graf'");
 		assert.ok(!html.includes("graph-row-embedding"), "the dead rungs render nothing");
 		assert.ok(!html.includes("Embedding model"), "the picker is gone");
 		assert.ok(!html.includes("graph-row-clustering"));
@@ -194,7 +194,7 @@ describe("GraphSection — master switch + chunk budget (wave 7 + 2026-10-02)", 
 	it("the GRAPH RENDERING row (2026-10-06): display-only — absent record = factory ON, stored off shows off", () => {
 		const html = renderToStaticMarkup(<GraphSection graph={undefined} onSectionChange={() => {}} />);
 		assert.ok(html.includes('data-testid="graph-row-rendering"'));
-		assert.ok(html.includes(">Graph rendering<"));
+		assert.ok(html.includes(">Renderowanie grafu<"));
 		assert.ok(tagOf(html, "toggle-graph-rendering-enabled").includes('aria-checked="true"'), "the home defaults to the canvas");
 		const off = renderToStaticMarkup(<GraphSection graph={{ rendering: false }} onSectionChange={() => {}} />);
 		assert.ok(tagOf(html, "toggle-extraction-enabled").includes('aria-checked="true"'), "rendering off does NOT touch extraction");
@@ -221,7 +221,7 @@ describe("GraphSection — master switch + chunk budget (wave 7 + 2026-10-02)", 
 describe("KeysSection (thin SSR)", () => {
 	it("SSR = the loading state (effects never fire)", () => {
 		const html = renderToStaticMarkup(<KeysSection />);
-		assert.ok(html.includes("Loading keys…"));
+		assert.ok(html.includes("Wczytywanie kluczy…"));
 	});
 });
 
@@ -229,7 +229,7 @@ describe("AppearanceSection (thin SSR)", () => {
 	it("mode is rendered DISABLED — dark-only this wave, no lying control", () => {
 		const html = renderToStaticMarkup(<AppearanceSection appearance={undefined} onSectionChange={() => {}} />);
 		assert.ok(tagOf(html, "select-mode").includes("disabled"), "mode select disabled");
-		assert.ok(html.includes("Coming soon"));
+		assert.ok(html.includes("Wkrótce"));
 		// The whole row dims, graph-view style (the control never adds its own).
 		assert.ok(tagOf(html, "row-mode").includes("opacity-40"), "mode row dims whole");
 	});
@@ -239,10 +239,10 @@ describe("AppearanceSection (thin SSR)", () => {
 		assert.ok(html.includes(`placeholder="#141414"`));
 		// The reading font is the searchable dropdown now (font-menu
 		// wave): its trigger shows the factory family; the emphasis
-		// inks' empty state is "same as text" (the old hexes died with
+		// inks' empty state is "jak tekst" (the old hexes died with
 		// the factory token change).
 		assert.ok(html.includes('data-testid="font-trigger"'));
-		assert.equal((html.match(/Empty = same as text/g) ?? []).length, 2);
+		assert.equal((html.match(/Puste = jak tekst/g) ?? []).length, 2);
 		assert.ok(html.includes("16px"));
 	});
 
@@ -273,7 +273,7 @@ describe("KeyboardSection (thin SSR)", () => {
 
 	it("displayOnly actions list but never offer Rebind", () => {
 		const html = renderToStaticMarkup(<KeyboardSection />);
-		assert.ok(html.includes("Fixed — part of this screen"));
+		assert.ok(html.includes("Stały — część tego ekranu"));
 		assert.ok(!html.includes(`data-testid="kbd-rebind-question-next-row"`), "surface keys stay put");
 		// The model-menu entries are GONE entirely (owner, 2026-10-10):
 		// obvious in-field navigation, not settings material.

@@ -114,7 +114,7 @@ export function QuestionDock({
 	// The chip's display name carries the tool's OWN name (owner
 	// 2026-10-09): probe-phase questions label Probe/Recall in the
 	// composer; teach tools keep the standing labels.
-	const toolLabel = toolName === "probe" ? "Probe" : toolName === "recall" ? "Recall" : undefined;
+	const toolLabel = toolName === "probe" ? "Sondaż" : toolName === "recall" ? "Przypomnienie" : undefined;
 	// Parse, don't cast (src/core/tool-parts.ts): the model authored this
 	// input, and only the schema the tool declared vouches for its shape.
 	// The dock mounts on input-available parts (already validated at the
@@ -126,7 +126,7 @@ export function QuestionDock({
 	if (!parsed) {
 		return (
 			<div data-testid="malformed-question" className="rounded-xl border border-dashed bg-card/60 p-3 text-sm text-muted-foreground">
-				This question arrived malformed — the transcript keeps the retry.
+				To pytanie dotarło w niepoprawnej formie — w historii zostaje ponowiona wersja.
 			</div>
 		);
 	}
@@ -142,7 +142,7 @@ export function QuestionDock({
 					label={
 						(canonical === "quiz" || canonical === "explain") &&
 						normalizeQuizType((parsed as { type?: unknown }).type) === "predict"
-							? "Prediction"
+							? "Predykcja"
 							: undefined
 					}
 				/>
@@ -213,11 +213,11 @@ export function QuestionDockBar({
 					<PlayIcon className="size-3.5" />
 				</span>
 				<span className="min-w-0 flex-1">
-					<span className="block text-sm font-medium">Check your understanding</span>
+					<span className="block text-sm font-medium">Sprawdź swoje zrozumienie</span>
 					<span className="block truncate text-xs text-muted-foreground">{teaserText(question)}</span>
 				</span>
 				<span className="flex shrink-0 items-center gap-1 text-xs font-medium text-primary">
-					Open <ChevronRightIcon className="size-3.5" />
+					Otwórz <ChevronRightIcon className="size-3.5" />
 				</span>
 			</button>
 		);
@@ -232,11 +232,11 @@ export function QuestionDockBar({
 			<span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 				{label ??
 							toolLabel ??
-							(toolName === "quiz" ? "Check" : toolName === "explain" ? "Explain" : "Question")}
+							(toolName === "quiz" ? "Sprawdzenie" : toolName === "explain" ? "Wyjaśnienie" : "Pytanie")}
 			</span>
 			<span className="min-w-0 flex-1 truncate text-muted-foreground">{teaserText(question)}</span>
 			<span className="flex shrink-0 items-center gap-1 text-xs font-medium">
-				Answer <ArrowDownIcon className="size-3.5" />
+				Odpowiedz <ArrowDownIcon className="size-3.5" />
 			</span>
 		</button>
 	);
@@ -547,17 +547,17 @@ function QuestionDockForm({
 			<div data-session-find-root="" className="max-h-[var(--dock-max-h,55dvh)] overflow-y-auto px-4 pt-3">
 				<div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
 					{toolName === "probe"
-						? "Probe"
+						? "Sondaż"
 						: toolName === "recall"
-							? "Recall"
+							? "Przypomnienie"
 							: kind === "quiz"
 								? qd.questionType === "predict"
-									? "Prediction"
-									: "Check"
+									? "Predykcja"
+									: "Sprawdzenie"
 									: kind === "explain"
-										? "Explain"
-											: "Question"}
-					{qd.mode === "multi-select" && " · select all that apply"}
+										? "Wyjaśnienie"
+											: "Pytanie"}
+					{qd.mode === "multi-select" && " · zaznacz wszystkie pasujące"}
 				</div>
 				<div className="mb-3 font-medium">
 					<MessageResponse>{qd.question}</MessageResponse>
@@ -644,7 +644,7 @@ function QuestionDockForm({
 								>
 									{sel.dontKnow && <span className="size-1.5 rounded-full bg-current" />}
 								</span>
-								<span>I don't know</span>
+								<span>Nie wiem</span>
 							</button>
 						)}
 
@@ -710,7 +710,7 @@ function QuestionDockForm({
 												submit();
 											}
 									}}
-									placeholder="Type your own answer…"
+									placeholder="Wpisz własną odpowiedź…"
 									className="lh-input w-full min-w-0 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
 									onClick={(e) => e.stopPropagation()}
 								/>
@@ -742,7 +742,7 @@ function QuestionDockForm({
 								sel.dontKnow ? "text-muted-foreground/50" : "text-muted-foreground",
 							)}
 						>
-							Confidence
+							Pewność
 						</span>
 						<div
 							className={cn("relative h-4 min-w-0 flex-1", sel.dontKnow && "opacity-40")}
@@ -773,7 +773,7 @@ function QuestionDockForm({
 								disabled={sel.dontKnow}
 								aria-label="Confidence — the probability your selected answer is correct"
 								aria-valuetext={`${CONFIDENCE_STOPS[confIdx]} percent`}
-								title="The probability your selected answer is correct — 50% is a coin flip. Adjust with ←/→."
+								title="Prawdopodobieństwo, że wybrana odpowiedź jest poprawna — 50% to rzut monetą. Zmieniaj strzałkami ←/→."
 								data-testid="confidence-slider"
 								onChange={(e) => {
 									// Snap to the nearest stop; the rendered VALUE is the stop's own
@@ -828,7 +828,7 @@ function QuestionDockForm({
 					className="rounded-[10px] border border-border/70 bg-background/60 transition-colors focus-within:border-primary/50"
 				>
 					<div className="px-2.5 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-						{qd.mode === "text" ? "Your answer" : "YOUR THINKING"}
+						{qd.mode === "text" ? "Twoja odpowiedź" : "TWÓJ TOK MYŚLENIA"}
 					</div>
 					{qd.mode === "text" ? (
 						<textarea
@@ -854,7 +854,7 @@ function QuestionDockForm({
 									submit();
 								}
 							}}
-							placeholder="Type your answer…"
+							placeholder="Wpisz swoją odpowiedź…"
 							rows={1}
 							className="field-sizing-content lh-input max-h-48 min-h-10 w-full resize-none bg-transparent px-2.5 py-2 outline-none placeholder:text-muted-foreground"
 						/>
@@ -884,7 +884,7 @@ function QuestionDockForm({
 									submit();
 								}
 							}}
-							placeholder="Why this answer? Whatever comes to mind."
+							placeholder="Dlaczego ta odpowiedź? Wpisz swoje przemyślenia."
 							rows={1}
 							className={cn(
 								"field-sizing-content lh-input max-h-48 w-full resize-none bg-transparent px-2.5 py-2 outline-none placeholder:text-muted-foreground/70",
@@ -896,14 +896,14 @@ function QuestionDockForm({
 					)}
 					<div className="flex items-center justify-between gap-2 p-1">
 						<span aria-hidden className="pl-1.5 text-xs text-muted-foreground">
-								{compactionRunning ? "compacting session…" : "↵ submits · ⇧↵ newline"}
+								{compactionRunning ? "kompaktowanie sesji…" : "↵ wysyła · ⇧↵ nowa linia"}
 						</span>
 						<Button
 							type="submit"
 							disabled={!canSubmit || compactionRunning}
 							className="ml-auto h-9 rounded-[6px] px-3.5 text-sm font-medium"
 						>
-							Submit answer
+							Zatwierdź odpowiedź
 						</Button>
 					</div>
 				</div>

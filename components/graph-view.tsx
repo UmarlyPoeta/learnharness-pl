@@ -349,7 +349,7 @@ export function GraphCostControl({ costs }: { costs: GraphCostSummary }) {
 		<div ref={rootRef} className="relative">
 			<Hint
 				// Trimmed (owner, subtlety round 2026-09-25).
-				label="Graph costs — click for details"
+				label="Koszty grafu — kliknij, aby zobaczyć szczegóły"
 				side="bottom"
 			>
 				<button
@@ -384,8 +384,8 @@ export function GraphCostControl({ costs }: { costs: GraphCostSummary }) {
  */
 function GraphCostPanel({ costs }: { costs: GraphCostSummary }) {
 	const stageRows: [string, GraphCostSummary["stages"]["extraction"]][] = [
-		["Extraction", costs.stages.extraction],
-		["Audit", costs.stages.audit],
+		["Ekstrakcja", costs.stages.extraction],
+		["Audyt", costs.stages.audit],
 	];
 	// The displayed figures come from displayCostTotals (naming excluded —
 	// the pill and this panel must agree).
@@ -394,12 +394,12 @@ function GraphCostPanel({ costs }: { costs: GraphCostSummary }) {
 		<div className="w-80 max-w-[calc(100vw-1.5rem)] rounded-xl border bg-card/95 p-3 text-xs shadow-lg backdrop-blur">
 			<div className="mb-2 flex items-baseline justify-between">
 				<span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-					Graph pipeline costs
+					Koszty potoku grafu
 				</span>
 				<span className="text-foreground tabular-nums">
 					{graphUsageLabel(costs)}
 					{unpricedRuns > 0 && (
-						<span className="text-muted-foreground"> · {unpricedRuns} unpriced</span>
+						<span className="text-muted-foreground"> · {unpricedRuns} bez wyceny</span>
 					)}
 				</span>
 			</div>
@@ -410,11 +410,11 @@ function GraphCostPanel({ costs }: { costs: GraphCostSummary }) {
 						<span className="min-w-0 text-right tabular-nums">
 							{fmtRunCost(stage.runs - stage.unpricedRuns - (stage.subscriptionRuns ?? 0) <= 0 ? null : stage.dollars, graphProviders(stage))}
 							{stage.unpricedRuns > 0 && (stage.runs - stage.unpricedRuns - (stage.subscriptionRuns ?? 0) > 0 || (stage.subscriptionRuns ?? 0) > 0) && (
-								<span className="text-muted-foreground"> +{stage.unpricedRuns} unpriced</span>
+								<span className="text-muted-foreground"> +{stage.unpricedRuns} bez wyceny</span>
 							)}
 							<span className="text-muted-foreground">
 								{" "}
-								· {fmtTokens(stage.tokens.inputTokens)} in / {fmtTokens(stage.tokens.outputTokens)} out
+								· {fmtTokens(stage.tokens.inputTokens)} wej. / {fmtTokens(stage.tokens.outputTokens)} wyj.
 							</span>
 						</span>
 					</div>
@@ -433,7 +433,7 @@ function GraphCostPanel({ costs }: { costs: GraphCostSummary }) {
 									</span>
 								)}
 							</span>
-							<span className="shrink-0 tabular-nums">{fmtRunCost(run.dollars, graphProviders(run))}{run.dollars === null && run.subscriptionRuns === 1 ? " +1 unpriced" : ""}</span>
+							<span className="shrink-0 tabular-nums">{fmtRunCost(run.dollars, graphProviders(run))}{run.dollars === null && run.subscriptionRuns === 1 ? " +1 bez wyceny" : ""}</span>
 						</div>
 					))}
 			</div>
@@ -465,7 +465,7 @@ function GraphSettingsControl({
 		<div ref={rootRef} className="relative">
 			<Hint
 				// User language (tooltip wave) — "rendering" is internal.
-				label="Graph display settings"
+				label="Ustawienia wyświetlania grafu"
 				side="bottom"
 			>
 				<button
@@ -498,7 +498,7 @@ function GraphSettingsControl({
 							    number — src/core/render-settings.ts). Physics keeps the
 							    fine-grained log sliders (step 5). */}
 							<SettingSlider
-								label="Node size"
+								label="Rozmiar węzła"
 								min={0}
 								max={100}
 								step={10}
@@ -508,7 +508,7 @@ function GraphSettingsControl({
 									changeSettings((cur) => ({ ...cur, nodeSize: fromLadderPosition(p, NODE_SIZE_LADDER) }))}
 							/>
 							<SettingSlider
-								label="Edge width"
+								label="Grubość krawędzi"
 								min={0}
 								max={100}
 								step={10}
@@ -518,7 +518,7 @@ function GraphSettingsControl({
 									changeSettings((cur) => ({ ...cur, edgeWidth: fromLadderPosition(p, EDGE_WIDTH_LADDER) }))}
 							/>
 							<SettingSlider
-								label="Arrowhead size"
+								label="Rozmiar grotu"
 								min={0}
 								max={100}
 								step={10}
@@ -528,7 +528,7 @@ function GraphSettingsControl({
 									changeSettings((cur) => ({ ...cur, arrowLength: fromLadderPosition(p, ARROW_LENGTH_LADDER) }))}
 							/>
 							<SettingSlider
-								label="Label size"
+								label="Rozmiar etykiet"
 								min={0}
 								max={100}
 								step={10}
@@ -539,7 +539,7 @@ function GraphSettingsControl({
 							/>
 							{/* Display is absolute (ratio / 0.5): "1×" is the default, dead-center (owner, 2026-10-07). */}
 							<SettingSlider
-								label="Labels until zoom"
+								label="Etykiety do przybliżenia"
 								min={0}
 								max={100}
 								step={10}
@@ -557,10 +557,10 @@ function GraphSettingsControl({
 						    the paint. */}
 						<div className="mt-1.5 flex flex-col gap-1.5 border-t pt-1.5">
 							<span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-								Regions
+								Regiony
 							</span>
 							<label className="flex cursor-pointer items-center justify-between text-[11px] text-muted-foreground">
-								<span>Background colors</span>
+								<span>Kolory tła</span>
 								<input
 									type="checkbox"
 									checked={settings.regions.enabled}
@@ -573,7 +573,7 @@ function GraphSettingsControl({
 								/>
 							</label>
 							<SettingSlider
-								label="Dilation"
+								label="Rozszerzenie"
 								disabled={!regionTuning.enabled}
 								min={0}
 								max={100}
@@ -587,7 +587,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Blur"
+								label="Rozmycie"
 								disabled={!regionTuning.enabled}
 								min={0}
 								max={100}
@@ -602,7 +602,7 @@ function GraphSettingsControl({
 								}
 							/>
 							<SettingSlider
-								label="Edge alpha"
+								label="Przezroczystość krawędzi"
 								disabled={!regionTuning.enabled}
 								min={0}
 								max={100}
@@ -618,7 +618,7 @@ function GraphSettingsControl({
 							<label
 								className={`flex items-center justify-between gap-2 text-[11px] text-muted-foreground${!regionTuning.enabled ? " opacity-40" : ""}`}
 							>
-								<span>Bitmap resolution</span>
+								<span>Rozdzielczość bitmapy</span>
 								<select
 									disabled={!regionTuning.enabled}
 									className="rounded-md border bg-background px-1.5 py-0.5 text-xs tabular-nums text-foreground"
@@ -643,7 +643,7 @@ function GraphSettingsControl({
 							    their own clusterLabels toggle. Size is screen px
 							    (constant at any zoom, unlike node labels). */}
 							<label className="flex cursor-pointer items-center justify-between text-[11px] text-muted-foreground">
-								<span>Cluster labels</span>
+								<span>Etykiety klastrów</span>
 								<input
 									type="checkbox"
 									checked={settings.clusterLabels}
@@ -652,7 +652,7 @@ function GraphSettingsControl({
 								/>
 							</label>
 							<SettingSlider
-								label="Cluster label size"
+								label="Rozmiar etykiet klastrów"
 								disabled={!settings.clusterLabels}
 								min={0}
 								max={100}
@@ -678,10 +678,10 @@ function GraphSettingsControl({
 						    anchor + its gray-out-able controls last. */}
 						<div className="mt-1.5 flex flex-col gap-1.5 border-t pt-1.5">
 							<span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-								Physics
+								Fizyka
 							</span>
 							<SettingSlider
-								label="Node repulsion"
+								label="Odpychanie węzłów"
 								min={0}
 								max={100}
 								step={5}
@@ -694,7 +694,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Edge attraction"
+								label="Przyciąganie krawędzi"
 								min={0}
 								max={100}
 								step={5}
@@ -707,7 +707,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Edge length"
+								label="Długość krawędzi"
 								min={0}
 								max={100}
 								step={5}
@@ -720,7 +720,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Central pull"
+								label="Przyciąganie do środka"
 								min={0}
 								max={100}
 								step={5}
@@ -733,7 +733,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Cluster pull"
+								label="Przyciąganie klastrów"
 								min={0}
 								max={100}
 								step={5}
@@ -746,7 +746,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Friction"
+								label="Tarcie"
 								min={0}
 								max={100}
 								step={5}
@@ -763,7 +763,7 @@ function GraphSettingsControl({
 							    controls at the very bottom — the grayed group reads
 							    as a self-contained sub-section. */}
 							<label className="flex items-center justify-between gap-2 text-xs">
-								Depth anchor
+								Kotwica głębokości
 								<select
 									className="rounded border bg-background px-1 py-0.5 text-xs"
 									value={physicsTuning.depthMode}
@@ -774,13 +774,13 @@ function GraphSettingsControl({
 										}))
 									}
 								>
-									<option value="off">Off</option>
-									<option value="vertical">Vertical (up)</option>
-									<option value="radial">Radial (outward)</option>
+									<option value="off">Wył.</option>
+									<option value="vertical">Pionowo (w górę)</option>
+									<option value="radial">Promieniście (na zewnątrz)</option>
 								</select>
 							</label>
 							<SettingSlider
-								label="Depth strength"
+								label="Siła głębokości"
 								disabled={physicsTuning.depthMode === "off"}
 								min={0}
 								max={100}
@@ -794,7 +794,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Depth spacing"
+								label="Odstęp poziomów"
 								disabled={physicsTuning.depthMode === "off"}
 								min={0}
 								max={100}
@@ -808,7 +808,7 @@ function GraphSettingsControl({
 									}))}
 							/>
 							<SettingSlider
-								label="Base ring radius"
+								label="Promień bazowego pierścienia"
 								disabled={physicsTuning.depthMode !== "radial"}
 								min={0}
 								max={100}
@@ -872,7 +872,7 @@ export function GraphChromeRow({
 				<div className="graph-chrome-fade-in w-56 min-w-0 shrink rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
 					<Hint
 						// ⌘F focuses node search (surface-scoped registry action).
-						label="Search nodes"
+						label="Szukaj węzłów"
 						action="find"
 						side="bottom"
 					>
@@ -882,15 +882,15 @@ export function GraphChromeRow({
 							ref={searchInputRef}
 							value={query}
 							onChange={(e) => onQuery(e.target.value)}
-							placeholder="Search nodes…"
-							aria-label="Search nodes"
+							placeholder="Szukaj węzłów…"
+							aria-label="Szukaj węzłów"
 							spellCheck={false}
 							className="h-7 w-full rounded-lg border bg-background pl-8 text-xs outline-none placeholder:text-muted-foreground focus:border-ring"
 						/>
 					</div>
 					</Hint>
 					{noMatch && (
-						<div className="px-1.5 pt-1 text-[11px] text-muted-foreground">No matching nodes.</div>
+						<div className="px-1.5 pt-1 text-[11px] text-muted-foreground">Brak pasujących węzłów.</div>
 					)}
 				</div>
 			)}
@@ -898,7 +898,7 @@ export function GraphChromeRow({
 			    container (36px band), between the search and Import. */}
 			{!isEmpty && (
 				<div className="graph-chrome-fade-in shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur">
-					<Hint label="Every reasoning chain" side="bottom">
+					<Hint label="Wszystkie łańcuchy rozumowania" side="bottom">
 						<button
 							type="button"
 							onClick={onOpenChains}
@@ -906,7 +906,7 @@ export function GraphChromeRow({
 							className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent"
 						>
 							<ListTreeIcon className="size-3" />
-							Chains
+							Łańcuchy
 						</button>
 					</Hint>
 				</div>
@@ -929,7 +929,7 @@ export function GraphChromeRow({
 					// The one button whose action isn't obvious from its label:
 					// the missing fact is where imports go (owner, subtlety
 					// round 2026-09-25).
-					label="Import notes into the graph"
+					label="Importuj notatki do grafu"
 					side="bottom"
 				>
 					<button
@@ -940,7 +940,7 @@ export function GraphChromeRow({
 					className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
 				>
 						<UploadIcon className="size-3" />
-						{importing ? "Importing…" : "Import notes…"}
+						{importing ? "Importowanie…" : "Importuj notatki…"}
 					</button>
 				</Hint>
 			</div>
@@ -1498,9 +1498,9 @@ export function GraphView({
 				<div className="flex h-full w-full items-center justify-center px-4">
 					<div className="flex flex-col items-center gap-3 text-center text-muted-foreground">
 						<WaypointsIcon className="size-10 opacity-40" strokeWidth={1.25} />
-						<div className="text-lg font-medium text-foreground">Knowledge graph</div>
+						<div className="text-lg font-medium text-foreground">Graf wiedzy</div>
 						<p className="max-w-sm text-sm">
-							Start a session or import notes to build your graph.
+							Rozpocznij sesję lub zaimportuj notatki, aby zbudować swój graf.
 						</p>
 					</div>
 				</div>
@@ -1541,7 +1541,7 @@ export function GraphView({
 						}}
 						className="flex items-center rounded-lg px-2.5 py-1.5 text-left text-muted-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
 					>
-						Delete
+						Usuń
 					</button>
 				</MenuShell>
 			)}
@@ -1652,7 +1652,7 @@ export function GraphView({
 					<div className="mt-1 text-xs leading-relaxed text-muted-foreground">{selected.node.statement}</div>
 					{selected.sourceIds.length > 0 ? (
 						<div className="mt-3 flex flex-col gap-1">
-							<div className="text-xs text-muted-foreground">Sessions</div>
+							<div className="text-xs text-muted-foreground">Sesje</div>
 							{selected.sourceIds.map((sourceId) => {
 								// An imported-notes file: a STATIC entry — the path,
 								// plain text, never a link (no session to open).
@@ -1681,7 +1681,7 @@ export function GraphView({
 							})}
 						</div>
 					) : (
-						<div className="mt-3 text-xs text-muted-foreground">No sessions recorded.</div>
+						<div className="mt-3 text-xs text-muted-foreground">Brak zapisanych sesji.</div>
 					)}
 				</div>
 			)}

@@ -104,7 +104,7 @@ export function DemoOutputCard({
 	if (!result || typeof result.html !== "string" || typeof result.title !== "string") {
 		return (
 			<div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-				Demo completed, but the result could not be displayed.
+				Demo zostało ukończone, ale nie udało się wyświetlić wyniku.
 			</div>
 		);
 	}
@@ -113,10 +113,10 @@ export function DemoOutputCard({
 		return (
 			<div className="rounded-xl border bg-card p-4 text-card-foreground" data-testid="demo-card-failed">
 				<div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-					Interactive demo
-					<span className="rounded bg-red-500/15 px-1.5 py-0.5 text-red-500">failed</span>
+					Interaktywne demo
+					<span className="rounded bg-red-500/15 px-1.5 py-0.5 text-red-500">błąd</span>
 				</div>
-				<p className="mt-2 text-sm text-muted-foreground">{result.notes ?? "The demo could not be built."}</p>
+				<p className="mt-2 text-sm text-muted-foreground">{result.notes ?? "Nie udało się zbudować dema."}</p>
 			</div>
 		);
 	}
@@ -177,7 +177,7 @@ function DemoFrame({
 			<div className="flex items-center justify-between gap-2">
 				<div className="flex min-w-0 items-baseline gap-2">
 					<span className="shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-						interactive demo
+						interaktywne demo
 					</span>
 					<span className="truncate text-xs font-medium tracking-wide text-foreground">{title}</span>
 				</div>
@@ -186,13 +186,13 @@ function DemoFrame({
 						checked={inverted}
 						onChange={toggleInverted}
 						label="Invert demo brightness"
-						title="Invert colors"
+						title="Odwróć kolory"
 						discIcon={<InvertDiscIcon className="size-3" />}
 					/>
 					<button
 						type="button"
 						aria-label="Download demo as HTML"
-						title="Download as HTML"
+						title="Pobierz jako HTML"
 						onClick={() => downloadFile(`${slugFilename(title)}.html`, html, "text/html")}
 						data-testid="demo-download"
 						className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -205,7 +205,7 @@ function DemoFrame({
 				<DemoErrorChip
 					title={title}
 					message={state.error}
-					onSend={actions ? () => actions.sendText(`The demo "${title}" threw an error: ${state.error}`) : undefined}
+					onSend={actions ? () => actions.sendText(`Demo „${title}” zgłosiło błąd: ${state.error}`) : undefined}
 				/>
 			)}
 			<iframe
@@ -250,7 +250,7 @@ export function DemoErrorChip({
 			className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-500"
 			data-testid="demo-error-chip"
 		>
-			<span className="font-medium">This demo threw an error</span>
+			<span className="font-medium">To demo zgłosiło błąd</span>
 			<span className="min-w-0 flex-1 truncate font-mono text-xs" title={message}>
 				{message}
 			</span>
@@ -261,7 +261,7 @@ export function DemoErrorChip({
 					className="rounded-md border border-red-500/40 px-2 py-1 text-xs font-medium hover:bg-red-500/15"
 					data-testid="demo-error-send"
 				>
-					Send to teacher
+					Wyślij nauczycielowi
 				</button>
 			)}
 		</div>

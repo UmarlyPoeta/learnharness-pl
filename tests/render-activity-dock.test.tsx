@@ -191,7 +191,7 @@ describe("activity section render", () => {
 	it("renders the ALWAYS-PRESENT header when idle — empty means empty, nothing hides", () => {
 		const html = renderToStaticMarkup(<ActivitySection feed={{ jobs: [], extractions: [] }} />);
 		assert.match(html, /data-testid="activity-section"/);
-		assert.match(html, /Background agents/);
+		assert.match(html, /Agenci w tle/);
 		assert.doesNotMatch(html, /activity-blob-(job|extraction)/, "no rows while idle");
 		assert.doesNotMatch(html, /activity-total-cost/, "the cost span is population, not decoration");
 	});
@@ -210,13 +210,13 @@ describe("activity section render", () => {
 		assert.match(html, /data-testid="activity-blob-extraction"/);
 		assert.match(html, /Chain-rule demo/);
 		assert.match(html, /building sandbox…/);
-		assert.match(html, /Extraction — merging/);
+		assert.match(html, /Ekstrakcja — merging/);
 		// Unpriced job → "—", never $0.0000 (doctrine); both blobs show it.
 		assert.match(html, /activity-blob-cost[^>]*>—</);
 		assert.match(html, /data-testid="activity-abort"/, "END on the blob face, popover-independent");
-		assert.match(html, /\bEnd\b/, "the explicit END button");
-		assert.match(html, /Background agents/);
-		// Total cost: nothing priced → "—" in the header.
+		assert.match(html, /Zakończ/, "the explicit END button");
+		assert.match(html, /Agenci w tle/);
+		// Łączny koszt: nothing priced → "—" in the header.
 		assert.match(html, /activity-total-cost[^>]*>—</);
 		// Truncation-reveals KEEP native title (tooltip wave mechanism rule):
 		// the truncated activity + title spans carry title= — a styled

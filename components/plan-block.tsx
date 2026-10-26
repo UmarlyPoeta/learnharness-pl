@@ -680,11 +680,11 @@ export function PlanBlock({ data, onOpen }: { data: PlanBlockData; onOpen: () =>
 	const statusMap = useMemo(() => new Map(data.nodes.map((n) => [n.id, n.status] as const)), [data]);
 	const statusOf = (id: string): PlanNodeStatus => statusMap.get(id) ?? "upcoming";
 	return (
-		<Hint label="Open the full plan" side="bottom">
+		<Hint label="Otwórz pełny plan" side="bottom">
 <button
 			type="button"
 			data-testid="plan-block-full"
-			aria-label="Open the full plan"
+			aria-label="Otwórz pełny plan"
 			onClick={onOpen}
 			className="block w-full text-left"
 		>
@@ -893,9 +893,9 @@ export function PlanPopup({ messages, onClose }: { messages: readonly PopupMessa
 			}}
 		>
 			<div className="mb-2 flex items-center gap-2">
-				<span className="text-sm font-medium">The plan</span>
-				<span className="text-xs text-muted-foreground">live — statuses derive from your check outcomes</span>
-				<Hint label="Close" binding="escape" side="left">
+				<span className="text-sm font-medium">Plan</span>
+				<span className="text-xs text-muted-foreground">na żywo — statusy wynikają z wyników twoich sprawdzeń</span>
+				<Hint label="Zamknij" binding="escape" side="left">
 <button
 					type="button"
 					onClick={onClose}
@@ -947,9 +947,9 @@ export function PlanPopup({ messages, onClose }: { messages: readonly PopupMessa
 							/>
 						</div>
 						<div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between p-2">
-							<span className="text-xs text-muted-foreground/60">Drag to pan · scroll to zoom</span>
+							<span className="text-xs text-muted-foreground/60">Przeciągnij, aby przesunąć · przewiń, aby powiększyć</span>
 							<div className="flex gap-1">
-								<Hint label="Zoom out" side="bottom">
+								<Hint label="Pomniejsz" side="bottom">
 <button
 									type="button"
 									aria-label="Zoom out"
@@ -959,7 +959,7 @@ export function PlanPopup({ messages, onClose }: { messages: readonly PopupMessa
 									<MinusIcon className="size-3.5" />
 								</button>
 </Hint>
-								<Hint label="Fit plan to screen" side="bottom">
+								<Hint label="Dopasuj plan do ekranu" side="bottom">
 <button
 									type="button"
 									aria-label="Fit plan to screen"
@@ -970,7 +970,7 @@ export function PlanPopup({ messages, onClose }: { messages: readonly PopupMessa
 									<MaximizeIcon className="size-3.5" />
 								</button>
 </Hint>
-								<Hint label="Zoom in" side="bottom">
+								<Hint label="Powiększ" side="bottom">
 <button
 									type="button"
 									aria-label="Zoom in"
@@ -985,7 +985,7 @@ export function PlanPopup({ messages, onClose }: { messages: readonly PopupMessa
 					</>
 				) : (
 					<div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-						No plan in this session yet.
+						Ta sesja nie ma jeszcze planu.
 					</div>
 				)}
 			</div>

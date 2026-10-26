@@ -613,7 +613,7 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
  * The stats-bar dictation slot (owner placement, round 1): the row's middle
  * is one strip that is always the full free width —
  *
- *   idle      a wide, quiet "Dictate" button (mic + label, grayed out — the
+ *   idle      a wide, quiet "Dyktuj" button (mic + label, grayed out — the
  *             whole middle is the affordance, per the owner).
  *   active    optimistic from the CLICK: red stop pill + the fixed-width
  *             meter (no interim text ever shifts it). Spinner while
@@ -678,7 +678,7 @@ export function DictationBar({ dictation }: { dictation: Dictation }) {
 				// full reveal (the keyless line KEEPS "Deepgram" — owner overrule:
 				// it's the Keys row label, the truth the user needs). Otherwise the
 				// quiet label + the live ⌘D binding.
-				label={error ?? "Dictate"}
+				label={error ?? "Dyktuj"}
 				action={error ? undefined : "toggle-dictation"}
 				side="top"
 			>
@@ -699,7 +699,7 @@ export function DictationBar({ dictation }: { dictation: Dictation }) {
 			className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md border border-border/50 bg-card/50 text-xs text-muted-foreground/70 shadow-lg backdrop-blur transition-colors hover:border-border hover:text-muted-foreground"
 			>
 					<MicIcon className="size-3.5" />
-					<span className="max-w-full truncate">{error ?? "Dictate"}</span>
+					<span className="max-w-full truncate">{error ?? "Dyktuj"}</span>
 				</button>
 			</Hint>
 		);
@@ -710,7 +710,7 @@ export function DictationBar({ dictation }: { dictation: Dictation }) {
 			<Hint
 				// The owner flagged this copy good ("Stop dictation (Esc)") —
 				// kept verbatim; only the machinery moved to the styled tooltip.
-				label="Stop dictation (Esc)"
+				label="Zatrzymaj dyktowanie (Esc)"
 				side="top"
 			>
 				<button

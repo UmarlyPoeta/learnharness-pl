@@ -20,10 +20,10 @@ import { BrailleSpinner } from "@/components/braille-spinner";
  *                 box must not duplicate it.
  */
 const KIND_LABEL: Record<JobKind, string> = {
-	research: "Research agent",
-	demo: "Demo agent",
-	visual: "Figure agent",
-	pdf: "PDF reader",
+	research: "Agent researchu",
+	demo: "Agent dem",
+	visual: "Agent grafik",
+	pdf: "Czytnik PDF",
 };
 
 export function DispatchCard({ toolCallId, kind }: { toolCallId: string; kind: JobKind }) {
@@ -41,10 +41,10 @@ export function DispatchCard({ toolCallId, kind }: { toolCallId: string; kind: J
 	// whose key is gone reads as the key being needed — the deep-link
 	// lands on the SetupDialog's first-key stage on its own.
 	if (isModelsRefusal(job.error)) {
-		return <DispatchRefusedCard label={label} line="needs model setup" button="Set up models" />;
+		return <DispatchRefusedCard label={label} line="wymaga konfiguracji modeli" button="Skonfiguruj modele" />;
 	}
 	if (isProviderKeyRefusal(job.error)) {
-		return <DispatchRefusedCard label={label} line="needs a provider key" button="Add a key" />;
+		return <DispatchRefusedCard label={label} line="wymaga klucza dostawcy" button="Dodaj klucz" />;
 	}
 	const failed = job.status === "error";
 	return (
@@ -54,7 +54,7 @@ export function DispatchCard({ toolCallId, kind }: { toolCallId: string; kind: J
 		>
 			{failed ? <XIcon className="size-3.5 text-red-500" /> : <CheckIcon className="size-3.5" />}
 			<span className="font-medium uppercase tracking-wide">{label}</span>
-			<span>{failed ? "failed" : "delivered"}</span>
+			<span>{failed ? "błąd" : "dostarczono"}</span>
 		</div>
 	);
 }
@@ -99,7 +99,7 @@ function DispatchActivityCard({ job, label }: { job: JobRecord | null; label: st
 				    the Braille spinner replaces the pulsing dot — one indicator
 				    everywhere. This is the ONLY dispatch-card change; the card's
 				    shape is untouched. */}
-				<BrailleSpinner label={`${label} running`} />
+				<BrailleSpinner label={`${label} — w toku`} />
 				{label}
 				{elapsed !== null && <span className="font-normal">· {elapsed}s</span>}
 			</div>

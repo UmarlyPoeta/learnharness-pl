@@ -186,14 +186,14 @@ export function AppearanceSection({
 
 	return (
 		<>
-			<SettingsRow label="Mode" hint="Coming soon" testid="row-mode" dimmed>
+			<SettingsRow label="Tryb" hint="Wkrótce" testid="row-mode" dimmed>
 				<ThinSelect value="dark" ariaLabel="mode" onChange={() => {}} testid="select-mode" disabled>
-					<option value="dark">Dark</option>
+					<option value="dark">Ciemny</option>
 				</ThinSelect>
 			</SettingsRow>
 			<SettingsRow
-				label="Background"
-				hint={`Empty = ${resolved.background ?? "#141414"}`}
+				label="Tło"
+				hint={`Puste = ${resolved.background ?? "#141414"}`}
 				testid="row-background"
 			>
 				<CommitInput
@@ -205,8 +205,8 @@ export function AppearanceSection({
 				/>
 			</SettingsRow>
 			<SettingsRow
-				label="Reading font"
-				hint={`Empty = ${DEFAULT_READING_FONT}`}
+				label="Czcionka do czytania"
+				hint={`Puste = ${DEFAULT_READING_FONT}`}
 				testid="row-font"
 			>
 				<span ref={fontMenuOpen ? menuAnchorRef : undefined} className="relative flex items-center gap-2">
@@ -222,7 +222,7 @@ export function AppearanceSection({
 						const triggerButton = (
 							<button
 								type="button"
-								aria-label="Reading font"
+								aria-label="Czcionka do czytania"
 								aria-expanded={fontMenuOpen}
 								data-testid="font-trigger"
 								onClick={openFontMenu}
@@ -237,7 +237,7 @@ export function AppearanceSection({
 						return fontMenuOpen ? (
 							triggerButton
 						) : (
-							<Hint label="Choose from your installed fonts" side="left">
+							<Hint label="Wybierz z zainstalowanych czcionek" side="left">
 								{triggerButton}
 							</Hint>
 						);
@@ -258,16 +258,16 @@ export function AppearanceSection({
 										? undefined
 										: localFonts === null
 											? enumEmpty
-												? "Common families — installed fonts could not be read"
-												: "Common families — your installed list needs the desktop app"
-											: "Your installed fonts"
+												? "Popularne kroje — nie udało się odczytać zainstalowanych czcionek"
+												: "Popularne kroje — lista zainstalowanych wymaga aplikacji desktopowej"
+											: "Twoje zainstalowane czcionki"
 								}
 							/>
 						</MenuShell>
 					)}
 				</span>
 			</SettingsRow>
-			<SettingsRow label="Reading font size" hint={`${resolved.proseFontSize}px`} testid="row-prose-size">
+			<SettingsRow label="Rozmiar czcionki do czytania" hint={`${resolved.proseFontSize}px`} testid="row-prose-size">
 				<CommitInput
 					type="number"
 					value={String(appearance?.proseFontSize ?? "")}
@@ -288,14 +288,14 @@ export function AppearanceSection({
 					}}
 				/>
 			</SettingsRow>
-			<SettingsRow label="Session names in serif" testid="row-session-serif">
+			<SettingsRow label="Nazwy sesji szeryfowe" testid="row-session-serif">
 				<Toggle
 					checked={appearance?.sessionNameSerif ?? true}
 					label="session names serif"
 					onChange={(on) => onSectionChange({ ...appearance, sessionNameSerif: on })}
 				/>
 			</SettingsRow>
-			<SettingsRow label="Heading weight" hint={`${resolved.mdRendering.headingWeight}`} testid="row-heading-weight">
+			<SettingsRow label="Grubość nagłówków" hint={`${resolved.mdRendering.headingWeight}`} testid="row-heading-weight">
 				<CommitInput
 					type="number"
 					value={String(md?.headingWeight ?? "")}
@@ -321,19 +321,19 @@ export function AppearanceSection({
 			{/* The emphasis inks default to the REGULAR TEXT COLOR now
 			    (appearance wave, 2026-09-26) — the empty-state labels say
 			    so; explicit hex overrides ride unchanged. */}
-			<SettingsRow label="Bold color" hint="Empty = same as text" testid="row-bold-color">
+			<SettingsRow label="Kolor pogrubienia" hint="Puste = jak tekst" testid="row-bold-color">
 				<CommitInput
 					value={md?.boldColor ?? ""}
-					placeholder="same as text"
+					placeholder="jak tekst"
 					ariaLabel="bold color"
 					testid="input-bold-color"
 					onCommit={(v) => onSectionChange({ ...appearance, mdRendering: { ...md, boldColor: v === "" ? null : v } })}
 				/>
 			</SettingsRow>
-			<SettingsRow label="Italic color" hint="Empty = same as text" testid="row-italic-color">
+			<SettingsRow label="Kolor kursywy" hint="Puste = jak tekst" testid="row-italic-color">
 				<CommitInput
 					value={md?.italicColor ?? ""}
-					placeholder="same as text"
+					placeholder="jak tekst"
 					ariaLabel="italic color"
 					testid="input-italic-color"
 					onCommit={(v) => onSectionChange({ ...appearance, mdRendering: { ...md, italicColor: v === "" ? null : v } })}
@@ -370,7 +370,7 @@ export function GraphSection({
 			    switch below arrived: off ≠ no graph, off = the graph stops
 			    growing. The testid keeps the old name's shape (row-enabled) so
 			    this stays one rename, not a test re-pin. */}
-			<SettingsRow label="Extraction" hint="Off = the graph stops growing" testid="graph-row-enabled">
+			<SettingsRow label="Ekstrakcja" hint="Wył. = graf przestaje rosnąć" testid="graph-row-enabled">
 				<Toggle
 					checked={graph?.enabled ?? true}
 					label="extraction enabled"
@@ -386,7 +386,7 @@ export function GraphSection({
 			    round): display-only. Off = the home shows the chains view
 			    instead of the canvas. The ledgers, the pipeline, everything
 			    data keeps working — that is the extraction switch above. */}
-			<SettingsRow label="Graph rendering" hint="Off = home shows the chains view" testid="graph-row-rendering">
+			<SettingsRow label="Renderowanie grafu" hint="Wył. = strona główna pokazuje widok łańcuchów" testid="graph-row-rendering">
 				<Toggle
 					checked={graph?.rendering ?? true}
 					label="graph rendering enabled"
@@ -394,7 +394,7 @@ export function GraphSection({
 				/>
 			</SettingsRow>
 			<SettingsRow
-				label="Extraction chunk budget"
+				label="Budżet fragmentu ekstrakcji"
 				hint={`${resolved.extractionChunkTokens} tok`}
 				testid="graph-row-chunk-tokens"
 			>

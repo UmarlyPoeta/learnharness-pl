@@ -91,7 +91,9 @@ SVG requirements:
 
 Your FINAL message: 1-2 sentences of notes for the teacher (what the figure shows, any caveats) —
 NEVER the SVG source itself. If you genuinely cannot make a correct picture of the brief, say exactly
-that in your final message and why.`;
+that in your final message and why.
+
+LANGUAGE: every label, caption, and legend in the figure is in Polish.`;
 
 /** The wire declarations (pi-ai Tool, TypeBox parameters): this loop owns
  *  execution itself — write/edit dispatch inline below, render feeds the

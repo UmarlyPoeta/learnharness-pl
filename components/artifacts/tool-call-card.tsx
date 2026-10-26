@@ -84,7 +84,7 @@ export function ToolCallCard({ part }: ArtifactPartProps) {
 				{p.input != null && (
 					<div>
 						<div className="mb-1 font-medium uppercase tracking-wide text-muted-foreground">
-							Input
+							Wejście
 						</div>
 						<pre className="max-h-32 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
 							{JSON.stringify(p.input, null, 2)}
@@ -94,7 +94,7 @@ export function ToolCallCard({ part }: ArtifactPartProps) {
 				{typeof p.errorText === "string" ? (
 					<div>
 						<div className="mb-1 font-medium uppercase tracking-wide text-muted-foreground">
-							Error
+							Błąd
 						</div>
 						<pre className="whitespace-pre-wrap break-all font-mono text-[11px] text-red-500">
 							{p.errorText}
@@ -103,7 +103,7 @@ export function ToolCallCard({ part }: ArtifactPartProps) {
 				) : out != null ? (
 					<div>
 						<div className="mb-1 font-medium uppercase tracking-wide text-muted-foreground">
-							Output
+							Wyjście
 						</div>
 						<pre className="max-h-64 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
 							{out}
@@ -111,7 +111,7 @@ export function ToolCallCard({ part }: ArtifactPartProps) {
 					</div>
 				) : (
 					p.state !== "output-available" && (
-						<div className="text-muted-foreground italic">running…</div>
+						<div className="text-muted-foreground italic">w toku…</div>
 					)
 				)}
 			</div>

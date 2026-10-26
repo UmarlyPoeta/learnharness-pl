@@ -22,19 +22,19 @@ import { IS_MAC } from "../src/core/keyboard.ts";
 
 describe("hintText — the parenthesized composition", () => {
 	it("a registry action appends the LIVE binding (override-aware source)", () => {
-		assert.equal(hintText("Dictate", "toggle-dictation"), IS_MAC ? "Dictate (⌘D)" : "Dictate (Ctrl+D)");
-		assert.equal(hintText("Settings", "open-settings"), IS_MAC ? "Settings (⌘,)" : "Settings (Ctrl+,)");
-		assert.equal(hintText("Search sessions", "sessions-search"), IS_MAC ? "Search sessions (⌘⇧F)" : "Search sessions (Ctrl+Shift+F)");
+		assert.equal(hintText("Dyktuj", "toggle-dictation"), IS_MAC ? "Dyktuj (⌘D)" : "Dyktuj (Ctrl+D)");
+		assert.equal(hintText("Ustawienia", "open-settings"), IS_MAC ? "Ustawienia (⌘,)" : "Ustawienia (Ctrl+,)");
+		assert.equal(hintText("Szukaj sesji", "sessions-search"), IS_MAC ? "Szukaj sesji (⌘⇧F)" : "Szukaj sesji (Ctrl+Shift+F)");
 	});
 
 	it("surface-owned keys ride the binding prop (no registry entry)", () => {
-		assert.equal(hintText("Close", undefined, "escape"), "Close (Esc)");
+		assert.equal(hintText("Zamknij", undefined, "escape"), "Zamknij (Esc)");
 		assert.equal(hintText("Send", undefined, "enter"), "Send (↵)");
 	});
 
 	it("no shortcut = the label alone, no dangling dash", () => {
-		assert.equal(hintText("Home"), "Home");
-		assert.equal(hintText("Stop dictation (Esc)"), "Stop dictation (Esc)");
+		assert.equal(hintText("Strona główna"), "Strona główna");
+		assert.equal(hintText("Zatrzymaj dyktowanie (Esc)"), "Zatrzymaj dyktowanie (Esc)");
 	});
 });
 
@@ -46,7 +46,7 @@ describe("subtlety round pins (owner 2026-09-25)", () => {
 
 describe("spot-pins: the dev-speak cull (owner copy review at merge)", () => {
 	it("the auto-update hint is honest user language — no stream jargon", () => {
-		assert.equal(AUTO_UPDATE_HINT, "Automatic updates arrive in an upcoming release");
+		assert.equal(AUTO_UPDATE_HINT, "Automatyczne aktualizacje pojawią się w kolejnej wersji");
 		assert.ok(!AUTO_UPDATE_HINT.includes("wave"), "no stream vocabulary");
 	});
 });
@@ -55,9 +55,9 @@ describe("Hint — the mechanism (SSR: the tooltip itself stays closed)", () => 
 	it("asChild: no wrapper DOM — the control keeps its own testid and classes", () => {
 		const html = renderToStaticMarkup(
 			createElement(Hint, {
-				label: "Dictate",
+				label: "Dyktuj",
 				action: "toggle-dictation",
-				children: createElement("button", { "data-testid": "dictation-toggle", className: "the-quiet-chrome" }, "Dictate"),
+				children: createElement("button", { "data-testid": "dictation-toggle", className: "the-quiet-chrome" }, "Dyktuj"),
 			}),
 		);
 		assert.match(html, /^<button/, "the trigger IS the button — nothing wraps it");

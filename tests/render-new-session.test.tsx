@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { DraftShell, startDraftSession } from "../components/new-session.tsx";
 
 /**
- * The sessionless draft view (/chat/new, owner 2026-09-13): "+ New session"
+ * The sessionless draft view (/chat/new, owner 2026-09-13): "+ Nowa sesja"
  * opens the draft — NOTHING is created until the first message is sent, and
  * that message becomes the session's title. These pins hold the two seams:
  * startDraftSession (the create-on-send contract) and DraftShell (the
@@ -67,7 +67,7 @@ describe("DraftShell — the sessionless surface", () => {
 		// No CTA by default: a configured surface stays quiet.
 		assert.ok(!html.includes('data-testid="setup-cta"'));
 		// The same empty state a fresh chat shows.
-		assert.ok(html.includes("The teacher will open by probing what you already know."));
+		assert.ok(html.includes("Nauczyciel zacznie od sprawdzenia, co już wiesz."));
 		// The pointer-events pattern (953b22b): the wrapper stays inert…
 		assert.ok(html.includes("pointer-events-none"));
 		// …and the blob re-enables it.
@@ -121,9 +121,9 @@ describe("the practice draft (?mode=practice, 2026-10-04)", () => {
 				mode="practice"
 			/>,
 		);
-		assert.match(html, /New practice session/);
-		assert.ok(html.includes("Pick nodes from your knowledge graph, describe what you want to practice, or bring your own problem."));
-		assert.match(html, /What do you want to practice\?/);
+		assert.match(html, /Nowa sesja ćwiczeń/);
+		assert.ok(html.includes("Wybierz węzły z grafu wiedzy, opisz co chcesz poćwiczyć lub podaj własne zadanie."));
+		assert.match(html, /Co chcesz poćwiczyć\?/);
 	});
 
 	it("THE PICK BAR (owner round 10): the practice draft carries the same pill above its composer", () => {
@@ -136,7 +136,7 @@ describe("the practice draft (?mode=practice, 2026-10-04)", () => {
 				mode="practice"
 			/>,
 		);
-		assert.match(html, />Pick nodes<\/button>/);
+		assert.match(html, />Wybierz węzły<\/button>/);
 		// picked: count + Clear, the home register verbatim
 		const picked = renderToStaticMarkup(
 			<DraftShell
@@ -148,8 +148,8 @@ describe("the practice draft (?mode=practice, 2026-10-04)", () => {
 				picks={[{ id: "n_1", name: "Parity", statement: "Odd + odd = even." }]}
 			/>,
 		);
-		assert.match(picked, /1 node selected/);
-		assert.match(picked, /Clear/);
+		assert.match(picked, /Wybrano: 1 węzeł/);
+		assert.match(picked, /Wyczyść/);
 		// teach mode with nothing picked renders nothing (home's law)
 		const teach = renderToStaticMarkup(
 			<DraftShell busy={false} text="" onChange={() => {}} onSend={() => {}} mode="teach" />,

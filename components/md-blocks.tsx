@@ -199,12 +199,12 @@ function MermaidInline({ chart }: { chart: string }) {
 				dangerouslySetInnerHTML={{ __html: svg ?? "" }}
 			/>
 			<div className="absolute top-0 right-0 flex items-start gap-0.5">
-				<CopyCorner getText={() => chart} label="Copy diagram source" />
+				<CopyCorner getText={() => chart} label="Kopiuj źródło diagramu" />
 				{overlay && (
 					<Hint
 					// Full-screen overlay copy (tooltip wave) — "session view" was
 					// internal direction-speak for the same thing.
-					label="Open full-screen"
+					label="Pełny ekran"
 					side="bottom"
 				>
 <button
@@ -257,7 +257,7 @@ export function MarkdownCode(props: ComponentProps<"code"> & ExtraProps) {
 	const lineNumbers = !/\bnoLineNumbers\b/.test(meta);
 	return (
 		<div className="group/md relative" data-testid="md-code">
-			<CopyCorner className="absolute top-1.5 right-2 z-10" getText={() => source} label="Copy code" />
+			<CopyCorner className="absolute top-1.5 right-2 z-10" getText={() => source} label="Kopiuj kod" />
 			<CodeBlock
 				code={source}
 				language={language}
@@ -385,7 +385,7 @@ export function MarkdownTable(props: ComponentProps<"table"> & ExtraProps) {
 				// cells it hovers over; the scroll container stays under it (the
 				// corner is fixed to the wrapper, not the scrolling table).
 				className="absolute top-1 right-1 z-10"
-				label="Copy table"
+				label="Kopiuj tabelę"
 				getText={() => (ref.current ? tableDataToMarkdown(extractTableDataFromElement(ref.current)) : "")}
 			/>
 			<div className="overflow-x-auto">
@@ -434,7 +434,7 @@ export function MathDisplay(props: ComponentProps<"span"> & ExtraProps) {
 		<span className="group/md relative block z-0" data-testid="md-math">
 			<CopyCorner
 				className="absolute top-0 right-0 z-10"
-				label="Copy equation source"
+				label="Kopiuj źródło wzoru"
 				getText={() => ref.current?.querySelector("annotation")?.textContent ?? ""}
 			/>
 			<span ref={ref} className={className} {...rest}>

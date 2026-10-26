@@ -163,7 +163,7 @@ function KeyTableRow({
 						onKeyDown={(e) => {
 							if (e.key === "Enter") void save();
 						}}
-						placeholder="Paste key…"
+						placeholder="Wklej klucz…"
 						aria-label={`${label} key`}
 						data-testid={`${testid}-input`}
 						disabled={busy}
@@ -177,7 +177,7 @@ function KeyTableRow({
 						data-testid={`${testid}-save`}
 						className="shrink-0 text-xs text-foreground underline-offset-2 hover:underline disabled:text-muted-foreground/40 disabled:no-underline"
 					>
-						Save
+						Zapisz
 					</button>
 					<button
 						type="button"
@@ -186,7 +186,7 @@ function KeyTableRow({
 						data-testid={`${testid}-cancel`}
 						className="shrink-0 text-xs text-muted-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
 					>
-						Cancel
+						Anuluj
 					</button>
 					{status.present && status.source === "file" && onDelete && (
 						<button
@@ -196,7 +196,7 @@ function KeyTableRow({
 							data-testid={`${testid}-delete`}
 							className="shrink-0 text-xs text-muted-foreground/70 underline-offset-2 hover:text-red-500 hover:underline"
 						>
-							Delete
+							Usuń
 						</button>
 					)}
 				</div>
@@ -230,7 +230,7 @@ function KeyTableRow({
 							onClick={(e) => e.stopPropagation()}
 							className="text-[10px] text-muted-foreground/60 underline-offset-2 hover:text-foreground hover:underline"
 						>
-							key ↗
+							klucz ↗
 						</a>
 					)}
 					<span data-testid={`${testid}-status`} className="font-mono text-[11px] text-muted-foreground">
@@ -290,7 +290,7 @@ function AddProviderRow({
 				onClick={() => setOpen((v) => !v)}
 				className="flex w-full items-center justify-between gap-3 rounded-sm px-1 py-1.5 text-left font-ui text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 			>
-				<span>+ Add provider key</span>
+				<span>+ Dodaj klucz dostawcy</span>
 				{addable.length > 0 && <span className="font-mono text-[11px]">{addable.length}</span>}
 			</button>
 			{open && (
@@ -397,7 +397,7 @@ export function KeysSection({
 	}
 
 	if (loading || statuses === null) {
-		return <p className="px-6 py-5 text-xs text-muted-foreground/70">Loading keys…</p>;
+		return <p className="px-6 py-5 text-xs text-muted-foreground/70">Wczytywanie kluczy…</p>;
 	}
 
 	const { providerRows, toolRows, unknownRows, addable } = classifyKeys(statuses, providers);
@@ -413,7 +413,7 @@ export function KeysSection({
 
 	return (
 		<>
-			<SettingsGroup label="Model API keys" testid="group-provider-keys">
+			<SettingsGroup label="Klucze API modeli" testid="group-provider-keys">
 				{providerRows.map((status) => (
 					<KeyTableRow
 						key={status.id}
@@ -455,11 +455,11 @@ export function KeysSection({
 				</div>}
 			</SettingsGroup>
 
-			<SettingsGroup label="Subscriptions" testid="group-subscriptions">
+			<SettingsGroup label="Subskrypcje" testid="group-subscriptions">
 				<SubscriptionConnections />
 			</SettingsGroup>
 
-			{(["Dictation", "Search"] as const).map((label) => <SettingsGroup key={label} label={label} testid={label === "Dictation" ? "group-dictation" : "group-search"}>
+			{(["Dictation", "Search"] as const).map((label) => <SettingsGroup key={label} label={label === "Dictation" ? "Dyktowanie" : "Wyszukiwanie"} testid={label === "Dictation" ? "group-dictation" : "group-search"}>
 				{toolRows.filter((status) => label === "Dictation" ? status.id === "DEEPGRAM_API_KEY" : status.id !== "DEEPGRAM_API_KEY").map((status) => (
 					<KeyTableRow
 						key={status.id}
@@ -507,7 +507,7 @@ function AddProviderEditor({
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && value.trim()) onSave(value);
 				}}
-				placeholder="Paste key…"
+				placeholder="Wklej klucz…"
 				aria-label={`${provider.label} key`}
 				data-testid={`key-${provider.id}-input`}
 				autoFocus
@@ -520,7 +520,7 @@ function AddProviderEditor({
 				data-testid={`key-${provider.id}-save`}
 				className="shrink-0 text-xs text-foreground underline-offset-2 hover:underline disabled:text-muted-foreground/40 disabled:no-underline"
 			>
-				Save
+				Zapisz
 			</button>
 			<button
 				type="button"
@@ -528,7 +528,7 @@ function AddProviderEditor({
 				data-testid={`key-${provider.id}-cancel`}
 				className="shrink-0 text-xs text-muted-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
 			>
-				Cancel
+				Anuluj
 			</button>
 			{error && (
 				<p role="alert" className="w-full pl-0 text-xs text-red-500" data-testid={`key-${provider.id}-error`}>

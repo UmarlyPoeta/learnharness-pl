@@ -196,7 +196,7 @@ export function SidebarToggle() {
 				open ? "w-0 -mr-3" : "w-9 mr-0 lh-closed-toggle",
 			)}
 		>
-			<Hint label="Open sidebar" action="toggle-sidebar">
+			<Hint label="Otwórz panel boczny" action="toggle-sidebar">
 			<Button
 				variant="ghost"
 				size="icon"
@@ -241,13 +241,13 @@ function SessionStatus({ busy }: { busy: boolean }) {
  *  — trivial, a format function swap). Pure — exported for tests. */
 export function timeAgo(iso: string, now = new Date()): string {
 	const ms = now.getTime() - new Date(iso).getTime();
-	if (ms < 60_000) return "just now";
+	if (ms < 60_000) return "przed chwilą";
 	const min = Math.floor(ms / 60_000);
-	if (min < 60) return `${min}m ago`;
+	if (min < 60) return `${min} min temu`;
 	const h = Math.floor(min / 60);
-	if (h < 24) return `${h}h ago`;
+	if (h < 24) return `${h} godz. temu`;
 	const d = Math.floor(h / 24);
-	if (d < 7) return `${d}d ago`;
+	if (d < 7) return `${d} ${d === 1 ? "dzień" : "dni"} temu`;
 	const date = new Date(iso);
 	const mm = String(date.getMonth() + 1).padStart(2, "0");
 	const dd = String(date.getDate()).padStart(2, "0");
@@ -260,12 +260,12 @@ export function timeAgo(iso: string, now = new Date()): string {
  *  still rides the API payload, so this is a one-line flip back if it's
  *  ever wanted. */
 function sessionMeta(chat: ChatListItem): string {
-	if (chat.compacting) return `Compacting context · ${timeAgo(chat.updatedAt)}`;
-	if (chat.pendingQuestion) return `Waiting for input · ${timeAgo(chat.updatedAt)}`;
+	if (chat.compacting) return `Kompaktowanie kontekstu · ${timeAgo(chat.updatedAt)}`;
+	if (chat.pendingQuestion) return `Oczekiwanie na odpowiedź · ${timeAgo(chat.updatedAt)}`;
 	if ((chat.kind ?? "teach") === "practice" && chat.pendingProblem) {
-		return `Problem waiting · ${timeAgo(chat.updatedAt)}`;
+		return `Zadanie czeka · ${timeAgo(chat.updatedAt)}`;
 	}
-	if (chat.busy) return "Working…";
+	if (chat.busy) return "Praca…";
 	return timeAgo(chat.updatedAt);
 }
 
@@ -656,19 +656,19 @@ function SessionsSidebar() {
 						// of the logo, carrying its real shortcut: ⌘G jumps to
 						// the graph view (keyboard-shortcuts routes it to "/",
 						// the same destination as this logo).
-						label="Home"
+						label="Strona główna"
 						action="jump-graph"
 						side="right"
 					>
 						<Link
 							href="/"
-							aria-label="Home"
+							aria-label="Strona główna"
 							className="lh-no-drag flex size-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50"
 						>
 							<LhMark className="size-6" />
 						</Link>
 					</Hint>
-					<Hint label="Close sidebar" action="toggle-sidebar">
+					<Hint label="Zamknij panel boczny" action="toggle-sidebar">
 						<Button
 							variant="ghost"
 							size="icon"
@@ -693,8 +693,8 @@ function SessionsSidebar() {
 						className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 					>
 						<PlusIcon className="size-3" />
-						Teaching
-						<span className="sr-only">create a new teaching session</span>
+						Nauka
+						<span className="sr-only">utwórz nową sesję nauki</span>
 					</button>
 					<button
 						type="button"
@@ -703,14 +703,14 @@ function SessionsSidebar() {
 						className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 					>
 						<DumbbellIcon className="size-3" />
-						Practice
-						<span className="sr-only">create a new practice session</span>
+						Ćwiczenia
+						<span className="sr-only">utwórz nową sesję ćwiczeń</span>
 					</button>
 				</div>
 
 				<div className="mx-3 mb-2 flex items-center gap-2">
-					<span className="text-xs uppercase tracking-widest text-muted-foreground/70">Sessions</span>
-					<Hint label="Search sessions" action="sessions-search" side="bottom">
+					<span className="text-xs uppercase tracking-widest text-muted-foreground/70">Sesje</span>
+					<Hint label="Szukaj sesji" action="sessions-search" side="bottom">
 					<span className="relative flex-1">
 						<Input
 							ref={searchRef}
@@ -760,8 +760,8 @@ function SessionsSidebar() {
 									e.currentTarget.blur();
 								}
 							}}
-							placeholder="Search…"
-							aria-label="Search sessions"
+							placeholder="Szukaj…"
+							aria-label="Szukaj sesji"
 							className="h-6 rounded-sm border-border bg-background pl-6 text-xs placeholder:text-muted-foreground/60"
 						/>
 						<SearchIcon className="pointer-events-none absolute left-1.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/70" />
@@ -790,17 +790,17 @@ function SessionsSidebar() {
 									: "text-muted-foreground hover:text-foreground",
 							)}
 						>
-							{f === "teach" ? "Teaching" : f === "all" ? "All" : "Practice"}
+							{f === "teach" ? "Nauka" : f === "all" ? "Wszystko" : "Ćwiczenia"}
 						</button>
 					))}
 				</div>
 
 				<div ref={listRef} className="flex-1 overflow-y-auto p-2">
 					{shown === null ? (
-						<div className="px-2 py-4 text-xs text-muted-foreground">Loading…</div>
+						<div className="px-2 py-4 text-xs text-muted-foreground">Wczytywanie…</div>
 					) : shown.length === 0 ? (
 						<div className="px-2 py-4 text-xs text-muted-foreground">
-							{query.trim() ? "No sessions match." : "No sessions yet."}
+							{query.trim() ? "Brak pasujących sesji." : "Brak sesji."}
 						</div>
 					) : (
 						shown.map((c, i) =>
@@ -839,7 +839,7 @@ function SessionsSidebar() {
 					    New session — quiet, bottom-pinned, opens the centered
 					    dialog (also mod+, in the keyboard registry). */}
 					<div className="px-3 pb-3 pt-1">
-						<Hint label="Settings" action="open-settings" side="right">
+						<Hint label="Ustawienia" action="open-settings" side="right">
 							<button
 								type="button"
 								onClick={() => openSettings()}
@@ -847,7 +847,7 @@ function SessionsSidebar() {
 								className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 							>
 								<SettingsIcon className="size-3" />
-								Settings
+								Ustawienia
 							</button>
 						</Hint>
 					</div>
@@ -879,7 +879,7 @@ function SessionsSidebar() {
 							}}
 							className="flex items-center rounded-lg px-2.5 py-1.5 text-left text-foreground transition-colors hover:bg-accent"
 						>
-							Rename
+							Zmień nazwę
 						</button>
 						{/* Export as Markdown (owner, release polish 2026-10-06): the
 					    session-markdown engine's user-facing debut — same-origin
@@ -901,7 +901,7 @@ function SessionsSidebar() {
 							}}
 							className="flex items-center rounded-lg px-2.5 py-1.5 text-left text-foreground transition-colors hover:bg-accent"
 						>
-							Export as Markdown…
+							Eksportuj jako Markdown…
 						</button>
 						<button
 							type="button"

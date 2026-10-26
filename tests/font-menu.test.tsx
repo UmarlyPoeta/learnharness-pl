@@ -83,7 +83,7 @@ describe("FontMenuList (thin SSR)", () => {
 		assert.ok(!html.includes('data-testid="font-custom-input"'), "no separate custom input");
 		assert.ok(!html.includes('data-testid="font-custom-set"'), "no Set button");
 		assert.ok(!html.includes("Type a family name"), "no second field placeholder");
-		assert.ok(html.includes("Search fonts…"), "the search placeholder");
+		assert.ok(html.includes("Szukaj czcionek…"), "the search placeholder");
 	});
 
 	it("the effective family's row carries the quiet highlight; the default row does when unset", () => {
@@ -102,11 +102,11 @@ describe("FontMenuList (thin SSR)", () => {
 		assert.ok(!georgiaRow.includes("bg-muted/60"), "others do not");
 	});
 
-	it("undefined families = the enumerating state (Loading fonts…), not an empty picker", () => {
+	it("undefined families = the enumerating state (Wczytywanie czcionek…), not an empty picker", () => {
 		const html = renderToStaticMarkup(
 			<FontMenuList families={undefined} effectiveFamily={null} onPick={() => {}} />,
 		);
-		assert.ok(html.includes("Loading fonts…"));
+		assert.ok(html.includes("Wczytywanie czcionek…"));
 	});
 });
 
@@ -144,11 +144,11 @@ describe("the emphasis-ink factory ruling (globals.css)", () => {
 		assert.equal((css.match(/--lh-ink-italic: var\(--foreground\)/g) ?? []).length, 2, "both theme blocks");
 	});
 
-	it("the appearance rows' empty-state labels say 'same as text'", () => {
+	it("the appearance rows' empty-state labels say 'jak tekst'", () => {
 		const html = renderToStaticMarkup(
 			<AppearanceSection appearance={undefined} onSectionChange={() => {}} />,
 		);
-		assert.equal((html.match(/Empty = same as text/g) ?? []).length, 2, "bold + italic rows");
+		assert.equal((html.match(/Puste = jak tekst/g) ?? []).length, 2, "bold + italic rows");
 		assert.ok(!html.includes("#ee928c"));
 		assert.ok(!html.includes("#6fa9d6"));
 	});

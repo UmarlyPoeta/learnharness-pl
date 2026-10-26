@@ -12,8 +12,8 @@ import type { ChatDeleteMode, ChatListItem } from "@/src/core";
 export const TRACES_COPY = {
 	testid: "delete-traces",
 	checkbox: "delete-traces-checkbox",
-	title: "Also remove its graph traces",
-	body: "This session’s topics, links, and events leave the graph too. Topics other sessions or imported notes also cover survive; topics only this session created are removed entirely.",
+	title: "Usuń również powiązane ślady z grafu wiedzy",
+	body: "Pojęcia, powiązania i zdarzenia tej sesji zostaną usunięte z grafu. Pojęcia współdzielone z innymi sesjami lub zaimportowanymi notatkami pozostaną nienaruszone.",
 };
 
 /**
@@ -164,7 +164,7 @@ export function DeleteSessionBody({
 			onClick={(e) => e.stopPropagation()}
 			className="w-[32rem] max-w-[calc(100vw-2rem)] rounded-xl border bg-card p-5 shadow-xl"
 		>
-			<h2 className="text-sm font-semibold text-destructive">Delete session?</h2>
+			<h2 className="text-sm font-semibold text-destructive">Usunąć sesję?</h2>
 			{/* The session name below the title in JetBrains Mono (owner,
 			    2026-09-24): no code-block chrome — the font already says
 			    code. Owner, 2026-10-13 polish: normal text-sm size (was
@@ -176,8 +176,7 @@ export function DeleteSessionBody({
 				</code>
 			</div>
 			<p className="mt-2 text-sm text-muted-foreground">
-				This permanently removes the session — its messages, background jobs, and extraction records. Everything
-				it added to the graph stays unless you check below. This cannot be undone.
+				To trwale usunie sesję — wiadomości, zadania w tle i zapisy. Wpisy w grafie wiedzy pozostaną, chyba że zaznaczysz pole poniżej. Tej operacji nie można cofnąć.
 			</p>
 			<label
 				data-testid={TRACES_COPY.testid}
@@ -210,7 +209,7 @@ export function DeleteSessionBody({
 						disabled={busy}
 						className="ml-3 text-xs text-foreground underline-offset-2 hover:underline disabled:opacity-40"
 					>
-						Try again
+						Spróbuj ponownie
 					</button>
 				</div>
 			)}
@@ -225,7 +224,7 @@ export function DeleteSessionBody({
 					disabled={busy}
 					className="rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
 				>
-					Cancel
+					Anuluj
 				</button>
 				<button
 					type="button"
@@ -234,7 +233,7 @@ export function DeleteSessionBody({
 					disabled={busy}
 					className="rounded-sm border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-xs text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-40"
 				>
-					{busy ? "Deleting…" : "Delete"}
+					{busy ? "Usuwanie…" : "Usuń"}
 				</button>
 			</div>
 		</div>

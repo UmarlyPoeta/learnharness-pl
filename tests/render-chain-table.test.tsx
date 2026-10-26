@@ -120,7 +120,7 @@ describe("ChainTableBody — clusters (the outermost layer)", () => {
 		// chat1: chains c1 (a, b, c1) + solo (solo) → 4 member ids
 		assert.ok(html.includes(">4</span>"), "chat1's proposition count");
 		assert.ok(html.includes("2026-09-20"), "the newest-member date");
-		assert.ok(html.includes(">notes</span>"), "the notes kind tag");
+		assert.ok(html.includes(">notatki</span>"), "the notes kind tag");
 	});
 });
 
@@ -130,7 +130,7 @@ describe("ChainTableBody — THE shared TopBar + the lines law (owner, round 2)"
 		assert.ok(html.includes("lh-drag"), "the window-drag band");
 		assert.ok(html.includes("select-none"), "dragging never highlights the bar");
 		assert.ok(html.includes("h-15"), "the standard height");
-		assert.ok(!html.includes(">Chains<"), "NO title (owner round 11): the serif register always names a session");
+		assert.ok(!html.includes(">Łańcuchy<"), "NO title (owner round 11): the serif register always names a session");
 		assert.ok(html.includes("chain"), "the counts remain");
 		assert.ok(html.includes('data-testid="chain-table-close"'), "the close X");
 		assert.ok(html.includes('data-testid="chain-table-search"'), "the search input");
@@ -317,7 +317,7 @@ describe("ChainTableBody — the fuzzy search (grouped + auto-expand)", () => {
 	it("no matches: the honest empty line", () => {
 		const html = render({ query: "qqqq" });
 		assert.ok(html.includes('data-testid="chain-table-nomatch"'));
-		assert.ok(html.includes("No matching chains."));
+		assert.ok(html.includes("Brak pasujących łańcuchów."));
 	});
 });
 

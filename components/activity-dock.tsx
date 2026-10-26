@@ -347,9 +347,9 @@ export function ActivitySection({ feed: feedProp }: { feed?: ActivityFeed }) {
 		<section data-testid="activity-section" className="border-t border-border px-3 pb-3 pt-2">
 			<div className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground/70">
 				<ActivityIcon className="size-3" />
-				Background agents
+				Agenci w tle
 				{blobs.length > 0 && (
-					<span className="ml-auto tabular-nums" data-testid="activity-total-cost" title="Total running cost (inferred)">
+					<span className="ml-auto tabular-nums" data-testid="activity-total-cost" title="Łączny bieżący koszt (szacowany)">
 						{planCostLabel(totalCost, subscriptionLabels(blobs.map((blob) => blob.model)))}
 				</span>
 				)}
@@ -392,16 +392,16 @@ function ActivityBlobRow({
 	const Icon = blob.process === "extraction" ? WaypointsIcon : (blob.jobKind && KIND_ICON[blob.jobKind]) || BotIcon;
 	const label =
 		blob.process === "extraction"
-			? `Extraction — ${blob.phase ?? "running"}`
+			? `Ekstrakcja — ${blob.phase ?? "w toku"}`
 			: blob.jobKind === "research"
-				? "Researcher"
+				? "Badacz"
 				: blob.jobKind === "demo"
-					? "Demo builder"
+					? "Generator dem"
 					: blob.jobKind === "visual"
-						? "Figure maker"
+						? "Generator grafik"
 						: blob.jobKind === "pdf"
-							? "PDF reader"
-							: "Sub-agent";
+							? "Czytnik PDF"
+							: "Podagent";
 	return (
 		<div
 			data-testid={`activity-blob-${blob.process}`}
@@ -437,8 +437,8 @@ function ActivityBlobRow({
 				data-testid="activity-abort"
 				onClick={onAbort}
 				disabled={abortState !== undefined}
-				title={abortState === "failed" ? "Abort failed — try again" : "End this background process"}
-				aria-label={`End ${label} in ${blob.title}`}
+				title={abortState === "failed" ? "Nie udało się przerwać — spróbuj ponownie" : "Zakończ ten proces w tle"}
+				aria-label={`Zakończ: ${label} w sesji ${blob.title}`}
 				className="absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
 			>
 				<SquareIcon className="size-3" />
@@ -462,13 +462,13 @@ function ActivityBlobRow({
 						</div>
 						{blob.activity && <div className="break-words">{blob.activity}</div>}
 						<div className="flex justify-between gap-2">
-							<span>Cost</span>
+							<span>Koszt</span>
 							<span className="tabular-nums text-card-foreground">
 								{planCostLabel(blob.cost, subscriptionLabel(blob.model))}
 							</span>
 						</div>
 						<div className="flex justify-between gap-2">
-							<span>Context</span>
+							<span>Kontekst</span>
 							<span className="tabular-nums text-card-foreground" data-testid="activity-blob-context">
 								{blob.context === null
 									? "—"
@@ -483,16 +483,16 @@ function ActivityBlobRow({
 						)}
 						{blob.steps !== undefined && (
 							<div className="flex justify-between gap-2">
-								<span>Steps</span>
+								<span>Kroki</span>
 								<span className="tabular-nums text-card-foreground">{blob.steps}</span>
 							</div>
 						)}
 						<a href={`/chat/${blob.chatId}`} className="text-primary hover:underline">
-							Open session →
+							Otwórz sesję →
 						</a>
 					</div>
 					<div className="mt-2 text-muted-foreground/80">
-					{abortState === "failed" && "Abort failed — try again"}
+					{abortState === "failed" && "Nie udało się przerwać — spróbuj ponownie"}
 					{abortState === "pending" && "Stopping…"}
 				</div>
 				</div>

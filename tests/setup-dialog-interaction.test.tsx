@@ -9,7 +9,7 @@ import { SetupDialog } from "../components/setup-dialog.tsx";
 import type { ModelCatalogEntry } from "../src/core/contracts/models.ts";
 
 // As in render-update-banner: mount real React handlers against an isolated
-// DOM. Fetch is wholly stubbed; no key, settings, or session writes can escape.
+// DOM. Fetch is wholly stubbed; brak klucza, settings, or session writes can escape.
 const dom = parseHTML("<html><body></body></html>");
 Object.assign(globalThis, {
 	window: dom.window,
@@ -159,7 +159,7 @@ describe("setup polish interactions", () => {
 
 	it("model and thinking dropdowns keep outside-click dismissal and model guidance uses two sentences", async () => {
 		await mount({ keyed: true });
-		assert.equal(element('[data-testid="setup-stage-pickers"] > p').textContent, "Pick the model for each tier. All three are required before chats can start.");
+		assert.equal(element('[data-testid="setup-stage-pickers"] > p').textContent, "Wybierz model dla każdego poziomu. Wszystkie trzy są wymagane, zanim zaczniesz rozmowy.");
 		await click(element('[data-testid="setup-trigger-strong"]'));
 		await click(element('[data-testid="setup-dialog"] h2'));
 		assert.equal(document.querySelector('[data-testid="setup-menu-strong"]'), null);
@@ -175,11 +175,11 @@ describe("setup polish interactions", () => {
 	it("the empty vision list gives the approved next action without an em dash", async () => {
 		await mount({ keyed: true });
 		await click(element('[data-testid="setup-trigger-vision"]'));
-		assert.ok(element('[data-testid="setup-menu-vision"]').textContent?.includes("No image-capable models. Add a provider key with access to a vision model."));
+		assert.ok(element('[data-testid="setup-menu-vision"]').textContent?.includes("Brak modeli obsługujących obrazy. Dodaj klucz dostawcy z dostępem do modelu wizyjnego."));
 	});
 
 	it("catalog failure uses the approved two-sentence error", async () => {
 		await mount({ catalogFails: true });
-		assert.ok(element('[data-testid="setup-dialog"]').textContent?.includes("Model catalog could not be loaded. Check the connection and retry."));
+		assert.ok(element('[data-testid="setup-dialog"]').textContent?.includes("Nie udało się wczytać katalogu modeli. Sprawdź połączenie i spróbuj ponownie."));
 	});
 });

@@ -52,7 +52,7 @@ export function ReadingThinkingField({
 			className="pointer-events-auto mb-2 rounded-2xl border bg-card/60 px-3 py-2 transition-colors focus-within:border-primary/50"
 		>
 			<div className="pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-				Thinking while reading
+				Myśli podczas czytania
 			</div>
 			<textarea
 				value={value}
@@ -94,7 +94,7 @@ export function ReadingThinkingField({
 						e.currentTarget.blur();
 					}
 				}}
-				placeholder="Whatever comes to mind as you read."
+				placeholder="Cokolwiek przychodzi ci do głowy podczas czytania."
 				rows={1}
 				className="field-sizing-content lh-input max-h-40 w-full resize-none bg-transparent py-0.5 outline-none placeholder:text-muted-foreground/70"
 			/>

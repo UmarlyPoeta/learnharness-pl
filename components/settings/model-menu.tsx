@@ -104,12 +104,12 @@ export function ModelMenuList({
 						}
 					}
 				}}
-				placeholder="Search models…"
+				placeholder="Szukaj modeli…"
 				className="lh-input mb-1.5 w-full rounded-lg border bg-background px-2 py-1.5 text-foreground outline-none focus:ring-1 focus:ring-ring"
 			/>
-			{!models && <div className="px-2 py-3 text-center text-muted-foreground">Loading models…</div>}
+			{!models && <div className="px-2 py-3 text-center text-muted-foreground">Wczytywanie modeli…</div>}
 			{models && results.length === 0 && (
-				<div className="px-2 py-3 text-center text-muted-foreground">No models match.</div>
+				<div className="px-2 py-3 text-center text-muted-foreground">Brak pasujących modeli.</div>
 			)}
 			<ul ref={listRef} data-testid="model-list" className="flex max-h-72 flex-col overflow-y-auto px-1">
 				{results.map((m, i) => (
@@ -125,12 +125,12 @@ export function ModelMenuList({
 						>
 							<span className="flex items-center justify-between gap-2">
 								<span className="truncate text-card-foreground">{m.name}</span>
-								<span className="shrink-0 tabular-nums text-muted-foreground" title={subscriptionLabel(`${m.provider}:${m.id}`) ? "Subscription connection" : "USD per 1M tokens in/out"}>
+								<span className="shrink-0 tabular-nums text-muted-foreground" title={subscriptionLabel(`${m.provider}:${m.id}`) ? "Połączenie subskrypcyjne" : "USD za 1M tokenów wej./wyj."}>
 									{subscriptionLabel(`${m.provider}:${m.id}`) ?? priceLabel(m.cost)}
 								</span>
 							</span>
 							<span className="flex items-center justify-between gap-2 text-muted-foreground">
-								<span className="truncate">{subscriptionLabel(`${m.provider}:${m.id}`) ? `${subscriptionLabel(`${m.provider}:${m.id}`)} (subscription)` : m.provider} · {m.id}</span>
+								<span className="truncate">{subscriptionLabel(`${m.provider}:${m.id}`) ? `${subscriptionLabel(`${m.provider}:${m.id}`)} (subskrypcja)` : m.provider} · {m.id}</span>
 								<span className="shrink-0 tabular-nums">{formatTokens(m.contextWindow)}</span>
 							</span>
 						</button>
@@ -163,7 +163,7 @@ export function ThinkingMenuList({
 	return (
 		<>
 			{levels.length === 0 ? (
-				<div className="px-2 py-3 text-center text-muted-foreground">{empty ?? "No thinking levels."}</div>
+				<div className="px-2 py-3 text-center text-muted-foreground">{empty ?? "Brak poziomów myślenia."}</div>
 			) : (
 				levels.map((level) => (
 					<button
@@ -248,11 +248,11 @@ export function ProviderMenuList({
 						}
 					}
 				}}
-				placeholder="Search providers…"
+				placeholder="Szukaj dostawców…"
 				className="lh-input mb-1.5 w-full rounded-lg border bg-background px-2 py-1.5 text-foreground outline-none focus:ring-1 focus:ring-ring"
 			/>
 			{results.length === 0 && (
-				<div className="px-2 py-3 text-center text-muted-foreground">No providers match.</div>
+				<div className="px-2 py-3 text-center text-muted-foreground">Brak pasujących dostawców.</div>
 			)}
 			<ul ref={listRef} data-testid="provider-list" className="flex max-h-72 flex-col overflow-y-auto px-1">
 				{results.map((p, i) => (
@@ -378,10 +378,10 @@ export function FontMenuList({
 						}
 					}
 				}}
-				placeholder="Search fonts…"
+				placeholder="Szukaj czcionek…"
 				className="lh-input mb-1.5 w-full rounded-lg border bg-background px-2 py-1.5 text-foreground outline-none focus:ring-1 focus:ring-ring"
 			/>
-			{!families && <div className="px-2 py-3 text-center text-muted-foreground">Loading fonts…</div>}
+			{!families && <div className="px-2 py-3 text-center text-muted-foreground">Wczytywanie czcionek…</div>}
 			<ul ref={listRef} data-testid="font-list" className="flex max-h-72 flex-col overflow-y-auto px-1">
 				{families &&
 					results.map((family, i) => {
@@ -415,8 +415,8 @@ export function FontMenuList({
 								menuIdx === 0 ? "bg-accent/40 ring-1 ring-inset ring-border" : ""
 							}`}
 						>
-							<span className="truncate text-card-foreground">Use “{customFamily}”</span>
-							<span className="shrink-0 text-muted-foreground">custom</span>
+							<span className="truncate text-card-foreground">Użyj „{customFamily}”</span>
+							<span className="shrink-0 text-muted-foreground">własna</span>
 						</button>
 					</li>
 				)}

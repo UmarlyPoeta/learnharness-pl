@@ -47,7 +47,7 @@ export function LiveToolCard({ part }: ArtifactPartProps) {
 			className="group my-1 w-full max-w-2xl select-none"
 		>
 			<summary className="flex cursor-pointer list-none items-center gap-2 text-xs text-muted-foreground [&::-webkit-details-marker]:hidden">
-				<BrailleSpinner label={`${toolActivityLabel(tool)} — live`} />
+				<BrailleSpinner label={`${toolActivityLabel(tool)} — na żywo`} />
 				<Shimmer duration={1} className="text-xs">
 					{toolActivityLabel(tool)}
 				</Shimmer>
@@ -55,7 +55,7 @@ export function LiveToolCard({ part }: ArtifactPartProps) {
 				<ChevronRight className="size-3 shrink-0 opacity-50 transition-transform group-open:rotate-90" />
 			</summary>
 			<div className="mt-2 rounded-xl border bg-card p-3 text-xs">
-				<div className="mb-1 font-medium uppercase tracking-wide text-muted-foreground">Input (streaming)</div>
+				<div className="mb-1 font-medium uppercase tracking-wide text-muted-foreground">Wejście (strumień)</div>
 				<pre className="max-h-32 overflow-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-relaxed">
 					{hasInput ? JSON.stringify(p.input, null, 2) : "…"}
 				</pre>

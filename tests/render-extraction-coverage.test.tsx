@@ -109,8 +109,8 @@ describe("CoverageMenuBody — the context-menu block", () => {
 			<CoverageMenuBody coverage={coverage()} extracting={false} onExtract={() => {}} />,
 		);
 		assert.ok(html.includes('data-testid="ctx-coverage"'), "the block carries its testid");
-		assert.match(html, /2k tok uncovered/, "the unit is typed out — tok (owner refinement round)");
-		assert.match(html, /5 messages unextracted/);
+		assert.match(html, /2k tok niepokryte/, "the unit is typed out — tok (owner refinement round)");
+		assert.match(html, /5 wiadomości niewyodrębnionych/);
 		assert.ok(html.includes('data-testid="ctx-extract"'), "the Extract affordance");
 		assert.ok(!html.includes('disabled=""'), "an uncovered session can extract (the disabled: utilities alone don't count)");
 	});
@@ -123,17 +123,17 @@ describe("CoverageMenuBody — the context-menu block", () => {
 				onExtract={() => {}}
 			/>,
 		);
-		assert.match(html, /fully extracted/);
+		assert.match(html, /w pełni wyodrębnione/);
 		assert.ok(html.includes("disabled"), "nothing to run — the button rests");
 	});
 
-	it("running: the pulse line + 'Running', not the numbers (motion is the state)", () => {
+	it("running: the pulse line + 'W toku', not the numbers (motion is the state)", () => {
 		const html = renderToStaticMarkup(
 			<CoverageMenuBody coverage={coverage({ running: true })} extracting={false} onExtract={() => {}} />,
 		);
 		assert.ok(html.includes('data-testid="ctx-coverage-running"'));
-		assert.match(html, /extracting…/);
-		assert.ok(html.includes(">Running</button>"), "the affordance reads Running while in flight");
+		assert.match(html, /wyodrębnianie…/);
+		assert.ok(html.includes(">W toku</button>"), "the affordance reads Running while in flight");
 		assert.ok(html.includes("disabled"), "no double-fire");
 	});
 
@@ -142,7 +142,7 @@ describe("CoverageMenuBody — the context-menu block", () => {
 			<CoverageMenuBody coverage={coverage()} extracting onExtract={() => {}} />,
 		);
 		assert.ok(html.includes('data-testid="ctx-coverage-running"'), "the optimistic state shows at once");
-		assert.match(html, />Running</);
+		assert.match(html, />W toku</);
 	});
 });
 
@@ -175,17 +175,17 @@ describe("CoverageRingDetail — the popover's exact numbers", () => {
 				chunkTokens={4096}
 			/>,
 		);
-		assert.match(html, /Uncovered.*2k tokens/s);
-		assert.match(html, /Covered.*30k tokens/s);
+		assert.match(html, /Niepokryte.*2k tokens/s);
+		assert.match(html, /Pokryte.*30k tokens/s);
 		assert.match(html, /7 \/ 12/);
-		assert.match(html, /Chunk threshold.*4\.1k tokens/s);
-		assert.match(html, /Last extraction/);
+		assert.match(html, /Próg fragmentu.*4\.1k tokens/s);
+		assert.match(html, /Ostatnia ekstrakcja/);
 		assert.ok(!html.includes('data-testid="coverage-ring-running"'), "idle: no status line");
 	});
 
 	it("no fold yet renders '—' (never a fake timestamp)", () => {
 		const html = renderToStaticMarkup(<CoverageRingDetail coverage={coverage()} chunkTokens={4096} />);
-		assert.match(html, /Last extraction.*—/s);
+		assert.match(html, /Ostatnia ekstrakcja.*—/s);
 	});
 
 	it("running: the extracting… status line", () => {
@@ -193,6 +193,6 @@ describe("CoverageRingDetail — the popover's exact numbers", () => {
 			<CoverageRingDetail coverage={coverage({ running: true })} chunkTokens={4096} />,
 		);
 		assert.ok(html.includes('data-testid="coverage-ring-running"'));
-		assert.match(html, /extracting…/);
+		assert.match(html, /wyodrębnianie…/);
 	});
 });

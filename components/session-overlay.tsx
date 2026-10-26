@@ -222,8 +222,8 @@ export function MermaidOverlay({
 		>
 			<div className="mb-2 flex items-center gap-2">
 				<span className="text-sm font-medium">Diagram</span>
-				<span className="text-xs text-muted-foreground">from this lesson</span>
-				<Hint label="Close" binding="escape" side="left">
+				<span className="text-xs text-muted-foreground">z tej lekcji</span>
+				<Hint label="Zamknij" binding="escape" side="left">
 <button
 					type="button"
 					onClick={onClose}
@@ -287,9 +287,9 @@ export function MermaidOverlay({
 							/>
 						</div>
 						<div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between p-2">
-							<span className="text-xs text-muted-foreground/60">Drag to pan · scroll to zoom</span>
+							<span className="text-xs text-muted-foreground/60">Przeciągnij, aby przesunąć · przewiń, aby powiększyć</span>
 							<div className="flex gap-1">
-								<Hint label="Zoom out" side="bottom">
+								<Hint label="Pomniejsz" side="bottom">
 <button
 									type="button"
 									aria-label="Zoom out"
@@ -299,7 +299,7 @@ export function MermaidOverlay({
 									<MinusIcon className="size-3.5" />
 								</button>
 </Hint>
-								<Hint label="Fit diagram to view" side="bottom">
+								<Hint label="Dopasuj diagram do widoku" side="bottom">
 <button
 									type="button"
 									aria-label="Fit diagram to view"
@@ -309,7 +309,7 @@ export function MermaidOverlay({
 									<MaximizeIcon className="size-3.5" />
 								</button>
 </Hint>
-								<Hint label="Zoom in" side="bottom">
+								<Hint label="Powiększ" side="bottom">
 <button
 									type="button"
 									aria-label="Zoom in"
@@ -325,7 +325,7 @@ export function MermaidOverlay({
 				) : (
 					<div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground">
 						<span className="inline-block size-4 animate-spin rounded-full border border-current border-b-2" />
-						Rendering diagram…
+						Renderowanie diagramu…
 					</div>
 				)}
 			</div>

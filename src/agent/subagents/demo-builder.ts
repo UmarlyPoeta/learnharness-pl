@@ -73,7 +73,9 @@ THE HOUSE RULE — never deliver untested:
 4. Only then finish. Your final message is 1-3 sentences of NOTES for the teacher (what the demo shows,
    its controls, what to try) — NEVER the HTML itself.
 
-Never claim success you did not see: a PASSED run_demo is the only definition of done.`;
+Never claim success you did not see: a PASSED run_demo is the only definition of done.
+
+LANGUAGE: every learner-visible string in the demo (titles, labels, buttons, captions) is in Polish.`;
 
 interface BuilderState {
 	html: string | null;

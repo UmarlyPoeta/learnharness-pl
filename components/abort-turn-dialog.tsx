@@ -29,19 +29,19 @@ export type AbortMode = "turn" | "question" | "problem";
 
 const COPY: Record<AbortMode, { title: string; line: string; action: string }> = {
 	turn: {
-		title: "Abort this turn?",
-		line: "The partial answer stays in the transcript.",
-		action: "Abort",
+		title: "Przerwać tę turę?",
+		line: "Częściowa odpowiedź pozostanie w historii.",
+		action: "Przerwij",
 	},
 	question: {
-		title: "Dismiss this question?",
-		line: "Skipped — the teacher moves on without it.",
-		action: "Dismiss",
+		title: "Pominąć to pytanie?",
+		line: "Pytanie zostanie pominięte — nauczyciel przejdzie dalej.",
+		action: "Pomiń",
 	},
 	problem: {
-		title: "Discard this problem?",
-		line: "The problem is dropped — no solution is revealed.",
-		action: "Discard",
+		title: "Odrzucić to zadanie?",
+		line: "Zadanie zostanie odrzucone — rozwiązanie nie zostanie ujawnione.",
+		action: "Odrzuć",
 	},
 };
 
@@ -81,7 +81,7 @@ export function AbortTurnBody({
 				</h2>
 				<p className="mt-1.5 text-xs text-muted-foreground" data-testid="abort-turn-line">
 					{copy.line}
-					{busy && mode !== "turn" ? " The working turn stops too." : ""}
+					{busy && mode !== "turn" ? " Bieżąca tura również zostanie zatrzymana." : ""}
 				</p>
 				<div className="mt-4 flex justify-end gap-2">
 					<button
@@ -90,7 +90,7 @@ export function AbortTurnBody({
 						onClick={onClose}
 						className="rounded-sm px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
 					>
-						Cancel
+						Anuluj
 					</button>
 					<button
 						type="button"

@@ -25,7 +25,7 @@ function render(props: Partial<Parameters<typeof KnowledgeSummary>[0]> = {}) {
 describe("KnowledgeSummary — the quiet home summary (2026-10-06)", () => {
 	it("every count on its OWN line — no dot separators (owner refinement, same day)", () => {
 		const html = render();
-		for (const line of ["12 propositions", "5 chains", "3 teaching sessions", "2 practice sessions", "4 imported notes"]) {
+		for (const line of ["12 twierdzeń", "5 łańcuchów", "3 sesje nauki", "2 sesje ćwiczeń", "4 zaimportowane notatki"]) {
 			const i = html.indexOf(line);
 			assert.ok(i !== -1, `${line} renders`);
 			// own-line: the count is its own text node — the char after the
@@ -38,8 +38,8 @@ describe("KnowledgeSummary — the quiet home summary (2026-10-06)", () => {
 
 	it("the two blocks part with an empty line — graph counts, then session counts", () => {
 		const html = render();
-		const graphBlock = html.indexOf("12 propositions");
-		const sessionsBlock = html.indexOf("3 teaching sessions");
+		const graphBlock = html.indexOf("12 twierdzeń");
+		const sessionsBlock = html.indexOf("3 sesje nauki");
 		assert.ok(graphBlock !== -1 && sessionsBlock !== -1);
 		assert.ok(sessionsBlock > graphBlock, "sessions come after the graph block");
 		// the parting is a dedicated spacer element (h-4), not a paragraph
@@ -48,28 +48,28 @@ describe("KnowledgeSummary — the quiet home summary (2026-10-06)", () => {
 
 	it("singularizes: one of each reads as single, not '1 sessions'", () => {
 		const html = render({ propositions: 1, chains: 1, teachSessions: 1, practiceSessions: 1, importedNotes: 1 });
-		assert.ok(html.includes("1 proposition"));
-		assert.ok(html.includes("1 chain"));
-		assert.ok(html.includes("1 teaching session"));
-		assert.ok(html.includes("1 practice session"));
-		assert.ok(html.includes("1 imported note"));
+		assert.ok(html.includes("1 twierdzenie"));
+		assert.ok(html.includes("1 łańcuch"));
+		assert.ok(html.includes("1 sesja nauki"));
+		assert.ok(html.includes("1 sesja ćwiczeń"));
+		assert.ok(html.includes("1 zaimportowana notatka"));
 	});
 
 	it("imported notes are a COUNT — never the file list (owner: 'the number of imported notes')", () => {
 		const html = render({ importedNotes: 7 });
-		assert.ok(html.includes("7 imported notes"));
+		assert.ok(html.includes("7 zaimportowanych notatek"));
 		assert.ok(!html.includes(".md"), "no file paths render");
 		assert.ok(!html.includes("truncate"), "no truncating source rows");
 	});
 
 	it("the empty knowledge base says so, quietly — import is the entry point", () => {
 		const html = render({ propositions: 0, chains: 0, teachSessions: 0, practiceSessions: 0, importedNotes: 0 });
-		assert.ok(html.includes("Nothing here yet"));
-		assert.ok(html.includes("import notes"), "the hint names the entry point");
+		assert.ok(html.includes("Nic tu jeszcze nie ma"));
+		assert.ok(html.includes("zaimportuj notatki"), "the hint names the entry point");
 	});
 
 	it("non-empty shows no empty-state hint", () => {
 		const html = render();
-		assert.ok(!html.includes("Nothing here yet"));
+		assert.ok(!html.includes("Nic tu jeszcze nie ma"));
 	});
 });

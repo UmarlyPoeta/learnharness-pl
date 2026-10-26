@@ -254,7 +254,7 @@ export function ChainTableBody({
 						value={query}
 						data-testid="chain-table-search"
 						onChange={(e) => onQuery(e.target.value)}
-						placeholder="Search nodes…"
+						placeholder="Szukaj węzłów…"
 						aria-label="Search nodes"
 						spellCheck={false}
 						className="lh-no-drag h-8 w-56 rounded-lg border bg-background pl-8 pr-3 text-xs outline-none placeholder:text-muted-foreground focus:border-ring"
@@ -288,7 +288,7 @@ export function ChainTableBody({
 						aria-sort={sort.col === "name" ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
 						className="flex flex-1 items-center gap-1 text-left transition-colors hover:text-foreground"
 					>
-						Name {dirIcon("name")}
+						Nazwa {dirIcon("name")}
 					</button>
 					<button
 						type="button"
@@ -297,7 +297,7 @@ export function ChainTableBody({
 						aria-sort={sort.col === "props" ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
 						className="flex w-14 shrink-0 items-center justify-end gap-1 text-right transition-colors hover:text-foreground"
 					>
-						Props {dirIcon("props")}
+						Tw. {dirIcon("props")}
 					</button>
 					<button
 						type="button"
@@ -306,13 +306,13 @@ export function ChainTableBody({
 						aria-sort={sort.col === "created" ? (sort.dir === 1 ? "ascending" : "descending") : "none"}
 						className="flex w-20 shrink-0 items-center justify-end gap-1 text-right transition-colors hover:text-foreground"
 					>
-						Created {dirIcon("created")}
+						Utworzono {dirIcon("created")}
 					</button>
 				</div>
 
 				{groups.length === 0 && (
 					<div data-testid="chain-table-nomatch" className="px-4 pt-3 text-xs text-muted-foreground">
-						No matching chains.
+						Brak pasujących łańcuchów.
 					</div>
 				)}
 
@@ -355,8 +355,8 @@ export function ChainTableBody({
 									{open ? <FolderOpenIcon className="size-3.5" /> : <FolderIcon className="size-3.5" />}
 								</span>
 								<span className="min-w-0 flex-1 truncate text-sm font-medium">
-									{group.label ?? <span className="text-muted-foreground/60">unlabeled</span>}
-									{group.kind === "notes" && <span className="ml-2 text-[11px] uppercase tracking-widest text-muted-foreground/60">notes</span>}
+									{group.label ?? <span className="text-muted-foreground/60">bez etykiety</span>}
+									{group.kind === "notes" && <span className="ml-2 text-[11px] uppercase tracking-widest text-muted-foreground/60">notatki</span>}
 								</span>
 								<span className="w-14 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
 									{group.nodeIds.length}
@@ -502,7 +502,7 @@ export function ChainTableBody({
 							onClick={onClear}
 							className="rounded-full px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 						>
-							Clear
+							Wyczyść
 						</button>
 						{selectMode ? (
 							<button
@@ -513,7 +513,7 @@ export function ChainTableBody({
 								className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80"
 							>
 								<DumbbellIcon aria-hidden="true" className="size-3.5" />
-								Done
+								Gotowe
 							</button>
 						) : (
 							<>
@@ -530,7 +530,7 @@ export function ChainTableBody({
 								className="flex items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
 							>
 								<Trash2Icon aria-hidden="true" className="size-3.5" />
-								Delete
+								Usuń
 							</button>
 							</>
 						)}

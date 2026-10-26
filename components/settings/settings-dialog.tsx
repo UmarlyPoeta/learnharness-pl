@@ -56,12 +56,12 @@ import { NativeSubscriptionUIProvider } from "./subscription-connections.tsx";
  *  prose is out; only the keyboard note stays (storage location is a
  *  real question users ask). */
 const SECTIONS = [
-	{ id: "keys", label: "Providers" },
+	{ id: "keys", label: "Dostawcy AI" },
 	{ id: "agent", label: "Agent" },
-	{ id: "appearance", label: "Appearance" },
-	{ id: "graph", label: "Graph" },
-	{ id: "keyboard", label: "Keyboard", hint: "Stored on this device" },
-	{ id: "general", label: "General" },
+	{ id: "appearance", label: "Wygląd" },
+	{ id: "graph", label: "Graf wiedzy" },
+	{ id: "keyboard", label: "Skróty klawiszowe", hint: "Zapisane na tym urządzeniu" },
+	{ id: "general", label: "Ogólne" },
 ] as const;
 type SectionId = (typeof SECTIONS)[number]["id"];
 
@@ -77,7 +77,7 @@ const DialogContext = createContext<{ open: (section?: string, row?: string) => 
  *  setup flow deep-links to Keys when no provider key exists yet). */
 /** The auto-update row's hint (tooltip wave): honest user language — no
  *  stream vocabulary. Exported for the copy pin (tooltip-mechanism test). */
-export const AUTO_UPDATE_HINT = "Automatic updates arrive in an upcoming release";
+export const AUTO_UPDATE_HINT = "Automatyczne aktualizacje pojawią się w kolejnej wersji";
 
 export function SettingsDialogProvider({
 	children,
@@ -274,10 +274,10 @@ export function SettingsDialogBody({
 		>
 			{/* Header — the app's quiet CMU title language. */}
 			<header className="flex h-15 shrink-0 items-center gap-3 border-b border-border px-5">
-				<h2 className="font-title text-2xl tracking-tight">Settings</h2>
+				<h2 className="font-title text-2xl tracking-tight">Ustawienia</h2>
 				<Hint
 						// Esc closes the dialog (its own listener) — surface it.
-						label="Close"
+						label="Zamknij"
 						binding="escape"
 						side="left"
 					>
@@ -349,21 +349,21 @@ export function SettingsDialogBody({
 					)}
 					{record === undefined ? (
 						<p className="px-6 py-5 text-xs text-muted-foreground/70">
-							Loading settings…
+							Wczytywanie ustawień…
 						</p>
 					) : record === null ? (
 						<p className="px-6 py-5 text-xs text-muted-foreground/70">
-							Settings could not be loaded — refresh to retry.
+							Nie udało się wczytać ustawień — odśwież, aby spróbować ponownie.
 						</p>
 					) : (
 						<div>
 							{active === "general" && (
 								<SettingsSection
-									title="General"
+									title="Ogólne"
 									testid="section-general"
 								>
 									<SettingsRow
-										label="Auto-update"
+										label="Automatyczne aktualizacje"
 										hint={AUTO_UPDATE_HINT}
 										testid="row-auto-update"
 									>
@@ -378,7 +378,7 @@ export function SettingsDialogBody({
 								</SettingsSection>
 							)}
 							{active === "keys" && (
-								<SettingsSection title="Providers" testid="section-keys">
+								<SettingsSection title="Dostawcy AI" testid="section-keys">
 									<KeysSection initialRow={initialRow ?? undefined} />
 								</SettingsSection>
 							)}
@@ -406,7 +406,7 @@ export function SettingsDialogBody({
 							)}
 							{active === "appearance" && (
 								<SettingsSection
-									title="Appearance"
+									title="Wygląd"
 									testid="section-appearance"
 								>
 									<AppearanceSection
@@ -419,7 +419,7 @@ export function SettingsDialogBody({
 							)}
 							{active === "graph" && (
 								<SettingsSection
-									title="Graph"
+									title="Graf wiedzy"
 									testid="section-graph"
 								>
 									<GraphSection
@@ -432,8 +432,8 @@ export function SettingsDialogBody({
 							)}
 							{active === "keyboard" && (
 								<SettingsSection
-									title="Keyboard"
-									hint="Stored on this device"
+									title="Skróty klawiszowe"
+									hint="Zapisane na tym urządzeniu"
 									testid="section-keyboard"
 								>
 									<KeyboardSection />

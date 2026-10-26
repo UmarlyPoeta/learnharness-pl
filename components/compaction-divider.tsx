@@ -22,7 +22,7 @@ export function CompactionMomentDivider({ data: _data }: { data: CompactionDivid
 	return (
 		<div className="flex w-full items-center justify-center py-1">
 			<span data-testid="compaction-divider" className="px-1.5 text-xs text-muted-foreground/70">
-				Context compacted
+				Kontekst skompaktowany
 			</span>
 		</div>
 	);
@@ -40,7 +40,7 @@ export function CompactionCutDivider({ data }: { data: CompactionDividerData }) 
 		<div data-testid="compaction-cut-divider" className="my-4 flex w-full items-center gap-3">
 			<span className="h-0 flex-1 border-t-2 border-dotted border-border/50" aria-hidden />
 			<span className="rounded-full border border-border/80 px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-				History compacted{kTok}
+				Historia skompaktowana{kTok}
 			</span>
 			<span className="h-0 flex-1 border-t-2 border-dotted border-border/50" aria-hidden />
 		</div>

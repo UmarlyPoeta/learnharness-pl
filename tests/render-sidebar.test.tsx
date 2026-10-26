@@ -58,7 +58,7 @@ describe("SessionRow", () => {
 		const html = render(item({ phase: "teach", pendingQuestion: true }));
 		assert.ok(!html.includes("session-dot"), "no dots");
 		assert.ok(!html.includes("braille-spinner"), "motion is reserved for working");
-		assert.ok(html.includes("Waiting for input"), "the meta line's text");
+		assert.ok(html.includes("Oczekiwanie na odpowiedź"), "the meta line's text");
 		assert.ok(!html.includes("Waiting for your answer"), "old wording is gone");
 	});
 
@@ -83,12 +83,12 @@ describe("SessionRow", () => {
 
 	it("the meta line: state replaces the count when the state is the useful fact", () => {
 		const awaiting = render(item({ pendingQuestion: true, updatedAt: "2026-01-02T01:00:00.000Z" }));
-		assert.ok(awaiting.includes("Waiting for input · 2026-01-02"), "awaiting meta keeps the existing date");
+		assert.ok(awaiting.includes("Oczekiwanie na odpowiedź · 2026-01-02"), "awaiting meta keeps the existing date");
 		assert.ok(!awaiting.includes("messages"), "count yields to the state");
 		assert.ok(!awaiting.includes("braille-spinner"), "…and the spinner stays off");
 
 		const working = render(item({ busy: true }));
-		assert.ok(working.includes("Working…"), "working meta");
+		assert.ok(working.includes("Praca…"), "working meta");
 
 		// Owner, typography round 5: the message count is dropped — it
 		// informed no decision. Idle meta is just how long ago.
@@ -102,7 +102,7 @@ describe("SessionRow", () => {
 		for (const kind of ["teach", "practice"] as const) {
 			for (const updatedAt of [new Date().toISOString(), "2025-06-02T12:00:00.000Z"]) {
 				const html = render(item({ kind, pendingQuestion: true, updatedAt }));
-				assert.ok(html.includes(`Waiting for input · ${timeAgo(updatedAt)}`));
+				assert.ok(html.includes(`Oczekiwanie na odpowiedź · ${timeAgo(updatedAt)}`));
 				assert.ok(!html.includes("Waiting for your answer"));
 			}
 		}
@@ -110,7 +110,7 @@ describe("SessionRow", () => {
 
 	it("compacting retains priority over pending input", () => {
 		const html = render(item({ compacting: true, pendingQuestion: true }));
-		assert.match(html, /Compacting context ·/);
+		assert.match(html, /Kompaktowanie kontekstu ·/);
 		assert.doesNotMatch(html, /Waiting for input/);
 	});
 
@@ -124,23 +124,23 @@ describe("SessionRow", () => {
 describe("timeAgo", () => {
 	const now = new Date("2026-01-02T12:00:00.000Z");
 
-	it("just now / minutes / hours / days, then the ISO date (owner, round 5)", () => {
-		assert.equal(timeAgo("2026-01-02T11:59:30.000Z", now), "just now");
-		assert.equal(timeAgo("2026-01-02T11:55:00.000Z", now), "5m ago");
-		assert.equal(timeAgo("2026-01-02T09:00:00.000Z", now), "3h ago");
-		assert.equal(timeAgo("2025-12-31T12:00:00.000Z", now), "2d ago");
+	it("przed chwilą / minutes / hours / days, then the ISO date (owner, round 5)", () => {
+		assert.equal(timeAgo("2026-01-02T11:59:30.000Z", now), "przed chwilą");
+		assert.equal(timeAgo("2026-01-02T11:55:00.000Z", now), "5 min temu");
+		assert.equal(timeAgo("2026-01-02T09:00:00.000Z", now), "3 godz. temu");
+		assert.equal(timeAgo("2025-12-31T12:00:00.000Z", now), "2 dni temu");
 		assert.equal(timeAgo("2025-06-02T12:00:00.000Z", now), "2025-06-02", "beyond a week: ISO — unambiguous, sortable");
 	});
 
-	it("negative drift (clock skew) reads as just now, never a future date", () => {
-		assert.equal(timeAgo("2026-01-02T12:01:00.000Z", now), "just now");
+	it("negative drift (clock skew) reads as przed chwilą, never a future date", () => {
+		assert.equal(timeAgo("2026-01-02T12:01:00.000Z", now), "przed chwilą");
 	});
 });
 
 describe("SessionRow practice badge (practice sessions, 2026-10-04)", () => {
 	it("a practice row carries the dumbbell badge and the unified Working meta while busy (owner, 2026-10-10)", () => {
 		const html = render(item({ kind: "practice", busy: true }));
-		assert.match(html, /Working…/);
+		assert.match(html, /Praca…/);
 		assert.doesNotMatch(html, /Practicing…/);
 		assert.match(html, /aria-label="Practice session"/);
 	});
@@ -153,11 +153,11 @@ describe("SessionRow practice badge (practice sessions, 2026-10-04)", () => {
 
 	it("busy teaching rows say the same unified Working", () => {
 		const html = render(item({ busy: true }));
-		assert.match(html, /Working…/);
+		assert.match(html, /Praca…/);
 	});
 
 	it("a practice row with a posed problem says the problem is waiting", () => {
 		const html = render(item({ kind: "practice", pendingProblem: true }));
-		assert.match(html, /Problem waiting ·/);
+		assert.match(html, /Zadanie czeka ·/);
 	});
 });

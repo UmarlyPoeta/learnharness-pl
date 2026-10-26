@@ -183,7 +183,7 @@ export function SessionFind({ scopeRef, scrollContextRef }: {
 			<input
 				ref={inputRef}
 				aria-label="Find in session"
-				placeholder="Find in session…"
+				placeholder="Szukaj w sesji…"
 				value={query}
 				onChange={(event) => setQuery(event.target.value)}
 				spellCheck={false}
@@ -192,15 +192,15 @@ export function SessionFind({ scopeRef, scrollContextRef }: {
 			<output aria-live="polite" data-testid="session-find-count" className="shrink-0 text-xs tabular-nums text-muted-foreground">
 				{query ? `${result.index + 1}/${result.count}` : ""}
 			</output>
-			<button type="button" aria-label="Previous match" title="Previous match (Shift+Enter)" className={buttonClass}
+			<button type="button" aria-label="Previous match" title="Poprzednie trafienie (Shift+Enter)" className={buttonClass}
 				disabled={!result.count} onMouseDown={(event) => event.preventDefault()} onClick={() => step(-1)}>
 				<ChevronUpIcon className="size-4" aria-hidden />
 			</button>
-			<button type="button" aria-label="Next match" title="Next match (Enter)" className={buttonClass}
+			<button type="button" aria-label="Next match" title="Następne trafienie (Enter)" className={buttonClass}
 				disabled={!result.count} onMouseDown={(event) => event.preventDefault()} onClick={() => step(1)}>
 				<ChevronDownIcon className="size-4" aria-hidden />
 			</button>
-			<button type="button" aria-label="Close Find" title="Close Find (Esc)" className={buttonClass} onClick={close}>
+			<button type="button" aria-label="Close Find" title="Zamknij wyszukiwanie (Esc)" className={buttonClass} onClick={close}>
 				<XIcon className="size-4" aria-hidden />
 			</button>
 		</div>

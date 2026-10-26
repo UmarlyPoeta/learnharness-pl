@@ -182,7 +182,7 @@ describe("plan block render", () => {
 		// Snapshot statuses render as carried.
 		assert.match(html, /data-testid="plan-node-a" data-status="visited"/);
 		assert.match(html, /data-testid="plan-node-b" data-status="upcoming"/);
-		assert.ok(html.includes('aria-label="Open the full plan"'), "the trigger names itself (tooltip copy)");
+		assert.ok(html.includes('aria-label="Otwórz pełny plan"'), "the trigger names itself (tooltip copy)");
 	});
 
 });
@@ -234,7 +234,7 @@ describe("plan popup (live derivation)", () => {
 		assert.doesNotMatch(html, /animate-pulse/);
 		// Arrows into not-yet-visited nodes are grayed out (owner, round 6).
 		assert.match(html, /marker-end="url\(#.*-dim\)"/);
-		assert.match(html, /live — statuses derive from your check outcomes/);
+		assert.match(html, /na żywo — statusy wynikają z wyników twoich sprawdzeń/);
 		// No top-left flash: at static render settled=false, so the diagram
 		// wrapper paints at opacity 0 — the fit runs in an effect AFTER the
 		// first paint and the chart would otherwise flash at the initial
@@ -281,6 +281,6 @@ describe("plan popup (live derivation)", () => {
 
 	it("renders the empty state when the session has no plan", () => {
 		const html = renderToStaticMarkup(<PlanPopup messages={[{ parts: [] }]} onClose={() => {}} />);
-		assert.match(html, /No plan in this session yet\./);
+		assert.match(html, /Ta sesja nie ma jeszcze planu\./);
 	});
 });

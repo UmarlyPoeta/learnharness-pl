@@ -50,12 +50,12 @@ describe("PracticeDock", () => {
 			/>,
 		);
 		assert.match(html, /Show that the sum is even\./);
-		// The 'Problem' eyebrow (owner round, 2026-10-05): the quiz cards'
+		// The 'Zadanie' eyebrow (owner round, 2026-10-05): the quiz cards'
 		// label row, mirrored — dock and transcript card read identically.
-		assert.match(html, /Problem/);
+		assert.match(html, /Zadanie/);
 		// The measured column cap (the old fixed 40vh is only the fallback).
 		assert.match(html, /--dock-max-h/);
-		assert.match(html, /YOUR THINKING/);
+		assert.match(html, /TWÓJ TOK MYŚLENIA/);
 		assert.match(html, /data-testid="practice-send"/);
 		assert.ok(!html.includes("practice-nudge") && !html.includes("practice-commit"), "the two-lane buttons are gone");
 		// The buttons carry their lane in the disabled gate; both start
@@ -81,7 +81,7 @@ describe("PracticeDock", () => {
 // ── the transcript cards ─────────────────────────────────────────────────────
 
 describe("the practice transcript cards", () => {
-	it("ProblemCard: ALWAYS OPEN, the 'Problem' eyebrow + the statement — the commitment NEVER renders", () => {
+	it("ProblemCard: ALWAYS OPEN, the 'Zadanie' eyebrow + the statement — the commitment NEVER renders", () => {
 		const html = renderToStaticMarkup(
 			<ProblemCard
 				part={part({
@@ -94,7 +94,7 @@ describe("the practice transcript cards", () => {
 			/>,
 		);
 		assert.match(html, /data-testid="problem-card"/);
-		assert.match(html, /Problem/);
+		assert.match(html, /Zadanie/);
 		assert.match(html, /Prove the parity claim\./);
 		assert.doesNotMatch(html, /Pair them\./, "the commitment stays hidden");
 		// No chevron, no collapsed bar (owner round, 2026-10-05).
@@ -112,12 +112,12 @@ describe("the practice transcript cards", () => {
 			/>,
 		);
 		assert.match(html, /data-testid="conclude-card"/);
-		assert.match(html, /Solved with hints/);
+		assert.match(html, /Rozwiązane z podpowiedziami/);
 		assert.match(html, /Pair them; each pair is even\./, "the committed solution, verbatim");
-		assert.match(html, /Concluded/); // the plain eyebrow (owner round 3)
-		assert.match(html, /Solved/); // the outcome rides the quiz chip
-		assert.match(html, /Model solution/); // the labeled hero after the divider
-		assert.ok(html.indexOf("Solved") < html.indexOf("Model solution"), "chip at the top");
+		assert.match(html, /Zakończone/); // the plain eyebrow (owner round 3)
+		assert.match(html, /Rozwiązane/); // the outcome rides the quiz chip
+		assert.match(html, /Rozwiązanie wzorcowe/); // the labeled hero after the divider
+		assert.ok(html.indexOf("Rozwiązane") < html.indexOf("Rozwiązanie wzorcowe"), "chip at the top");
 		assert.match(html, /The pairing came after R2\./);
 		// VERDICT FIRST (owner round 3): verdict under the heading row, then
 		// the divider, then the labeled model solution.
@@ -149,7 +149,7 @@ describe("the practice transcript cards", () => {
 			/>,
 		);
 		assert.ok(html.includes('data-testid="metadata-toggle"'), "the trigger row");
-		assert.match(html, /Metadata/, "the label (CSS renders it mono-caps)");
+		assert.match(html, /Metadane/, "the label (CSS renders it mono-caps)");
 		assert.ok(!html.includes('data-testid="metadata-box"'), "the info box is CLOSED until clicked — no rows in the markup");
 		assert.ok(!html.includes("border-t \"/>"), "no separate divider — the trigger just sits at the bottom");
 		// The open face (info-box rows at the model solution's 15px) is a
@@ -172,13 +172,13 @@ describe("the practice transcript cards", () => {
 		const html = renderToStaticMarkup(
 			<ConcludeCard part={part({ type: "tool-conclude", input: { outcome: "dismissed" } })} />,
 		);
-		assert.match(html, /Problem dismissed\./);
+		assert.match(html, /Zadanie odrzucone\./);
 		assert.doesNotMatch(html, /The solution/);
 	});
 
 	it("ThinkingCard: one label, right side, expanded arrival (owner round, 2026-10-07)", () => {
 		const trace = renderToStaticMarkup(<ThinkingCard data={{ problemCallId: "c", commit: false, text: "stuck at step two" }} />);
-		assert.match(trace, /YOUR THINKING/);
+		assert.match(trace, /TWÓJ TOK MYŚLENIA/);
 		// Transcript rows arrive EXPANDED (clearly conveyed as sent) as
 		// full-width card-color bands with the 6px rail (the document,
 		// all-in — owner round two, 2026-10-07).
@@ -187,7 +187,7 @@ describe("the practice transcript cards", () => {
 		assert.ok(trace.includes("bg-card"), "the card-color band");
 		assert.ok(trace.includes("border-l-[calc(3ch-14px)]"), "narrow rail inside the 3ch inset");
 		const legacy = renderToStaticMarkup(<ThinkingCard data={{ problemCallId: "c", commit: true, text: "It is 42." }} />);
-		assert.match(legacy, /YOUR THINKING/);
+		assert.match(legacy, /TWÓJ TOK MYŚLENIA/);
 		assert.doesNotMatch(legacy, /Your solution/);
 	});
 });
@@ -240,8 +240,8 @@ describe("GraphContextCard", () => {
 			], chains: ["Modus ponens → Soundness"] }} />,
 		);
 		assert.ok(html.includes('data-testid="graph-context-card"'));
-		assert.ok(html.includes("2 propositions"));
-		assert.ok(html.includes("1 chain"));
+		assert.ok(html.includes("2 twierdzenia"));
+		assert.ok(html.includes("1 łańcuch"));
 		// minimal: the collapsed bar carries NO statement text
 		assert.ok(!html.includes("If P implies Q"));
 		assert.ok(!html.includes("graph-context-body"));
@@ -251,8 +251,8 @@ describe("GraphContextCard", () => {
 		const html = renderToStaticMarkup(
 			<GraphContextCard data={{ propositions: [{ id: "n1", name: "A", statement: "S." }], chains: [] }} />,
 		);
-		assert.ok(html.includes("1 proposition</span>"));
-		assert.ok(!html.includes("chain"));
+		assert.ok(html.includes("1 twierdzenie</span>"));
+		assert.ok(!html.includes("łańcuch"));
 	});
 
 	it("the marker projects to the card's part (projectView fold)", () => {

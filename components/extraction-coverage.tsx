@@ -8,6 +8,7 @@ import { formatTokens } from "@/components/usage-format";
 import { Hint } from "@/components/ui/hint";
 import { timeAgo } from "@/components/sidebar";
 import { resolveSettings } from "@/src/core";
+import { plural } from "@/lib/utils";
 
 /**
  * The extraction-coverage surfaces (extraction-UX redesign, owner-locked
@@ -190,17 +191,17 @@ export function CoverageMenuBody({
 			{busy ? (
 				<span className="flex items-center gap-1.5 text-muted-foreground" data-testid="ctx-coverage-running">
 					<span className="size-1.5 animate-pulse rounded-full bg-foreground/70" aria-hidden />
-					extracting…
+					wyodrębnianie…
 				</span>
 			) : complete ? (
-				<span className="text-muted-foreground">fully extracted</span>
+				<span className="text-muted-foreground">w pełni wyodrębnione</span>
 			) : (
 				<span className="flex flex-col">
 					<span className="tabular-nums text-foreground">
-						{formatTokens(coverage.uncoveredTokens)} tok uncovered
+						{formatTokens(coverage.uncoveredTokens)} tok niepokryte
 					</span>
 					<span className="tabular-nums text-muted-foreground">
-						{coverage.uncoveredCount} message{coverage.uncoveredCount === 1 ? "" : "s"} unextracted
+						{coverage.uncoveredCount} {plural(coverage.uncoveredCount, "wiadomość niewyodrębniona", "wiadomości niewyodrębnione", "wiadomości niewyodrębnionych")}
 					</span>
 				</span>
 			)}
@@ -211,7 +212,7 @@ export function CoverageMenuBody({
 				disabled={busy || complete}
 				className="flex items-center justify-center rounded-lg border px-2 py-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
 			>
-				{busy ? "Running" : "Extract"}
+				{busy ? "W toku" : "Wyodrębnij"}
 			</button>
 		</div>
 	);
@@ -301,7 +302,7 @@ export function CoverageRing({ chatId, refreshKey = 0 }: { chatId: string; refre
 		<div ref={rootRef} className="lh-no-drag relative shrink-0">
 			<Hint
 				// Trimmed (owner, subtlety round 2026-09-25).
-				label="How much of this session isn't mapped yet"
+				label="Jaka część tej sesji nie trafiła jeszcze do grafu"
 				side="bottom"
 			>
 				<button
@@ -362,35 +363,35 @@ export function CoverageRingDetail({ coverage, chunkTokens }: { coverage: Sessio
 	return (
 		<>
 			<div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-				Extraction coverage
+				Pokrycie ekstrakcji
 			</div>
 			<div className="flex flex-col gap-1 text-muted-foreground">
 				<div className="flex justify-between gap-2">
-					<span>Uncovered</span>
+					<span>Niepokryte</span>
 					<span className="tabular-nums text-card-foreground">
 						{formatTokens(coverage.uncoveredTokens)} tokens
 					</span>
 				</div>
 				<div className="flex justify-between gap-2">
-					<span>Covered</span>
+					<span>Pokryte</span>
 					<span className="tabular-nums text-card-foreground">
 						{formatTokens(coverage.coveredTokens)} tokens
 					</span>
 				</div>
 				<div className="flex justify-between gap-2">
-					<span>Messages</span>
+					<span>Wiadomości</span>
 					<span className="tabular-nums text-card-foreground">
 						{coverage.coveredCount} / {coverage.totalMessages}
 					</span>
 				</div>
 				<div className="flex justify-between gap-2">
-					<span>Chunk threshold</span>
+					<span>Próg fragmentu</span>
 					<span className="tabular-nums text-card-foreground">
 						{formatTokens(chunkTokens)} tokens
 					</span>
 				</div>
 				<div className="flex justify-between gap-2">
-					<span>Last extraction</span>
+					<span>Ostatnia ekstrakcja</span>
 					<span className="tabular-nums text-card-foreground">
 						{coverage.lastFoldedAt ? timeAgo(coverage.lastFoldedAt) : "—"}
 					</span>
@@ -398,7 +399,7 @@ export function CoverageRingDetail({ coverage, chunkTokens }: { coverage: Sessio
 				{coverage.running && (
 					<div className="flex justify-between gap-2" data-testid="coverage-ring-running">
 						<span>Status</span>
-						<span className="text-card-foreground">extracting…</span>
+						<span className="text-card-foreground">wyodrębnianie…</span>
 					</div>
 				)}
 			</div>
