@@ -68,7 +68,7 @@ describe("SessionRow", () => {
 		assert.ok(html.includes("braille-frame"), "CSS-animated frames");
 		assert.ok((html.match(/class="braille-frame"/g) ?? []).length === 10, "all ten frames");
 		assert.ok(html.includes('data-frame="0"'), "frame 0 leads (static fallback)");
-		assert.ok(html.includes("Working"), "accessible label");
+		assert.ok(html.includes("Pracuję"), "accessible label");
 		assert.ok(!html.includes("bg-attention"), "no colored state fill — monochrome by design");
 	});
 
@@ -78,7 +78,7 @@ describe("SessionRow", () => {
 		// contract can't silently re-widen: an extraction-only "working"
 		// row would be a double signal.
 		const html = render(item({ busy: true, pendingQuestion: false }));
-		assert.ok(html.includes("Working"), "the spinner's label names the turn, not agents");
+		assert.ok(html.includes("Pracuję"), "the spinner's label names the turn, not agents");
 	});
 
 	it("the meta line: state replaces the count when the state is the useful fact", () => {

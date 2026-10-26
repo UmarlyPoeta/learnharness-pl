@@ -508,7 +508,7 @@ describe("provider-error banner (live and saved)", () => {
 
 	it("uses the existing fallback wording when the saved failure has no error text", () => {
 		const withoutText = { ...failed(), errorMessage: undefined } as LhMessage;
-		assert.equal(model({ initialMessages: [withoutText] }).getState().error?.message, "An error occurred.");
+		assert.equal(model({ initialMessages: [withoutText] }).getState().error?.message, "Wystąpił błąd.");
 		assert.equal(model().getState().error, null);
 	});
 

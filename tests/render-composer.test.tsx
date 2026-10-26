@@ -33,14 +33,14 @@ function render(
 describe("Composer", () => {
 	it("chat placeholder + send button", () => {
 		const html = render();
-		assert.match(html, /Ask, answer, or steer the lesson/, "the default — active sessions");
+		assert.match(html, /Pytaj, odpowiadaj albo pokieruj lekcją/, "the default — active sessions");
 		assert.ok(html.includes('aria-label="Send"'), "send button present");
 	});
 
 	it("placeholder is overridable — the new-session page asks the graph view's question", () => {
 		const html = render({ placeholder: "What do you want to learn?" });
 		assert.match(html, /What do you want to learn\?/);
-		assert.ok(!html.includes("Ask, answer"), "the session placeholder must not ride along");
+		assert.ok(!html.includes("Pytaj, odpowiadaj"), "the session placeholder must not ride along");
 	});
 
 	it("busy with text: the button STAYS Send (click = steer); busy and empty: it becomes Stop", () => {

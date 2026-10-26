@@ -269,7 +269,7 @@ export class SessionModel {
 		const providerError =
 			latest?.role === "assistant" && latest.stopReason === "error" &&
 			!this.incompleteUsageIds.has(latest.id) && (!live || latest.id === this.liveFailureId)
-				? { message: latest.errorMessage ?? "An error occurred." }
+				? { message: latest.errorMessage ?? "Wystąpił błąd." }
 				: null;
 		return {
 			messages: projectView(messages, live),
@@ -341,7 +341,7 @@ export class SessionModel {
 		if (event.type === "error") {
 			// Loop-level failure (agent.continue threw outside the stream) —
 			// raw text (owner ruling, Wave D): the banner shows exactly this.
-			this.setError(String(event.errorText ?? "An error occurred."));
+			this.setError(String(event.errorText ?? "Wystąpił błąd."));
 			return false;
 		}
 		const agent = event as unknown as AgentEvent;
@@ -415,7 +415,7 @@ export class SessionModel {
 				const result = agent.result as
 					| { content?: Array<{ type?: string; text?: string }>; details?: unknown }
 					| null;
-				const text = result?.content?.find((c) => c.type === "text")?.text ?? "The tool call failed.";
+				const text = result?.content?.find((c) => c.type === "text")?.text ?? "Wywołanie narzędzia nie powiodło się.";
 				this.mutate(() => {
 					this.executions = new Map(this.executions).set(agent.toolCallId, {
 						isError: agent.isError,

@@ -46,7 +46,7 @@ export function Composer({
 	autoFocus,
 	inputRef,
 	onEscape,
-	placeholder = "Ask, answer, or steer the lesson…",
+	placeholder = "Pytaj, odpowiadaj albo pokieruj lekcją…",
 	nextProblem = false,
 	onNext,
 }: {
@@ -64,7 +64,7 @@ export function Composer({
 	 *  when absent — Esc otherwise means nothing in the composer. */
 	onEscape?: () => void;
 	/** The textarea's placeholder (owner refinement round, 2026-09-24):
-	 *  active sessions read "Ask, answer, or steer the lesson…"; the fresh
+	 *  active sessions read "Pytaj, odpowiadaj albo pokieruj lekcją…"; the fresh
 	 *  new-session page asks the graph view's opening question instead. */
 	placeholder?: string;
 	/** The practice pause is live (owner round 16): Enter on the empty
