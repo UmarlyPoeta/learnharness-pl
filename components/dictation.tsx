@@ -131,18 +131,24 @@ export const LOCAL_STT_SLOW = "Przepisywanie trwa za długo — spróbuj krótsz
 /** 10 minutes of 16 kHz Int16 mono — the server's cap; the run auto-stops at it. */
 export const MAX_LOCAL_BYTES = 19_200_000;
 
-export function concatFrames(frames: ArrayBuffer[]): Uint8Array<ArrayBuffer> {
+/** A captured frame: pcm-capture.js posts Int16Arrays; tests may pass raw buffers. */
+export type PcmFrame = ArrayBuffer | ArrayBufferView;
+
+export function concatFrames(frames: PcmFrame[]): Uint8Array<ArrayBuffer> {
 	const out = new Uint8Array(frames.reduce((n, f) => n + f.byteLength, 0));
 	let at = 0;
 	for (const f of frames) {
-		out.set(new Uint8Array(f), at);
+		// The BYTES of a view, never `new Uint8Array(view)` — that converts
+		// each Int16 sample to one truncated byte (Whisper heard noise and
+		// answered "KONIEC!").
+		out.set(ArrayBuffer.isView(f) ? new Uint8Array(f.buffer, f.byteOffset, f.byteLength) : new Uint8Array(f), at);
 		at += f.byteLength;
 	}
 	return out;
 }
 
 /** One-shot transcription of a finished run. No audio → "" without a request. */
-export async function transcribeLocal(frames: ArrayBuffer[], fetchImpl: typeof fetch = fetch): Promise<string> {
+export async function transcribeLocal(frames: PcmFrame[], fetchImpl: typeof fetch = fetch): Promise<string> {
 	// Frames are 4096 bytes and the cap isn't a multiple of that: trim, or
 	// the last frame tips a full 10-minute run into the server's 413.
 	const body = concatFrames(frames).subarray(0, MAX_LOCAL_BYTES);
@@ -352,7 +358,7 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 	/** Frames captured before the socket is OPEN (mitigation A): flushed in
 	 *  order on open; capped at 256 frames (≈32s) with the oldest dropped;
 	 *  cleared at teardown so a dead run's audio can't leak into the next. */
-	const pendingRef = useRef<ArrayBuffer[]>([]);
+	const pendingRef = useRef<PcmFrame[]>([]);
 	const genRef = useRef(0); // stale-handler guard (dictate pattern)
 	const safetyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const reconnectsRef = useRef(0);
@@ -369,7 +375,7 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 	 *  reroute its stop (final review I2). */
 	const runEngineRef = useRef<DictationEngine>("local");
 	/** Local engine: the run's PCM frames and their byte total. */
-	const localFramesRef = useRef<ArrayBuffer[]>([]);
+	const localFramesRef = useRef<PcmFrame[]>([]);
 	const localBytesRef = useRef(0);
 	/** The latest stop() — the worklet handler auto-stops at MAX_LOCAL_BYTES. */
 	const stopRef = useRef<() => void>(() => {});
@@ -528,7 +534,7 @@ export function useDictation({ append }: { append: (text: string) => void }): Di
 			const worklet = new AudioWorkletNode(ctx, "pcm-capture");
 			workletRef.current = worklet;
 			worklet.port.onmessage = (e) => {
-				const msg = e.data as { type: string; rms?: number; buffer?: ArrayBuffer };
+				const msg = e.data as { type: string; rms?: number; buffer?: Int16Array };
 				if (msg.type === "level") {
 					levelRef.current = msg.rms ?? 0; // never reset to zero (dictate pattern)
 				} else if (msg.type === "audio" && local) {

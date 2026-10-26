@@ -99,6 +99,18 @@ test("a local run posts its audio once and appends the text", async () => {
 	assert.equal(d.phase, "idle");
 });
 
+test("the worklet's Int16Array frames reach the server byte-exact", async () => {
+	await act(async () => d.toggle());
+	await flush();
+	const samples = Int16Array.from({ length: 2048 }, (_, i) => (i * 37) % 30000 - 15000);
+	worklet!.port.onmessage!({ data: { type: "audio", buffer: samples } });
+	await act(async () => d.stop());
+	await flush();
+	const body = posts[0]!;
+	assert.equal(body.byteLength, 4096);
+	assert.deepEqual([...new Int16Array(body.buffer, body.byteOffset, 2048)], [...samples]);
+});
+
 test("Esc while transcribing drops the late result", async () => {
 	let release!: () => void;
 	sttReply = () => Response.json({ text: "spóźnione" });

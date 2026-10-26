@@ -29,6 +29,17 @@ describe("concatFrames", () => {
 	});
 });
 
+describe("concatFrames — the worklet's real frames", () => {
+	it("Int16Array frames (what pcm-capture.js posts) keep their exact bytes", () => {
+		// pcm-capture posts `buffer: this.frame` — an Int16Array, not an
+		// ArrayBuffer. new Uint8Array(int16) would truncate each sample to
+		// its low byte (the "KONIEC!" bug: Whisper heard noise).
+		const out = concatFrames([Int16Array.of(1000, -1000), Int16Array.of(12345)]);
+		assert.equal(out.byteLength, 6);
+		assert.deepEqual([...new Int16Array(out.buffer, out.byteOffset, 3)], [1000, -1000, 12345]);
+	});
+});
+
 describe("transcribeLocal", () => {
 	it("no audio: empty text, and the server is never called", async () => {
 		const f = fakeFetch(() => Response.json({ text: "x" }));
