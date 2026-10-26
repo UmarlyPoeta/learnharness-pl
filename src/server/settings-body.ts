@@ -18,12 +18,13 @@ import type {
 	AppearanceSettings,
 	BackgroundModelRole,
 	CompactionSettings,
+	DictationSettings,
 	GeneralSettings,
 	GraphSettings,
 	ModelsSettings,
 	RoleModelOverride,
 } from "../core/settings.ts";
-import { BACKGROUND_MODEL_ROLES, COMPACTION_THRESHOLD_FLOOR, EXTRACTION_CHUNK_TOKENS_FLOOR, MODEL_SLOTS } from "../core/settings.ts";
+import { BACKGROUND_MODEL_ROLES, COMPACTION_THRESHOLD_FLOOR, DICTATION_ENGINES, EXTRACTION_CHUNK_TOKENS_FLOOR, MODEL_SLOTS } from "../core/settings.ts";
 import { WRITABLE_TOOL_KEYS } from "../core/pending.ts";
 
 /** Parsed-or-rejected — `ok: false` carries the 400's error message. */
@@ -85,6 +86,19 @@ export function parseGeneralSettingsBody(body: unknown): SettingsBodyResult<Gene
 			return { ok: false, error: "autoUpdate must be a boolean" };
 		}
 		settings.autoUpdate = raw.autoUpdate;
+	}
+	return { ok: true, settings };
+}
+
+export function parseDictationSettingsBody(body: unknown): SettingsBodyResult<DictationSettings> {
+	const raw = asRecord(body);
+	if (!raw) return { ok: false, error: "Invalid JSON body" };
+	const settings: DictationSettings = {};
+	if (raw.engine !== undefined) {
+		if (!(DICTATION_ENGINES as readonly unknown[]).includes(raw.engine)) {
+			return { ok: false, error: `engine must be one of ${DICTATION_ENGINES.join(", ")}` };
+		}
+		settings.engine = raw.engine as DictationSettings["engine"];
 	}
 	return { ok: true, settings };
 }
@@ -385,6 +399,7 @@ export const SETTINGS_SECTIONS = {
 	graph: parseGraphSettingsBody,
 	compaction: parseCompactionSettingsBody,
 	models: parseModelsSettingsBody,
+	dictation: parseDictationSettingsBody,
 } as const;
 
 export type SettingsSectionName = keyof typeof SETTINGS_SECTIONS;

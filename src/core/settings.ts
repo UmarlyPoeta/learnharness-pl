@@ -235,6 +235,21 @@ export interface GeneralSettings {
 	autoUpdate?: boolean;
 }
 
+/** Dictation engines (local Whisper wave, 2026-10-26): the local
+ *  faster-whisper server or Deepgram's cloud stream. */
+export const DICTATION_ENGINES = ["local", "deepgram"] as const;
+export type DictationEngine = (typeof DICTATION_ENGINES)[number];
+
+export interface DictationSettings {
+	/** Absent = "local" (the default engine). */
+	engine?: DictationEngine;
+}
+
+/** The effective engine: "local" unless the record pins "deepgram". */
+export function dictationEngine(record: UserSettings | null | undefined): DictationEngine {
+	return record?.dictation?.engine === "deepgram" ? "deepgram" : "local";
+}
+
 /** Agent settings — everything about the non-conversation machinery. */
 export interface AgentSettings {
 	/** Background-role model/thinking overrides (absent role = config pin). */
@@ -367,6 +382,7 @@ export interface UserSettings {
 	appearance?: AppearanceSettings;
 	graph?: GraphSettings;
 	compaction?: CompactionSettings;
+	dictation?: DictationSettings;
 	[key: string]: unknown;
 }
 
@@ -441,6 +457,12 @@ function sanitizeGeneral(raw: Record<string, unknown>): GeneralSettings {
 	const out: GeneralSettings = {};
 	const autoUpdate = boolOrDrop(raw.autoUpdate);
 	if (autoUpdate !== undefined) out.autoUpdate = autoUpdate;
+	return out;
+}
+
+function sanitizeDictation(raw: Record<string, unknown>): DictationSettings {
+	const out: DictationSettings = {};
+	if ((DICTATION_ENGINES as readonly unknown[]).includes(raw.engine)) out.engine = raw.engine as DictationEngine;
 	return out;
 }
 
@@ -614,6 +636,9 @@ export function sanitizeUserSettings(raw: unknown): UserSettings | null {
 	};
 	if (r.general !== null && typeof r.general === "object" && !Array.isArray(r.general)) {
 		out.general = sanitizeGeneral(r.general as Record<string, unknown>);
+	}
+	if (r.dictation !== null && typeof r.dictation === "object" && !Array.isArray(r.dictation)) {
+		out.dictation = sanitizeDictation(r.dictation as Record<string, unknown>);
 	}
 	if (r.agent !== null && typeof r.agent === "object" && !Array.isArray(r.agent)) {
 		out.agent = sanitizeAgent(r.agent as Record<string, unknown>);
