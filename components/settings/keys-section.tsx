@@ -24,8 +24,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { AUTH_KEYS, type AuthKeyStatus } from "@/src/core";
-import { SettingsGroup } from "./controls.tsx";
+import { AUTH_KEYS, dictationEngine, type AuthKeyStatus, type DictationEngine } from "@/src/core";
+import { SettingsGroup, SettingsRow, ThinSelect } from "./controls.tsx";
 import { SubscriptionConnections } from "./subscription-connections.tsx";
 import { ProviderMenuList } from "./model-menu.tsx";
 import { MenuShell } from "@/components/menu-shell";
@@ -315,6 +315,67 @@ function AddProviderRow({
 	);
 }
 
+/** The local server's health as /api/stt/local reports it; null = not known yet. */
+export type LocalSttStatus = { ok: boolean; device?: string | null } | null;
+
+/** The Dyktowanie group's lead row (local Whisper wave, 2026-10-26): the
+ *  engine pick, plus the local server's status while it is the engine. */
+export function DictationEngineRow({
+	engine,
+	status,
+	onChange,
+}: {
+	engine: DictationEngine;
+	status: LocalSttStatus;
+	onChange: (engine: DictationEngine) => void;
+}) {
+	const line = status === null ? "sprawdzanie…" : status.ok ? `działa · ${status.device ?? "—"}` : "nie działa — uruchom learn";
+	return (
+		<SettingsRow label="Silnik dyktowania" testid="row-dictation-engine">
+			<span className="flex items-center gap-2">
+				{engine === "local" && (
+					<span data-testid="dictation-engine-status" className="font-ui text-xs text-muted-foreground">{line}</span>
+				)}
+				<ThinSelect value={engine} ariaLabel="dictation engine" testid="dictation-engine" onChange={(v) => onChange(v as DictationEngine)}>
+					<option value="local">Lokalny Whisper</option>
+					<option value="deepgram">Deepgram</option>
+				</ThinSelect>
+			</span>
+		</SettingsRow>
+	);
+}
+
+/** The engine pick + local status, read and written through the settings record. */
+function useDictationEngine(): { engine: DictationEngine; status: LocalSttStatus; setEngine: (e: DictationEngine) => void } {
+	const [engine, setEngineState] = useState<DictationEngine>("local");
+	const [status, setStatus] = useState<LocalSttStatus>(null);
+	useEffect(() => {
+		fetch("/api/settings")
+			.then((r) => r.json())
+			.then((data: { settings?: Parameters<typeof dictationEngine>[0] }) => setEngineState(dictationEngine(data.settings)))
+			.catch(() => {});
+	}, []);
+	useEffect(() => {
+		if (engine !== "local") return;
+		setStatus(null);
+		fetch("/api/stt/local")
+			.then((r) => r.json())
+			.then((data: { ok?: boolean; device?: string | null }) => setStatus({ ok: data.ok === true, device: data.device }))
+			.catch(() => setStatus({ ok: false }));
+	}, [engine]);
+	const setEngine = (next: DictationEngine) => {
+		setEngineState(next);
+		void fetch("/api/settings/dictation", {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ engine: next }),
+		}).then((res) => {
+			if (res.ok) notifySettingsSaved("dictation");
+		});
+	};
+	return { engine, status, setEngine };
+}
+
 export function KeysSection({
 	/** A deep-linked row to unfold on arrival (zero-keys wave): the
 	 *  dictation error's click lands here on DEEPGRAM_API_KEY. Followed
@@ -325,6 +386,7 @@ export function KeysSection({
 	initialRow?: string;
 }) {
 	const [statuses, setStatuses] = useState<AuthKeyStatus[] | null>(null);
+	const dictation = useDictationEngine();
 	const [providers, setProviders] = useState<ProviderKeyInfo[] | undefined>(undefined);
 	const [loading, setLoading] = useState(true);
 	/** The unfolded row (its id), null = all folded. Seeded by the
@@ -460,6 +522,7 @@ export function KeysSection({
 			</SettingsGroup>
 
 			{(["Dictation", "Search"] as const).map((label) => <SettingsGroup key={label} label={label === "Dictation" ? "Dyktowanie" : "Wyszukiwanie"} testid={label === "Dictation" ? "group-dictation" : "group-search"}>
+				{label === "Dictation" && <DictationEngineRow engine={dictation.engine} status={dictation.status} onChange={dictation.setEngine} />}
 				{toolRows.filter((status) => label === "Dictation" ? status.id === "DEEPGRAM_API_KEY" : status.id !== "DEEPGRAM_API_KEY").map((status) => (
 					<KeyTableRow
 						key={status.id}
