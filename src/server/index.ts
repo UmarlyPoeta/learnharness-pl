@@ -45,3 +45,4 @@ export * from "./observability.ts";
 export * from "./model-catalog.ts";
 export { sessionCost } from "./pricing.ts";
 export { transcribeTimeoutMs } from "./stt-local.ts";
+export { createWhisperEngine, whisperEngine, modelPath, MODEL_FILE, WhisperError, __setSttForTests, type WhisperEngine, type SpawnLike, type ChildLike } from "./whisper-engine.ts";
