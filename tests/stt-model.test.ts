@@ -9,7 +9,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { describe, it } from "node:test";
-import { createModelDownloader } from "../src/server/stt-model.ts";
+import { createModelDownloader, MODEL_URL } from "../src/server/stt-model.ts";
 
 const BYTES = [1, 2, 3, 4, 5];
 const SHA = createHash("sha256").update(Buffer.from(BYTES)).digest("hex");
@@ -104,6 +104,20 @@ describe("model downloader", () => {
 		d.start();
 		assert.equal((await settled(d)).state, "ready");
 		assert.deepEqual([...fs.readFileSync(dest)], BYTES);
+	});
+
+	it("a write failure (full disk) ends in error instead of hanging", async () => {
+		const dest = tmpDest();
+		fs.mkdirSync(dest + ".part", { recursive: true }); // .part is a directory: the write stream fails like ENOSPC would
+		const d = createModelDownloader({ url: "https://x/m.bin", sha256: SHA, size: 5, dest, fetchImpl: streamFetch() });
+		d.start();
+		const s = await settled(d);
+		assert.equal(s.state, "error");
+		assert.ok(s.error);
+	});
+
+	it("the model URL is pinned to a repository revision, not main", () => {
+		assert.match(MODEL_URL, /\/resolve\/[0-9a-f]{40}\/ggml-large-v3-turbo-q5_0\.bin$/);
 	});
 
 	it("a second start while downloading is refused", async () => {

@@ -31,7 +31,7 @@ const { createSubscriptions, loadSubscriptionSDK } = require("./subscriptions.cj
 const { attachSubscriptionChild, subscriptionControl } = require("./subscription-ipc.cjs");
 const { desktopAPIHeaders } = require("./desktop-api.cjs");
 const { randomBytes } = require("node:crypto");
-const { spawn } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
 const net = require("node:net");
@@ -279,6 +279,16 @@ function killServer() {
 	if (!serverProcess) return;
 	const child = serverProcess;
 	serverProcess = null;
+	// Windows: TerminateProcess leaves grandchildren (whisper-server) running,
+	// holding VRAM and locking the files an update must replace — kill the
+	// whole tree. Elsewhere the server's own exit hook stops it.
+	if (process.platform === "win32" && child.pid) {
+		try {
+			spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true });
+		} catch {
+			/* fall through to the plain kill */
+		}
+	}
 	child.kill("SIGTERM");
 	setTimeout(() => {
 		try {

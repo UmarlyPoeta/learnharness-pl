@@ -36,8 +36,8 @@ describe("standalone JavaScript tracing exclusions and native workaround policy"
 		assert.equal(ignore(`${root}/data/private.json`), true);
 		assert.equal(ignore(`${root}/node_modules/gcp-metadata/build/src/index.js`), false);
 	});
-	it("preserves all secret exclusions exactly", () => {
-		assert.deepEqual(patterns, ["**/data/**/*", "auth.json", ".env*"]);
+	it("preserves all secret exclusions exactly, plus the whisper.cpp tree (LearnHarness PL)", () => {
+		assert.deepEqual(patterns, ["**/data/**/*", "auth.json", ".env*", "build/whisper-src/**", "resources/**"]);
 	});
 	it("retains exactly the narrow native-Turbopack closure workaround and existing runtime includes", () => {
 		assert.deepEqual(nextConfig.outputFileTracingIncludes!["*"], [

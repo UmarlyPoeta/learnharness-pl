@@ -37,3 +37,31 @@ describe("bundled whisper.cpp wiring", () => {
 		assert.ok(config.extraResources.some((entry) => entry.from === "resources/whisper" && entry.to === "whisper"));
 	});
 });
+
+describe("bundled whisper.cpp build hygiene (final review)", () => {
+	const script = readFileSync(new URL("../scripts/build-whisper.sh", import.meta.url), "utf8");
+	const release = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
+	const nextConfig = readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
+
+	it("Linux installs the SPIR-V headers ggml-vulkan's CMake requires", () => {
+		assert.match(release, /apt-get install -y [^\n]*\blibvulkan-dev\b[^\n]*\bglslc\b[^\n]*\bspirv-headers\b|apt-get install -y [^\n]*\bspirv-headers\b/);
+	});
+
+	it("no runtime DLL the user may lack: static MSVC runtime, no OpenMP", () => {
+		assert.match(script, /-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded\b/);
+		assert.match(script, /-DGGML_OPENMP=OFF\b/);
+	});
+
+	it("ships whisper.cpp's MIT license next to the binaries", () => {
+		assert.match(script, /cp "\$SRC\/LICENSE" "\$OUT\/LICENSE-whisper\.cpp\.txt"/);
+	});
+
+	it("the server payload never traces whisper sources or binaries", () => {
+		assert.match(nextConfig, /"build\/whisper-src\/\*\*"/);
+		assert.match(nextConfig, /"resources\/\*\*"/);
+	});
+
+	it("quitting kills the server's whole process tree on Windows (no orphaned whisper-server)", () => {
+		assert.match(main, /taskkill(\.exe)?"?, \["\/pid", String\([^)]*\.pid\), "\/T", "\/F"\]/);
+	});
+});

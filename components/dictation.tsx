@@ -125,6 +125,9 @@ export const DICTATION_KEYLESS = "Dictation needs a Deepgram key";
 /** The client-authored line for an unreachable local server (the route's 503). */
 export const LOCAL_STT_DOWN = "Lokalny Whisper nie działa — uruchom learn";
 
+/** The installed app's bundled engine failed to start (its 503 carries backend). */
+export const LOCAL_STT_APP_DOWN = "Lokalny Whisper nie uruchomił się — spróbuj ponownie; szczegóły w whisper-server.log w katalogu danych";
+
 /** The line for a transcription that outlived the route's wait (its 504). */
 export const LOCAL_STT_SLOW = "Przepisywanie trwa za długo — spróbuj krótszego nagrania";
 
@@ -161,8 +164,8 @@ export async function transcribeLocal(frames: PcmFrame[], fetchImpl: typeof fetc
 		body,
 		headers: { "Content-Type": "application/octet-stream" },
 	});
-	const data = (await res.json().catch(() => ({}))) as { text?: string; message?: string };
-	if (res.status === 503) throw new Error(LOCAL_STT_DOWN);
+	const data = (await res.json().catch(() => ({}))) as { text?: string; message?: string; backend?: string };
+	if (res.status === 503) throw new Error(data.backend === "whispercpp" ? LOCAL_STT_APP_DOWN : LOCAL_STT_DOWN);
 	if (res.status === 504) throw new Error(LOCAL_STT_SLOW);
 	if (res.status === 409) throw new Error(LOCAL_STT_NO_MODEL);
 	if (!res.ok) throw new Error(data.message ?? "transkrypcja nie powiodła się");

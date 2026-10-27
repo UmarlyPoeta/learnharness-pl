@@ -13,15 +13,19 @@
  */
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
+import * as http from "node:http";
 import * as net from "node:net";
 import * as os from "node:os";
 import * as path from "node:path";
 import { PATHS } from "../../config.ts";
+import { transcribeTimeoutMs } from "./stt-local.ts";
 
 export const MODEL_FILE = "ggml-large-v3-turbo-q5_0.bin";
 
 export class WhisperError extends Error {
-	constructor(readonly code: "no-model" | "down", message?: string) {
+	/** no-model: download it first; down: won't start / crashed; slow: the
+	 *  transcription outlived its wait (the server keeps running). */
+	constructor(readonly code: "no-model" | "down" | "slow", message?: string) {
 		super(message ?? code);
 	}
 }
@@ -30,9 +34,14 @@ export type ChildLike = {
 	pid?: number;
 	kill(): boolean;
 	on(ev: "exit", cb: (code: number | null) => void): unknown;
+	on(ev: "error", cb: (err: Error) => void): unknown;
 	stderr?: NodeJS.ReadableStream | null;
 };
-export type SpawnLike = (cmd: string, args: string[], opts: { stdio: ["ignore", "pipe", "pipe"] }) => ChildLike;
+export type SpawnLike = (
+	cmd: string,
+	args: string[],
+	opts: { cwd: string; stdio: ["ignore", "ignore", "pipe"]; windowsHide: true },
+) => ChildLike;
 
 export interface WhisperEngine {
 	ensure(): Promise<{ url: string }>;
@@ -61,6 +70,8 @@ export function createWhisperEngine(o: {
 	let url: string | null = null;
 	let starting: Promise<{ url: string }> | null = null;
 	let idle: ReturnType<typeof setTimeout> | null = null;
+	/** Transcriptions in flight — the idle timer only arms at zero. */
+	let inFlight = 0;
 
 	const clearIdle = () => {
 		if (idle) clearTimeout(idle);
@@ -77,18 +88,27 @@ export function createWhisperEngine(o: {
 	async function start(): Promise<{ url: string }> {
 		const port = await o.freePort();
 		const base = `http://127.0.0.1:${port}`;
-		const args = ["--host", "127.0.0.1", "--port", String(port), "-m", o.modelPath, "-l", "pl", "-t", String(o.threads)];
-		const c = o.spawnImpl(o.bin, args, { stdio: ["ignore", "pipe", "pipe"] });
+		// The model goes RELATIVE to cwd: whisper.cpp decodes narrow argv as
+		// UTF-8, but Windows hands it the ANSI code page — a profile path with
+		// Polish letters would fail to open. The file name itself is ASCII.
+		const p = o.modelPath.includes("\\") ? path.win32 : path.posix;
+		const args = ["--host", "127.0.0.1", "--port", String(port), "-m", p.basename(o.modelPath), "-l", "pl", "-t", String(o.threads)];
+		// stdout is never read: an unread pipe fills up and blocks the server.
+		const c = o.spawnImpl(o.bin, args, { cwd: p.dirname(o.modelPath), stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
 		child = c;
 		let exited = false;
-		c.on("exit", () => {
+		const gone = () => {
 			exited = true;
 			if (child === c) {
 				child = null;
 				url = null;
 				clearIdle();
 			}
-		});
+		};
+		c.on("exit", gone);
+		// A missing or quarantined binary emits only "error" (no "exit") — and
+		// an unhandled "error" would take the whole server down.
+		c.on("error", gone);
 		o.onChild?.(c);
 		const deadline = Date.now() + readyTimeoutMs;
 		while (!exited && Date.now() < deadline) {
@@ -101,6 +121,7 @@ export function createWhisperEngine(o: {
 			} catch {
 				// not listening yet
 			}
+			if (exited) break;
 			await new Promise((r) => setTimeout(r, pollMs));
 		}
 		if (child === c) stop();
@@ -116,27 +137,70 @@ export function createWhisperEngine(o: {
 
 	async function transcribe(wav: Uint8Array<ArrayBuffer>): Promise<string> {
 		const { url: base } = await ensure();
+		inFlight++;
 		clearIdle();
 		const form = new FormData();
 		form.append("file", new Blob([wav], { type: "audio/wav" }), "audio.wav");
 		form.append("response_format", "json");
 		form.append("temperature", "0");
-		let text: string;
 		try {
-			const res = await o.fetchImpl(`${base}/inference`, { method: "POST", body: form });
-			if (!res.ok) throw new Error(`inference ${res.status}`);
-			text = ((await res.json()) as { text?: string }).text ?? "";
-		} catch (e) {
-			stop();
-			throw new WhisperError("down", e instanceof Error ? e.message : String(e));
+			let res: Response;
+			try {
+				res = await o.fetchImpl(`${base}/inference`, {
+					method: "POST",
+					body: form,
+					signal: AbortSignal.timeout(transcribeTimeoutMs(wav.byteLength)),
+				});
+			} catch (e) {
+				// Still transcribing, just slower than we wait — keep the server.
+				if (e instanceof DOMException && e.name === "TimeoutError") throw new WhisperError("slow", e.message);
+				stop();
+				throw new WhisperError("down", e instanceof Error ? e.message : String(e));
+			}
+			if (!res.ok) {
+				stop();
+				throw new WhisperError("down", `inference ${res.status}`);
+			}
+			const text = ((await res.json()) as { text?: string }).text ?? "";
+			// whisper.cpp ends each segment with a newline — a dictated answer is one line.
+			return text.replace(/\s+/g, " ").trim();
+		} finally {
+			inFlight--;
+			if (inFlight === 0 && child) {
+				clearIdle();
+				idle = setTimeout(stop, idleMs);
+				idle.unref?.();
+			}
 		}
-		idle = setTimeout(stop, idleMs);
-		idle.unref?.();
-		// whisper.cpp ends each segment with a newline — a dictated answer is one line.
-		return text.replace(/\s+/g, " ").trim();
 	}
 
 	return { ensure, transcribe, stop, running: () => child !== null };
+}
+
+/** Loopback fetch over node:http with no headers/body timeouts — whisper-server
+ *  answers only after the whole transcription, which on CPU can outlast
+ *  undici's 300 s headersTimeout; the caller's AbortSignal is the only limit. */
+export async function localFetch(url: string, init: RequestInit = {}): Promise<Response> {
+	const request = new Request(url, init);
+	const body = init.body == null ? null : Buffer.from(await request.arrayBuffer());
+	const headers: Record<string, string> = {};
+	request.headers.forEach((value, key) => (headers[key] = value));
+	if (body) headers["content-length"] = String(body.byteLength);
+	return new Promise<Response>((resolve, reject) => {
+		const req = http.request(url, { method: request.method, headers, signal: init.signal ?? undefined }, (res) => {
+			const chunks: Buffer[] = [];
+			res.on("data", (c: Buffer) => chunks.push(c));
+			res.on("error", reject);
+			res.on("end", () => {
+				const out = new Headers();
+				for (const [k, v] of Object.entries(res.headers)) if (typeof v === "string") out.set(k, v);
+				resolve(new Response(Buffer.concat(chunks), { status: res.statusCode ?? 500, headers: out }));
+			});
+		});
+		req.on("error", (e) => reject(init.signal?.aborted ? init.signal.reason : e));
+		if (body) req.write(body);
+		req.end();
+	});
 }
 
 export function modelPath(): string {
@@ -170,7 +234,7 @@ export function whisperEngine(): WhisperEngine | null {
 		modelPath: model,
 		threads: Math.min(8, os.availableParallelism()),
 		spawnImpl: spawn as unknown as SpawnLike,
-		fetchImpl: fetch,
+		fetchImpl: ((input: string | URL | Request, init?: RequestInit) => localFetch(String(input instanceof Request ? input.url : input), init)) as typeof fetch,
 		freePort,
 		modelExists: () => fs.existsSync(model),
 		onChild: (c) => {
@@ -179,6 +243,11 @@ export function whisperEngine(): WhisperEngine | null {
 			c.stderr?.pipe(log);
 		},
 	});
+	// The server process exiting (app quit, update install) takes
+	// whisper-server with it — an orphan would hold VRAM and lock the
+	// files the next update must replace.
+	const engine = singleton;
+	process.once("exit", () => engine.stop());
 	return singleton;
 }
 

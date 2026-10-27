@@ -122,7 +122,7 @@ jobs:
           cache: true
       - name: Vulkan headers and shader compiler (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libvulkan-dev glslc
+        run: sudo apt-get update && sudo apt-get install -y libvulkan-dev glslc spirv-headers
       - name: Build whisper.cpp
         run: bash scripts/build-whisper.sh
       - name: Native renderer tests on this OS

@@ -135,11 +135,18 @@ describe("/api/stt/local with the bundled whisper.cpp (desktop app)", () => {
 		assert.deepEqual(await res.json(), { message: "stt-no-model" });
 	});
 
-	it("an engine that won't come up is 503 stt-down", async () => {
+	it("an engine that won't come up is 503 stt-down, marked as the desktop engine", async () => {
 		__setSttForTests({ engine: fakeEngine(async () => { throw new WhisperError("down"); }) });
 		const res = await post(new Uint8Array([0, 0]));
 		assert.equal(res.status, 503);
-		assert.deepEqual(await res.json(), { message: "stt-down" });
+		assert.deepEqual(await res.json(), { message: "stt-down", backend: "whispercpp" });
+	});
+
+	it("a transcription that outlives its wait is 504 stt-timeout", async () => {
+		__setSttForTests({ engine: fakeEngine(async () => { throw new WhisperError("slow"); }) });
+		const res = await post(new Uint8Array([0, 0]));
+		assert.equal(res.status, 504);
+		assert.deepEqual(await res.json(), { message: "stt-timeout" });
 	});
 
 	it("GET names the backend and the model state", async () => {

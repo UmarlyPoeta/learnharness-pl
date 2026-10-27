@@ -33,7 +33,9 @@ export async function POST(request: Request) {
 			return Response.json({ text });
 		} catch (e) {
 			if (e instanceof WhisperError && e.code === "no-model") return Response.json({ message: "stt-no-model" }, { status: 409 });
-			return Response.json({ message: "stt-down" }, { status: 503 });
+			if (e instanceof WhisperError && e.code === "slow") return Response.json({ message: "stt-timeout" }, { status: 504 });
+			// backend tells the client this is the installed app — no `learn` to run there.
+			return Response.json({ message: "stt-down", backend: "whispercpp" }, { status: 503 });
 		}
 	}
 	let res: Response;

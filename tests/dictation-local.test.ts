@@ -6,7 +6,7 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { concatFrames, DG_URL, LOCAL_STT_DOWN, LOCAL_STT_NO_MODEL, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
+import { concatFrames, DG_URL, LOCAL_STT_APP_DOWN, LOCAL_STT_DOWN, LOCAL_STT_NO_MODEL, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
 
 type Call = { url: string; init?: RequestInit };
 
@@ -71,6 +71,12 @@ describe("transcribeLocal", () => {
 		const f = fakeFetch(() => Response.json({ text: "" }));
 		await transcribeLocal([new ArrayBuffer(MAX_LOCAL_BYTES), new ArrayBuffer(4096)], f.fetch);
 		assert.equal((f.calls[0]!.init?.body as Uint8Array).byteLength, MAX_LOCAL_BYTES);
+	});
+
+	it("the installed app's engine failing never tells the user to run learn", async () => {
+		const f = fakeFetch(() => Response.json({ message: "stt-down", backend: "whispercpp" }, { status: 503 }));
+		await assert.rejects(transcribeLocal([frame(1)], f.fetch), { message: LOCAL_STT_APP_DOWN });
+		assert.ok(!LOCAL_STT_APP_DOWN.includes("learn"));
 	});
 
 	it("no model downloaded yet points to Settings (desktop app)", async () => {

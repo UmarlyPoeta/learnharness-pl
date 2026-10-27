@@ -26,6 +26,8 @@ cmake -S "$SRC" -B "$SRC/build" \
 	-DGGML_CPU_ALL_VARIANTS=ON \
 	-DGGML_NATIVE=OFF \
 	-DGGML_VULKAN="$VULKAN" \
+	-DGGML_OPENMP=OFF \
+	-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded \
 	-DWHISPER_BUILD_SERVER=ON \
 	-DWHISPER_BUILD_TESTS=OFF \
 	-DWHISPER_BUILD_EXAMPLES=ON \
@@ -42,4 +44,6 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 cp "$BIN"/whisper-server* "$OUT"/
 find "$SRC/build" \( -name '*.so' -o -name '*.so.*' -o -name '*.dll' \) -exec cp -L {} "$OUT"/ \;
+# whisper.cpp / ggml are MIT — the notice ships with the binaries.
+cp "$SRC/LICENSE" "$OUT/LICENSE-whisper.cpp.txt"
 ls -la "$OUT"

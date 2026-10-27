@@ -9,6 +9,8 @@
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { Readable, Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { modelPath } from "./whisper-engine.ts";
 
 export type ModelStatus = {
@@ -18,7 +20,10 @@ export type ModelStatus = {
 	error?: string;
 };
 
-export const MODEL_URL = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin";
+/** Pinned to a repository revision: a later re-upload on `main` would fail
+ *  every download's checksum. */
+export const MODEL_URL =
+	"https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-large-v3-turbo-q5_0.bin";
 export const MODEL_SIZE = 574_041_195;
 export const MODEL_SHA256 = "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2";
 
@@ -46,24 +51,17 @@ export function createModelDownloader(o: {
 		const res = await o.fetchImpl(o.url);
 		if (res.status !== 200 || !res.body) throw new Error(`Pobieranie nie powiodło się (HTTP ${res.status})`);
 		const hash = createHash("sha256");
-		const out = fs.createWriteStream(part, { flags: "w" });
-		const done = new Promise<void>((resolve, reject) => {
-			out.on("finish", resolve);
-			out.on("error", reject);
+		const count = new Transform({
+			transform(chunk: Buffer, _enc, cb) {
+				hash.update(chunk);
+				received += chunk.byteLength;
+				cb(null, chunk);
+			},
 		});
-		const reader = res.body.getReader();
-		try {
-			for (;;) {
-				const { done: end, value } = await reader.read();
-				if (end) break;
-				hash.update(value);
-				received += value.byteLength;
-				if (!out.write(value)) await new Promise<void>((r) => out.once("drain", () => r()));
-			}
-		} finally {
-			out.end();
-		}
-		await done;
+		// pipeline: backpressure plus failure from ANY stage — a full disk or
+		// a dropped connection rejects instead of waiting for a "drain" that
+		// never comes; the file is closed before the rename.
+		await pipeline(Readable.fromWeb(res.body as import("node:stream/web").ReadableStream<Uint8Array>), count, fs.createWriteStream(part, { flags: "w" }));
 		if (hash.digest("hex") !== o.sha256) throw new Error("Suma kontrolna się nie zgadza — plik jest uszkodzony, spróbuj ponownie");
 		fs.renameSync(part, o.dest);
 	}
@@ -76,7 +74,11 @@ export function createModelDownloader(o: {
 		download()
 			.catch((e: unknown) => {
 				error = e instanceof Error ? e.message : String(e);
-				fs.rmSync(part, { force: true });
+				try {
+					fs.rmSync(part, { force: true });
+				} catch {
+					// not a removable file — nothing half-written to clean up
+				}
 			})
 			.finally(() => {
 				running = false;
