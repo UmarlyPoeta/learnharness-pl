@@ -57,9 +57,11 @@ describe("bundled whisper.cpp build hygiene (final review)", () => {
 		assert.match(script, /cp "\$SRC\/LICENSE" "\$OUT\/LICENSE-whisper\.cpp\.txt"/);
 	});
 
-	it("the server payload never traces whisper sources or binaries", () => {
-		assert.match(nextConfig, /"build\/whisper-src\/\*\*"/);
-		assert.match(nextConfig, /"resources\/\*\*"/);
+	it("TypeScript never compiles the whisper.cpp tree (CMake writes compiler_depend.ts files)", () => {
+		const tsconfig = JSON.parse(readFileSync(new URL("../tsconfig.json", import.meta.url), "utf8")) as { exclude: string[] };
+		assert.ok(tsconfig.exclude.includes("build/whisper-src"));
+		assert.ok(tsconfig.exclude.includes("resources"));
+		assert.ok(!/"resources\/\*\*"/.test(nextConfig), "a resources/** trace exclude strips @anthropic-ai/sdk/resources");
 	});
 
 	it("quitting kills the server's whole process tree on Windows (no orphaned whisper-server)", () => {

@@ -64,6 +64,25 @@ describe("desktop standalone payload", () => {
 		});
 	});
 
+	it("removes the traced whisper.cpp tree and binaries, never a package's own resources/ (LearnHarness PL)", () => {
+		withPayload(({ root, write, run }) => {
+			const whisper = [path.join("build", "whisper-src", "whisper.cpp-1.9.5", "build", "x.o"), path.join("resources", "whisper", "whisper-server")];
+			for (const extra of whisper) {
+				write(extra);
+				write(path.join(STANDALONE, extra));
+			}
+			const nested = "node_modules/@anthropic-ai/sdk/resources/messages.js";
+			write(path.join(STANDALONE, nested));
+			write(path.join(STANDALONE, "build", "icon.png"));
+			const result = run();
+			assert.equal(result.status, 0, String(result.stderr));
+			assert.equal(fs.existsSync(path.join(root, STANDALONE, "build", "whisper-src")), false);
+			assert.equal(fs.existsSync(path.join(root, STANDALONE, "resources")), false);
+			assert.ok(fs.existsSync(path.join(root, STANDALONE, nested)), "a dependency's resources/ dir is runtime code");
+			for (const extra of whisper) assert.ok(fs.existsSync(path.join(root, extra)), "the real build tree is untouched");
+		});
+	});
+
 	it("accepts a clean payload and is idempotent", () => {
 		withPayload(({ run }) => {
 			for (let i = 0; i < 2; i++) {

@@ -69,7 +69,11 @@ for (const secret of ["auth.json", ...subscriptionSecrets, ".env", ".env.local"]
 // generic dist/** earlier broke pi-ai / pi-agent-core's runtime dist/.
 // Never touch ROOT/dist or ROOT/node_modules/electron (the running app
 // and the build runtime); native canvas/resvg packages stay untouched.
-for (const extra of ["dist", path.join("node_modules", "electron")]) {
+// LearnHarness PL: also the whisper.cpp source/build tree and the bundled
+// binaries (they ship once, as extraResources → <resources>/whisper). Only
+// these standalone-ROOT paths — a resources/** trace exclude would strip
+// dependencies' own resources/ dirs (@anthropic-ai/sdk/resources).
+for (const extra of ["dist", path.join("node_modules", "electron"), path.join("build", "whisper-src"), "resources"]) {
 	const target = path.join(STANDALONE, extra);
 	if (exists(target)) {
 		fs.rmSync(target, { recursive: true, force: true });

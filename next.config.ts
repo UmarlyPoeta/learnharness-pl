@@ -57,10 +57,6 @@ const nextConfig: NextConfig = {
 			"github-copilot-credentials.json*",
 			"xai-credentials.json*",
 			".env*",
-			// whisper.cpp sources/build tree and the bundled binaries — the
-			// binaries ship once, as extraResources (<resources>/whisper).
-			"build/whisper-src/**",
-			"resources/**",
 		],
 	},
 	// Empirically verified gaps (2026-09-17 standalone smoke): the tracer
