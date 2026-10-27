@@ -256,13 +256,13 @@ jobs:
       - name: Select the tag's single draft
         # Machine JSON on stdout (release id + asset ids); warnings on stderr.
         run: npx tsx scripts/verify-release.ts select "$RUNNER_TEMP/releases.json" --tag "$GITHUB_REF_NAME" > "$RUNNER_TEMP/draft.json"
-      - name: Download the three update feeds
+      - name: Download the two update feeds
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/metadata"
-          for name in latest-mac.yml latest.yml latest-linux.yml; do
+          for name in latest.yml latest-linux.yml; do
             id=$(DRAFT="$RUNNER_TEMP/draft.json" NAME="$name" node -e '
               const fs = require("node:fs");
               const draft = JSON.parse(fs.readFileSync(process.env.DRAFT, "utf8"));

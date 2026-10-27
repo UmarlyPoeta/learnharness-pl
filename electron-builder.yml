@@ -9,8 +9,8 @@
 #   - signed + notarized since 2026-10-08 (Developer ID Application cert in
 #     the login keychain; notary credentials in the LH_NOTARY keychain
 #     profile; the profile + team env vars are baked into desktop:dist).
-appId: com.learnharness.LearnHarness
-productName: LearnHarness
+appId: com.umarlypoeta.LearnHarnessPL
+productName: LearnHarness PL
 directories:
   output: dist
 # Icons (owner ruling, 2026-10-13) — per-platform sources in build/:
@@ -99,57 +99,8 @@ extraResources:
     to: server
     filter:
       - "standalone/**/*"
-mac:
-  # The backend's --require runs before Next loads. Keep this resource
-  # outside app.asar so early Node-mode loading needs no ASAR support.
-  extraResources:
-    - from: electron/server-title-guard.cjs
-      to: server-title-guard.cjs
-  icon: build/icon.icon
-  # zip rides next to dmg (flipped 2026-10-08): Squirrel.Mac — Electron's
-  # macOS auto-updater — installs from ZIP and cannot read DMGs. DMG is
-  # for humans; ZIP + blockmap are the updater's payload.
-  target:
-    - target: dmg
-      arch:
-        - arm64
-    - target: zip
-      arch:
-        - arm64
-  # Locale trim (payload wave, 2026-09-24): English-only app — cuts
-  # every non-en .lproj from the frameworks (the STT/mic entitlements
-  # don't depend on locales). Revisit only if localization ever lands.
-  electronLanguages:
-    - en
-  category: public.app-category.education
-  # Laid for the STT milestone (researcher-verified): the TCC mic prompt
-  # reads this string; macOS asks regardless of Electron's own handlers.
-  extendInfo:
-    NSMicrophoneUsageDescription: "LearnHarness uses the microphone only for speech-to-text input into your sessions."
-  hardenedRuntime: true
-  entitlements: build/entitlements.mac.plist
-  # Signing + notarization (flipped 2026-10-08): identity auto-detects the
-  # Developer ID Application certificate from the login keychain;
-  # notarize: true makes electron-builder sign → submit to Apple's notary
-  # service → staple the ticket, all inside this one build (credentials
-  # via the LH_NOTARY keychain profile, env baked into desktop:dist).
-  # Adds minutes per build (Apple's scan queue). Verification battery:
-  # codesign --verify --deep / spctl --assess / stapler validate.
-  notarize: true
-dmg:
-  title: "${productName} ${version}"
-  # Owner artwork: 540×380 at 1×; the sibling background@2x.png is
-  # combined into a Retina TIFF by dmg-builder. Centres use 1× coordinates.
-  background: build/background.png
-  iconSize: 80
-  contents:
-    - x: 130
-      y: 190
-      type: file
-    - x: 410
-      y: 190
-      type: link
-      path: /Applications
+# No macOS build in LearnHarness PL (no Apple Developer account to sign
+# and notarize) — Windows + Linux only.
 afterPack: scripts/after-pack.cjs
 win:
   icon: build/icon.ico
@@ -157,7 +108,9 @@ win:
     - target: nsis
       arch:
         - x64
-  artifactName: "${productName}-${version}-${arch}-setup.${ext}"
+  # productName has a space — artifacts spell the literal prefix
+  # (scripts/verify-release.ts derives its expected names from this).
+  artifactName: "LearnHarness-PL-${version}-${arch}-setup.${ext}"
   # Unsigned Windows release (owner ruling): preserve icon/version metadata,
   # skip signing, and do not require a publisher signature for updates.
   signExecutable: false
@@ -174,21 +127,24 @@ linux:
     - target: deb
       arch:
         - x64
-  artifactName: "${productName}-${version}-${arch}.${ext}"
+  artifactName: "LearnHarness-PL-${version}-${arch}.${ext}"
   category: Education
+  # The fork's maintainer (the original author stays credited in
+  # package.json author + README); deb requires "Name <email>".
+  maintainer: "UmarlyPoeta <145399929+UmarlyPoeta@users.noreply.github.com>"
   # Match Electron's app_id/WM_CLASS to the installed desktop launcher.
   syncDesktopName: true
   # Both targets update via electron-updater 6.8.9. AppImage replaces its
   # own file; deb uses dpkg/apt and may request administrator permission.
 publish:
-  # Update feed = GitHub Releases (decided 2026-10-08): latest-mac.yml +
-  # zip/blockmap live on releases; electron-updater reads them anonymously.
+  # Update feed = GitHub Releases of the LearnHarness PL fork: latest.yml /
+  # latest-linux.yml live on releases; electron-updater reads them anonymously.
   # REQUIRES THE REPO TO BE PUBLIC before 0.3.0 ships — anonymous downloads
   # from a private repo are impossible, and a token baked into the app
   # would be a leak. desktop:dist passes no --publish flag, so builds never
   # upload; publishing happens at release time (GH_TOKEN + --publish).
   - provider: github
-    owner: amosblomqvist
-    repo: learnharness
-    # All three CI jobs contribute assets; only the owner publishes it.
+    owner: UmarlyPoeta
+    repo: learnharness-pl
+    # Both CI jobs contribute assets; only the owner publishes it.
     releaseType: draft

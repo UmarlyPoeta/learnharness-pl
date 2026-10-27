@@ -14,7 +14,7 @@ const ui = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
 const prose = Source_Sans_3({ subsets: ["latin"], variable: "--font-sans3" });
 
 export const metadata: Metadata = {
-	title: "Learning Harness",
+	title: "LearnHarness PL",
 	description: "Agent-nauczyciel z pamięcią — sesje, sprawdziany i graf wiedzy o tym, co już wiesz.",
 };
 

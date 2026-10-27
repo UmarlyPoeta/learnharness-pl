@@ -93,10 +93,9 @@ describe("desktop packaging policy", () => {
 		await validateConfiguration(config, { isEnabled: false });
 	});
 
-	it("ships Mac arm64, Windows NSIS x64, and both Linux x64 channels", () => {
-		assert.deepEqual(config.mac.target, [
-			{ target: "dmg", arch: ["arm64"] }, { target: "zip", arch: ["arm64"] },
-		]);
+	it("ships Windows NSIS x64 and both Linux x64 channels — no macOS (LearnHarness PL)", () => {
+		assert.equal(config.mac, undefined);
+		assert.equal(config.dmg, undefined);
 		assert.deepEqual(config.win.target, [{ target: "nsis", arch: ["x64"] }]);
 		assert.equal(config.win.signExecutable, false);
 		assert.equal(config.win.verifyUpdateCodeSignature, false);
@@ -105,14 +104,17 @@ describe("desktop packaging policy", () => {
 		]);
 		assert.equal(config.linux.syncDesktopName, true);
 		assert.equal(config.publish[0].releaseType, "draft");
+		assert.equal(config.publish[0].owner, "UmarlyPoeta");
+		assert.equal(config.publish[0].repo, "learnharness-pl");
 	});
 
-	it("deb has public maintainer metadata and a matching desktop identity", () => {
+	it("deb has the fork's public maintainer, credits the original author, and a matching desktop identity", () => {
 		const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-		assert.equal(pkg.author.name, "Amos Blomqvist");
-		assert.equal(pkg.author.email, "255718537+amosblomqvist@users.noreply.github.com");
-		assert.equal(pkg.homepage, "https://github.com/amosblomqvist/learnharness");
-		assert.equal(pkg.desktopName, "learnharness.desktop");
+		assert.equal(pkg.author.name, "Amos Blomqvist", "the original author stays credited (AGPL)");
+		assert.deepEqual(pkg.contributors, ["UmarlyPoeta"]);
+		assert.equal(config.linux.maintainer, "UmarlyPoeta <145399929+UmarlyPoeta@users.noreply.github.com>");
+		assert.equal(pkg.homepage, "https://github.com/UmarlyPoeta/learnharness-pl");
+		assert.equal(pkg.desktopName, "learnharness-pl.desktop");
 	});
 });
 

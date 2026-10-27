@@ -41,14 +41,15 @@ const path = require("node:path");
 // renderer owns the number; this is the IPC widen target).
 const SIDEBAR_AUTOCLOSE = 928;
 
-const PRODUCT_NAME = "LearnHarness";
+const PRODUCT_NAME = "LearnHarness PL";
 
 // APP NAME → userData (owner, 2026-10-10): the Application Support dir is
-// exactly "LearnHarness" in dev AND packaged. Packaged Electron would
+// exactly "LearnHarness PL" in dev AND packaged — a different name from the
+// original app, so the fork never shares sessions, graph or keys with it. Packaged Electron would
 // otherwise derive it from package.json "name" (now lowercase
 // "learnharness"), and productName metadata alone doesn't reach app.name.
 // Must run before the LH_DEV_URL suffix below — dev becomes
-// "LearnHarness-dev".
+// "LearnHarness PL-dev".
 app.setName(PRODUCT_NAME);
 const AUTH_FILE = () => path.join(app.getPath("userData"), "auth.json");
 const DATA_DIR = () => path.join(app.getPath("userData"), "data");
@@ -456,11 +457,11 @@ function checkForUpdates({ manual = false } = {}) {
 			// update-downloaded. Manual checks additionally answer directly.
 			if (!manual) return;
 			const version = result?.updateInfo?.version;
-			if (!version) dialog.showMessageBox({ type: "info", message: "You're up to date.", detail: `LearnHarness ${app.getVersion()} is the latest version.` });
+			if (!version) dialog.showMessageBox({ type: "info", message: "Masz najnowszą wersję.", detail: `LearnHarness PL ${app.getVersion()} to najnowsza wersja.` });
 		})
 		.catch((err) => {
 			log(`update check failed: ${err?.message ?? err}`);
-			if (manual) dialog.showMessageBox({ type: "warning", message: "Couldn't check for updates.", detail: String(err?.message ?? err) });
+			if (manual) dialog.showMessageBox({ type: "warning", message: "Nie udało się sprawdzić aktualizacji.", detail: String(err?.message ?? err) });
 		});
 }
 
@@ -529,48 +530,48 @@ function installMenu() {
 		{
 			label: app.name,
 			submenu: [
-				{ role: "about" },
+				{ role: "about", label: "O programie LearnHarness PL" },
 				// Manual check (Wave C): answers via native dialog — no renderer
 				// round-trip. The 24h automatic checks stay silent.
-				{ label: "Check for Updates…", click: () => checkForUpdates({ manual: true }) },
+				{ label: "Sprawdź aktualizacje…", click: () => checkForUpdates({ manual: true }) },
 				{ type: "separator" },
-				{ role: "hide" },
-				{ role: "hideOthers" },
+				{ role: "hide", label: "Ukryj" },
+				{ role: "hideOthers", label: "Ukryj pozostałe" },
 				{ type: "separator" },
-				{ role: "quit" },
+				{ role: "quit", label: "Zakończ" },
 			],
 		},
-		{ label: "Edit", submenu: [{ role: "undo" }, { role: "redo" }, { type: "separator" }, { role: "cut" }, { role: "copy" }, { role: "paste" }, { role: "selectAll" }] },
+		{ label: "Edycja", submenu: [{ role: "undo", label: "Cofnij" }, { role: "redo", label: "Ponów" }, { type: "separator" }, { role: "cut", label: "Wytnij" }, { role: "copy", label: "Kopiuj" }, { role: "paste", label: "Wklej" }, { role: "selectAll", label: "Zaznacz wszystko" }] },
 		{
-			label: "View",
+			label: "Widok",
 			submenu: [
-				{ role: "reload" },
-				{ role: "toggleDevTools" },
+				{ role: "reload", label: "Odśwież" },
+				{ role: "toggleDevTools", label: "Narzędzia deweloperskie" },
 				{ type: "separator" },
 				// OWNED zoom (see applyZoom): the roles change zoomLevel
 				// silently; these broadcast the factor and re-seat the
 				// traffic lights. The renderer's --lh-zoom depends on
 				// hearing every change.
 				{
-					label: "Actual Size",
+					label: "Rzeczywisty rozmiar",
 					accelerator: "CommandOrControl+0",
 					click: () => applyZoom(BrowserWindow.getAllWindows()[0], 1),
 				},
 				{
-					label: "Zoom In",
+					label: "Powiększ",
 					accelerator: "CommandOrControl+Plus",
 					click: () => zoomStep(BrowserWindow.getAllWindows()[0], +1),
 				},
 				{
-					label: "Zoom Out",
+					label: "Pomniejsz",
 					accelerator: "CommandOrControl+-",
 					click: () => zoomStep(BrowserWindow.getAllWindows()[0], -1),
 				},
 				{ type: "separator" },
-				{ role: "togglefullscreen" },
+				{ role: "togglefullscreen", label: "Pełny ekran" },
 			],
 		},
-		{ role: "windowMenu" },
+		{ role: "windowMenu", label: "Okno" },
 	];
 	Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

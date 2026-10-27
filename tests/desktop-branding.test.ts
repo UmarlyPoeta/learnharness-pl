@@ -1,0 +1,25 @@
+/**
+ * LearnHarness PL's desktop identity (release wave, 2026-10-27): the app
+ * name decides the userData directory, so the fork must never share data
+ * with the original LearnHarness install; the shell's own copy is Polish.
+ */
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, it } from "node:test";
+
+const main = readFileSync(new URL("../electron/main.cjs", import.meta.url), "utf8");
+
+describe("desktop branding", () => {
+	it("the app name — and with it userData — is LearnHarness PL", () => {
+		assert.match(main, /^const PRODUCT_NAME = "LearnHarness PL";$/m);
+	});
+
+	it("menus and update dialogs are Polish", () => {
+		for (const english of ["Check for Updates…", "You're up to date.", "Couldn't check for updates.", '"Edit"', '"View"', "Actual Size", "Zoom In", "Zoom Out"]) {
+			assert.ok(!main.includes(english), `English copy left: ${english}`);
+		}
+		for (const polish of ["Sprawdź aktualizacje…", "Masz najnowszą wersję.", "Edycja", "Widok", "Rzeczywisty rozmiar", "Powiększ", "Pomniejsz"]) {
+			assert.ok(main.includes(polish), `missing: ${polish}`);
+		}
+	});
+});

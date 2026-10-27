@@ -132,24 +132,20 @@ describe("backend-only preload wiring and packaging", () => {
 		});
 	}
 
-	it("electron-builder copies the guard outside ASAR only on macOS, retaining shared resources", async () => {
+	it("Windows/Linux packaging keeps the shared server payload and ships no macOS-only guard (LearnHarness PL has no mac build)", async () => {
 		const yaml = require("js-yaml");
 		const config = yaml.load(readFileSync(path.join(root, "electron-builder.yml"), "utf8"));
-		const { getFileMatchers, copyFiles } = require("app-builder-lib/out/fileMatcher.js");
+		assert.equal(config.mac, undefined);
+		const { getFileMatchers } = require("app-builder-lib/out/fileMatcher.js");
 		const destination = mkdtempSync(path.join(tmpdir(), "lh-title-resource-"));
 		try {
-			for (const platform of ["mac", "win", "linux"]) {
+			for (const platform of ["win", "linux"]) {
 				const matchers = getFileMatchers(config, "extraResources", destination, {
 					defaultSrc: root, customBuildOptions: config[platform], macroExpander: (value: string) => value,
 					globalOutDir: path.join(root, "dist"),
 				});
 				assert.ok(matchers.some((matcher: { to: string }) => matcher.to === path.join(destination, "server")), "shared standalone payload remains included");
-				const guards = matchers.filter((matcher: { to: string }) => matcher.to === path.join(destination, "server-title-guard.cjs"));
-				assert.equal(guards.length, platform === "mac" ? 1 : 0);
-				if (platform === "mac") {
-					await copyFiles(guards, null, false);
-					assert.equal(readFileSync(path.join(destination, "server-title-guard.cjs"), "utf8"), guardSource);
-				}
+				assert.equal(matchers.filter((matcher: { to: string }) => matcher.to === path.join(destination, "server-title-guard.cjs")).length, 0);
 			}
 		} finally {
 			rmSync(destination, { recursive: true, force: true });

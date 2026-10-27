@@ -6,7 +6,7 @@ import { ConnectionDialog, ConnectionFooter, ConnectionRow } from "./connection-
 import { Button } from "@/components/ui/button";
 import { Toggle } from "./controls";
 
-export const CHATGPT_NOTICE = "LearnHarness przechowuje dane twojego konta ChatGPT i poświadczenia w niezaszyfrowanym pliku lokalnym na tym urządzeniu. Gdy to połączenie jest używane, odpowiedni kontekst rozmowy, materiały do nauki i wyniki narzędzi są wysyłane bezpośrednio do OpenAI. Obowiązują limity planu ChatGPT; dodatkowe kredyty autoryzujesz i zarządzasz nimi w ChatGPT, nie w LearnHarness.";
+export const CHATGPT_NOTICE = "LearnHarness PL przechowuje dane twojego konta ChatGPT i poświadczenia w niezaszyfrowanym pliku lokalnym na tym urządzeniu. Gdy to połączenie jest używane, odpowiedni kontekst rozmowy, materiały do nauki i wyniki narzędzi są wysyłane bezpośrednio do OpenAI. Obowiązują limity planu ChatGPT; dodatkowe kredyty autoryzujesz i zarządzasz nimi w ChatGPT, nie w LearnHarness PL.";
 export const CHATGPT_BACKGROUND_HINT = "Praca w tle wlicza się do zużycia twojego planu ChatGPT.";
 const BACKGROUND_LABEL = "Zezwól na użycie w tle dla wszystkich kont ChatGPT";
 const REVOCATION_WARNING = "Konto odłączone lokalnie. Nie udało się potwierdzić unieważnienia po stronie serwera.";

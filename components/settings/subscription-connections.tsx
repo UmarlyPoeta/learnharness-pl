@@ -8,9 +8,9 @@ import { ChatGPTConnection } from "./chatgpt-connection";
 import { Toggle } from "./controls";
 
 export const COPILOT_POLICY_NOTICE = "Natywne logowanie Copilot w Pi może włączyć dodatkowe modele, których polityka nie jest jeszcze skonfigurowana. Modele jawnie wyłączone przez politykę nie zostaną włączone. Ograniczenia organizacji nadal obowiązują.";
-export const SUBSCRIPTION_BACKGROUND_HINT = "Pozwól agentom pomocniczym LearnHarness i automatycznym kontynuacjom korzystać z tego połączenia.";
+export const SUBSCRIPTION_BACKGROUND_HINT = "Pozwól agentom pomocniczym LearnHarness PL i automatycznym kontynuacjom korzystać z tego połączenia.";
 export function subscriptionNotice(label: string): string { return `Twoje prompty, wyniki narzędzi i odpowiedni kontekst sesji są wysyłane do ${label}, aby wykonać wybraną pracę. Poświadczenia są przechowywane lokalnie w pliku tekstowym dostępnym tylko dla właściciela. Obowiązują warunki dostawcy, zasady wykorzystania danych i limity planu. To połączenie nigdy nie przełącza się na klucz API.`; }
-export function subscriptionDisconnectCopy(label: string): string { return `Odłączyć ${label} od LearnHarness? To zatrzyma pracę korzystającą z tego połączenia i usunie zapisane poświadczenia z tego urządzenia. Nie anuluje subskrypcji ani nie unieważnia dostępu u dostawcy. Zapisane wybory modeli pozostaną niedostępne, dopóki nie połączysz się ponownie lub ich nie zmienisz.`; }
+export function subscriptionDisconnectCopy(label: string): string { return `Odłączyć ${label} od LearnHarness PL? To zatrzyma pracę korzystającą z tego połączenia i usunie zapisane poświadczenia z tego urządzenia. Nie anuluje subskrypcji ani nie unieważnia dostępu u dostawcy. Zapisane wybory modeli pozostaną niedostępne, dopóki nie połączysz się ponownie lub ich nie zmienisz.`; }
 export function emptySubscriptionStatus(providerId: NativeSubscriptionProviderId): NativeSubscriptionStatus { return { providerId, available: false, connected: false, pending: false, allowBackgroundUse: true, connectionId: null, epoch: 0, authorityRevision: 0, revision: 0 }; }
 const Context = createContext({ statuses: [] as NativeSubscriptionStatus[], busy: false, open: (_providerId: NativeSubscriptionProviderId) => {} });
 const CONTROL_ERROR = "Nie udało się zmienić połączenia. Spróbuj ponownie.";

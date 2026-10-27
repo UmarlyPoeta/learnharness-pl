@@ -20,7 +20,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const svg = readFileSync(path.join(root, "build", "icon-flat.svg"), "utf8");
+// LearnHarness PL: the original artwork plus a red "PL" badge in the
+// bottom-right corner (sized to stay legible at 32 px).
+const PL_BADGE =
+	'<rect x="560" y="600" width="430" height="330" rx="80" fill="#dc2626"/>' +
+	'<text x="775" y="845" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="700" font-size="250" fill="#ffffff">PL</text>';
+const svg = readFileSync(path.join(root, "build", "icon-flat.svg"), "utf8").replace("</svg>", `${PL_BADGE}</svg>`);
 
 const render = (size) => new Resvg(svg, { fitTo: { mode: "width", value: size } }).render(size, size).asPng();
 

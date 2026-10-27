@@ -1,14 +1,17 @@
 {
-	"name": "learnharness",
-	"version": "0.3.7",
+	"name": "learnharness-pl",
+	"version": "1.0.0",
 	"license": "AGPL-3.0-only",
 	"author": {
 		"name": "Amos Blomqvist",
 		"email": "255718537+amosblomqvist@users.noreply.github.com"
 	},
-	"homepage": "https://github.com/amosblomqvist/learnharness",
-	"desktopName": "learnharness.desktop",
-	"description": "An agent harness for learning: adaptive teaching, practice, and a persistent knowledge graph.",
+	"contributors": [
+		"UmarlyPoeta"
+	],
+	"homepage": "https://github.com/UmarlyPoeta/learnharness-pl",
+	"desktopName": "learnharness-pl.desktop",
+	"description": "Polska wersja LearnHarness: uprząż agentowa do nauki — adaptacyjne nauczanie, ćwiczenia i trwały graf wiedzy.",
 	"type": "module",
 	"private": true,
 	"main": "electron/main.cjs",
@@ -20,8 +23,7 @@
 		"lint": "eslint .",
 		"typecheck": "tsc --noEmit",
 		"desktop:dev": "concurrently -k \"next dev\" \"LH_DEV_URL=http://localhost:3000 electron .\"",
-		"dev:fresh": "bash scripts/dev-fresh.sh",
-		"desktop:dist": "rm -rf dist .next/standalone && next build && node scripts/smoke-provider-runtime.mjs && node scripts/build-server.mjs && node scripts/smoke-server.mjs && DEVELOPER_DIR=${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer} APPLE_KEYCHAIN_PROFILE=LH_NOTARY APPLE_TEAM_ID=JS6XN22HY6 electron-builder --mac --arm64"
+		"dev:fresh": "bash scripts/dev-fresh.sh"
 	},
 	"dependencies": {
 		"@earendil-works/pi-agent-core": "1.4.0",

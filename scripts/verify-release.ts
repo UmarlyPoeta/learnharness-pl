@@ -1,7 +1,7 @@
 /**
  * verify-release.ts — the final desktop-release gate (2026-10-13).
  *
- * Runs in the release workflow's LAST job, after all three packaging jobs
+ * Runs in the release workflow's LAST job, after both packaging jobs
  * have uploaded to the tag's single draft GitHub Release, and fails the
  * workflow unless that draft holds exactly what end users and
  * electron-updater need. The workflow never publishes; this script only
@@ -12,22 +12,17 @@
  * builder (app-builder-lib 26.15.3) — these are the artifacts it actually
  * emits for this repo's electron-builder.yml, not pattern guesses:
  *
- *   mac (dmg + zip, arm64; no user artifactName there):
- *     dmg    LearnHarness-<v>-arm64.dmg       + .blockmap (createBlockmap)
- *     zip    LearnHarness-<v>-arm64-mac.zip   + .blockmap (createBlockmap;
- *            Squirrel.Mac updates from the ZIP — it IS the updater payload)
- *     feed   latest-mac.yml — files[0] is the ZIP (writeUpdateInfoFiles
- *            sorts zip first) and the legacy top-level path/sha512 point
- *            at it.
- *   win (nsis x64; artifactName "${productName}-${version}-${arch}-setup.${ext}"):
- *     exe    LearnHarness-<v>-x64-setup.exe   + .blockmap (createBlockmap)
+ *   LearnHarness PL ships no macOS build. productName "LearnHarness PL"
+ *   has a space, so both artifactNames spell the literal "LearnHarness-PL".
+ *   win (nsis x64; artifactName "LearnHarness-PL-${version}-${arch}-setup.${ext}"):
+ *     exe    LearnHarness-PL-<v>-x64-setup.exe   + .blockmap (createBlockmap)
  *     feed   latest.yml — a single file entry, the exe.
- *   linux (AppImage + deb, x64; artifactName "${productName}-${version}-${arch}.${ext}"
+ *   linux (AppImage + deb, x64; artifactName "LearnHarness-PL-${version}-${arch}.${ext}"
  *            is user-forced at the linux level, so it overrides BOTH targets'
  *            default name formats, and ${arch} expands per target ext:
  *            x64→x86_64 for AppImage, x64→amd64 for deb):
- *     image  LearnHarness-<v>-x86_64.AppImage (no blockmap in 26.15.3)
- *     deb    LearnHarness-<v>-amd64.deb       (no blockmap)
+ *     image  LearnHarness-PL-<v>-x86_64.AppImage (no blockmap in 26.15.3)
+ *     deb    LearnHarness-PL-<v>-amd64.deb       (no blockmap)
  *     feed   latest-linux.yml — the AppImage and deb entries merged by
  *            writeUpdateInfoFiles (order not deterministic; checked as a set).
  *
@@ -63,8 +58,8 @@
  *   - update feeds that do not parse, carry the wrong version, reference
  *     a path/URL instead of a bare asset name (traversal / untrusted
  *     origin), reference an asset the release does not hold, disagree
- *     with the API-reported asset size, lack/misplace entries (mac ZIP
- *     must be first and back the legacy path/sha512), or carry an
+ *     with the API-reported asset size, lack entries (the legacy top-level
+ *     path/sha512 must be backed by files[0]), or carry an
  *     implausible sha512.
  */
 import * as fs from "node:fs";
@@ -87,10 +82,10 @@ export type DraftSelection =
 	| { ok: true; release: ReleaseRecord; warnings: string[] }
 	| Failures;
 
-/** The full expected asset inventory for one version (11 files). */
+/** The full expected asset inventory for one version (6 files — LearnHarness
+ *  PL ships Windows + Linux only). */
 export type ExpectedAssets = {
 	version: string;
-	mac: { dmg: string; zip: string; feed: string };
 	win: { exe: string; feed: string };
 	linux: { appImage: string; deb: string; feed: string };
 	/** Every asset name the draft must hold, and no others. */
@@ -104,8 +99,12 @@ type Issues = Issue[];
 // Version + expected assets
 // ---------------------------------------------------------------------------
 
-/** Verified product name spelled into every artifact (electron-builder.yml productName). */
-const PRODUCT_NAME = "LearnHarness";
+/** electron-builder.yml productName — has a space, so artifacts spell the
+ *  literal ARTIFACT_PREFIX instead of ${productName}. */
+const PRODUCT_NAME = "LearnHarness PL";
+const ARTIFACT_PREFIX = "LearnHarness-PL";
+const PUBLISH_OWNER = "UmarlyPoeta";
+const PUBLISH_REPO = "learnharness-pl";
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
 
@@ -118,29 +117,22 @@ export function checkVersion(version: unknown): { ok: true; version: string } | 
 
 /** The exact asset set the installed builder emits for this repo's config. */
 export function expectedAssets(version: string): ExpectedAssets {
-	const mac = {
-		dmg: `${PRODUCT_NAME}-${version}-arm64.dmg`,
-		zip: `${PRODUCT_NAME}-${version}-arm64-mac.zip`,
-		feed: "latest-mac.yml",
-	};
 	const win = {
-		exe: `${PRODUCT_NAME}-${version}-x64-setup.exe`,
+		exe: `${ARTIFACT_PREFIX}-${version}-x64-setup.exe`,
 		feed: "latest.yml",
 	};
 	const linux = {
-		appImage: `${PRODUCT_NAME}-${version}-x86_64.AppImage`,
-		deb: `${PRODUCT_NAME}-${version}-amd64.deb`,
+		appImage: `${ARTIFACT_PREFIX}-${version}-x86_64.AppImage`,
+		deb: `${ARTIFACT_PREFIX}-${version}-amd64.deb`,
 		feed: "latest-linux.yml",
 	};
-	// Sidecar differential-update blockmaps: emitted for dmg, mac zip and
-	// NSIS exe (createBlockmap); AppImage/deb have none in app-builder-lib 26.15.3.
-	const blockmaps = [mac.dmg, mac.zip, win.exe].map((name) => `${name}.blockmap`);
+	// Sidecar differential-update blockmap: emitted for the NSIS exe
+	// (createBlockmap); AppImage/deb have none in app-builder-lib 26.15.3.
 	return {
 		version,
-		mac,
 		win,
 		linux,
-		files: [mac.dmg, mac.zip, win.exe, linux.appImage, linux.deb, ...blockmaps, mac.feed, win.feed, linux.feed],
+		files: [win.exe, linux.appImage, linux.deb, `${win.exe}.blockmap`, win.feed, linux.feed],
 	};
 }
 
@@ -259,7 +251,7 @@ export function verifyConfigAssumptions(config: unknown, pkg: unknown): { ok: tr
 	const errors: Issues = [];
 	const bad = (message: string) => errors.push(message);
 	if (!isPlainObject(pkg) || typeof pkg.version !== "string") bad("package.json has no string version");
-	if (!isPlainObject(pkg) || pkg.name !== "learnharness") bad("package.json name is no longer \"learnharness\"");
+	if (!isPlainObject(pkg) || pkg.name !== "learnharness-pl") bad("package.json name is no longer \"learnharness-pl\"");
 	if (!isPlainObject(config)) {
 		return { ok: false, errors: ["electron-builder.yml did not parse to a mapping", ...errors] };
 	}
@@ -267,16 +259,10 @@ export function verifyConfigAssumptions(config: unknown, pkg: unknown): { ok: tr
 	if (config.artifactName != null) bad("a top-level artifactName now overrides target defaults — expected names no longer hold");
 	const sameTargets = (actual: unknown, expected: Array<Record<string, unknown>>) =>
 		JSON.stringify(actual) === JSON.stringify(expected);
-	if (!isPlainObject(config.mac)) bad("mac section missing");
-	else {
-		if (config.mac.artifactName != null) bad("mac.artifactName set — expected names no longer hold");
-		if (!sameTargets(config.mac.target, [{ target: "dmg", arch: ["arm64"] }, { target: "zip", arch: ["arm64"] }])) {
-			bad(`mac.target changed (${JSON.stringify(config.mac.target)}) — expected names no longer hold`);
-		}
-	}
+	if (config.mac != null || config.dmg != null) bad("a mac section is configured — LearnHarness PL ships no macOS build");
 	if (!isPlainObject(config.win)) bad("win section missing");
 	else {
-		if (config.win.artifactName !== "${productName}-${version}-${arch}-setup.${ext}") {
+		if (config.win.artifactName !== `${ARTIFACT_PREFIX}-\${version}-\${arch}-setup.\${ext}`) {
 			bad(`win.artifactName changed (${JSON.stringify(config.win.artifactName)}) — expected names no longer hold`);
 		}
 		if (!sameTargets(config.win.target, [{ target: "nsis", arch: ["x64"] }])) {
@@ -285,7 +271,7 @@ export function verifyConfigAssumptions(config: unknown, pkg: unknown): { ok: tr
 	}
 	if (!isPlainObject(config.linux)) bad("linux section missing");
 	else {
-		if (config.linux.artifactName !== "${productName}-${version}-${arch}.${ext}") {
+		if (config.linux.artifactName !== `${ARTIFACT_PREFIX}-\${version}-\${arch}.\${ext}`) {
 			bad(`linux.artifactName changed (${JSON.stringify(config.linux.artifactName)}) — expected names no longer hold`);
 		}
 		if (!sameTargets(config.linux.target, [{ target: "AppImage", arch: ["x64"] }, { target: "deb", arch: ["x64"] }])) {
@@ -295,6 +281,8 @@ export function verifyConfigAssumptions(config: unknown, pkg: unknown): { ok: tr
 	const publish = Array.isArray(config.publish) ? config.publish[0] : undefined;
 	if (!isPlainObject(publish) || publish.provider !== "github" || publish.releaseType !== "draft") {
 		bad(`publish[0] must be the github provider with releaseType "draft" (${JSON.stringify(config.publish)}) — uploads would not land in the draft`);
+	} else if (publish.owner !== PUBLISH_OWNER || publish.repo !== PUBLISH_REPO) {
+		bad(`publish must target ${PUBLISH_OWNER}/${PUBLISH_REPO} (${JSON.stringify(publish)}) — updates would come from another repository`);
 	}
 	if (errors.length > 0) {
 		errors.push("packaging config drifted from the verified shapes — re-derive the expected assets in scripts/verify-release.ts");
@@ -335,13 +323,12 @@ type FeedExpectation = {
 	file: string;
 	/** Every files[].url the feed must reference — exactly these, no more. */
 	urls: string[];
-	/** If set, files[0].url must be this entry (mac: the updater ZIP). */
+	/** If set, files[0].url must be this entry. */
 	first?: string;
 };
 
 export function feedExpectations(expected: ExpectedAssets): FeedExpectation[] {
 	return [
-		{ file: expected.mac.feed, urls: [expected.mac.zip, expected.mac.dmg], first: expected.mac.zip },
 		{ file: expected.win.feed, urls: [expected.win.exe] },
 		{ file: expected.linux.feed, urls: [expected.linux.appImage, expected.linux.deb] },
 	];
@@ -590,7 +577,7 @@ function main(argv: string[]): number {
 	const assets = verifyAssets(selection.release, expected);
 	if (!assets.ok) errors.push(...assets.errors);
 	const files: Record<string, string> = {};
-	for (const name of [expected.mac.feed, expected.win.feed, expected.linux.feed]) {
+	for (const name of [expected.win.feed, expected.linux.feed]) {
 		try {
 			files[name] = fs.readFileSync(path.join(metadataDir, name), "utf8");
 		} catch {
@@ -602,7 +589,7 @@ function main(argv: string[]): number {
 	if (errors.length > 0) return fail(errors);
 	const present = expected.files.filter((name) => selection.release.assets.some((asset) => asset.name === name));
 	console.log(`assets: ${present.length}/${expected.files.length} expected files present, non-zero size, and "uploaded"`);
-	console.log(`feeds: ${expected.mac.feed}, ${expected.win.feed}, ${expected.linux.feed} parse, carry version ${start.version}, and reference only uploaded assets by exact name`);
+	console.log(`feeds: ${expected.win.feed}, ${expected.linux.feed} parse, carry version ${start.version}, and reference only uploaded assets by exact name`);
 	console.log(`OK: draft for ${start.tag} is complete and consistent — ready for the owner to review and publish.`);
 	return 0;
 }
