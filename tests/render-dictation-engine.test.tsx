@@ -37,3 +37,30 @@ describe("DictationEngineRow", () => {
 		assert.ok(!render({ engine: "deepgram", status: { ok: false } }).includes('data-testid="dictation-engine-status"'));
 	});
 });
+
+describe("DictationEngineRow — the bundled whisper.cpp model (desktop app)", () => {
+	const desktop = (model: "missing" | "downloading" | "ready" | "error") => ({ ok: true, backend: "whispercpp" as const, model, device: null });
+
+	it("missing model: one-click download button", () => {
+		const html = render({ status: desktop("missing") });
+		assert.match(html, /data-testid="stt-model-download"[^>]*>Pobierz model \(ok\. 550 MB\)</);
+	});
+
+	it("downloading: progress in MB", () => {
+		const html = render({ status: desktop("downloading"), download: { received: 104857600, total: 574041195 } });
+		assert.match(html, /data-testid="stt-model-progress"[^>]*>Pobieranie: 100 \/ 547 MB</);
+		assert.ok(!html.includes('data-testid="stt-model-download"'));
+	});
+
+	it("error: the message and a retry", () => {
+		const html = render({ status: desktop("error"), download: { received: 0, total: 574041195, error: "Pobieranie nie powiodło się (HTTP 404)" } });
+		assert.match(html, /Pobieranie nie powiodło się \(HTTP 404\)/);
+		assert.match(html, /data-testid="stt-model-download"[^>]*>Spróbuj ponownie</);
+	});
+
+	it("ready: the usual status line, no download affordance", () => {
+		const html = render({ status: desktop("ready") });
+		assert.match(html, /data-testid="dictation-engine-status"[^>]*>działa · —</);
+		assert.ok(!html.includes("stt-model-"));
+	});
+});

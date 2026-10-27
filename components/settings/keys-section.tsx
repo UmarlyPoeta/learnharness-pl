@@ -315,8 +315,20 @@ function AddProviderRow({
 	);
 }
 
-/** The local server's health as /api/stt/local reports it; null = not known yet. */
-export type LocalSttStatus = { ok: boolean; device?: string | null } | null;
+/** The local engine's health as /api/stt/local reports it; null = not known yet.
+ *  backend "whispercpp" = the installed app's bundled engine, whose model is
+ *  downloaded from Settings; "python" = the dev server (always has its model). */
+export type LocalSttStatus = {
+	ok: boolean;
+	device?: string | null;
+	backend?: "whispercpp" | "python";
+	model?: "missing" | "downloading" | "ready" | "error";
+} | null;
+
+/** /api/stt/model's progress, shown while the model downloads. */
+export type ModelDownload = { received: number; total: number; error?: string } | null;
+
+const mb = (bytes: number) => Math.floor(bytes / 1048576);
 
 /** The Dyktowanie group's lead row (local Whisper wave, 2026-10-26): the
  *  engine pick, plus the local server's status while it is the engine. */
@@ -324,16 +336,43 @@ export function DictationEngineRow({
 	engine,
 	status,
 	onChange,
+	download = null,
+	onDownload = () => {},
 }: {
 	engine: DictationEngine;
 	status: LocalSttStatus;
 	onChange: (engine: DictationEngine) => void;
+	download?: ModelDownload;
+	onDownload?: () => void;
 }) {
 	const line = status === null ? "sprawdzanie…" : status.ok ? `działa · ${status.device ?? "—"}` : "nie działa — uruchom learn";
+	const model = engine === "local" && status?.backend === "whispercpp" ? status.model : undefined;
+	const button = (label: string) => (
+		<button
+			type="button"
+			data-testid="stt-model-download"
+			onClick={onDownload}
+			className="rounded-sm border border-border px-2 py-1 font-ui text-xs text-foreground transition-colors hover:bg-accent"
+		>
+			{label}
+		</button>
+	);
 	return (
 		<SettingsRow label="Silnik dyktowania" testid="row-dictation-engine">
 			<span className="flex items-center gap-2">
-				{engine === "local" && (
+				{model === "missing" && button("Pobierz model (ok. 550 MB)")}
+				{model === "downloading" && (
+					<span data-testid="stt-model-progress" className="font-ui text-xs tabular-nums text-muted-foreground">
+						{`Pobieranie: ${mb(download?.received ?? 0)} / ${mb(download?.total ?? 0)} MB`}
+					</span>
+				)}
+				{model === "error" && (
+					<>
+						<span className="font-ui text-xs text-red-400">{download?.error ?? "Pobieranie nie powiodło się"}</span>
+						{button("Spróbuj ponownie")}
+					</>
+				)}
+				{engine === "local" && (model === undefined || model === "ready") && (
 					<span data-testid="dictation-engine-status" className="font-ui text-xs text-muted-foreground">{line}</span>
 				)}
 				<ThinSelect value={engine} ariaLabel="dictation engine" testid="dictation-engine" onChange={(v) => onChange(v as DictationEngine)}>
@@ -345,10 +384,18 @@ export function DictationEngineRow({
 	);
 }
 
-/** The engine pick + local status, read and written through the settings record. */
-function useDictationEngine(): { engine: DictationEngine; status: LocalSttStatus; setEngine: (e: DictationEngine) => void } {
+/** The engine pick + local status, read and written through the settings
+ *  record; while the desktop model downloads, /api/stt/model is polled. */
+function useDictationEngine(): {
+	engine: DictationEngine;
+	status: LocalSttStatus;
+	setEngine: (e: DictationEngine) => void;
+	download: ModelDownload;
+	startDownload: () => void;
+} {
 	const [engine, setEngineState] = useState<DictationEngine>("local");
 	const [status, setStatus] = useState<LocalSttStatus>(null);
+	const [download, setDownload] = useState<ModelDownload>(null);
 	useEffect(() => {
 		fetch("/api/settings")
 			.then((r) => r.json())
@@ -360,9 +407,33 @@ function useDictationEngine(): { engine: DictationEngine; status: LocalSttStatus
 		setStatus(null);
 		fetch("/api/stt/local")
 			.then((r) => r.json())
-			.then((data: { ok?: boolean; device?: string | null }) => setStatus({ ok: data.ok === true, device: data.device }))
+			.then((data: NonNullable<LocalSttStatus>) => setStatus({ ok: data.ok === true, device: data.device, backend: data.backend, model: data.model }))
 			.catch(() => setStatus({ ok: false }));
 	}, [engine]);
+	// Poll the download while it runs; the final state lands in `status`.
+	const downloading = status?.model === "downloading";
+	useEffect(() => {
+		if (!downloading) return;
+		const id = setInterval(() => {
+			fetch("/api/stt/model")
+				.then((r) => r.json())
+				.then((s: { state: NonNullable<LocalSttStatus>["model"]; received: number; total: number; error?: string }) => {
+					setDownload({ received: s.received, total: s.total, error: s.error });
+					if (s.state !== "downloading") setStatus((cur) => (cur ? { ...cur, model: s.state } : cur));
+				})
+				.catch(() => {});
+		}, 1000);
+		return () => clearInterval(id);
+	}, [downloading]);
+	const startDownload = () => {
+		void fetch("/api/stt/model", { method: "POST" })
+			.then((r) => r.json())
+			.then((s: { state?: NonNullable<LocalSttStatus>["model"]; received?: number; total?: number }) => {
+				setDownload({ received: s.received ?? 0, total: s.total ?? 0 });
+				setStatus((cur) => (cur ? { ...cur, model: "downloading" } : cur));
+			})
+			.catch(() => {});
+	};
 	const setEngine = (next: DictationEngine) => {
 		setEngineState(next);
 		void fetch("/api/settings/dictation", {
@@ -373,7 +444,7 @@ function useDictationEngine(): { engine: DictationEngine; status: LocalSttStatus
 			if (res.ok) notifySettingsSaved("dictation");
 		});
 	};
-	return { engine, status, setEngine };
+	return { engine, status, setEngine, download, startDownload };
 }
 
 export function KeysSection({
@@ -522,7 +593,7 @@ export function KeysSection({
 			</SettingsGroup>
 
 			{(["Dictation", "Search"] as const).map((label) => <SettingsGroup key={label} label={label === "Dictation" ? "Dyktowanie" : "Wyszukiwanie"} testid={label === "Dictation" ? "group-dictation" : "group-search"}>
-				{label === "Dictation" && <DictationEngineRow engine={dictation.engine} status={dictation.status} onChange={dictation.setEngine} />}
+				{label === "Dictation" && <DictationEngineRow engine={dictation.engine} status={dictation.status} onChange={dictation.setEngine} download={dictation.download} onDownload={dictation.startDownload} />}
 				{toolRows.filter((status) => label === "Dictation" ? status.id === "DEEPGRAM_API_KEY" : status.id !== "DEEPGRAM_API_KEY").map((status) => (
 					<KeyTableRow
 						key={status.id}

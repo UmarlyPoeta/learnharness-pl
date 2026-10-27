@@ -128,6 +128,9 @@ export const LOCAL_STT_DOWN = "Lokalny Whisper nie działa — uruchom learn";
 /** The line for a transcription that outlived the route's wait (its 504). */
 export const LOCAL_STT_SLOW = "Przepisywanie trwa za długo — spróbuj krótszego nagrania";
 
+/** The installed app has no model yet (the route's 409) — the click opens Settings. */
+export const LOCAL_STT_NO_MODEL = "Pobierz model dyktowania w Ustawieniach";
+
 /** 10 minutes of 16 kHz Int16 mono — the server's cap; the run auto-stops at it. */
 export const MAX_LOCAL_BYTES = 19_200_000;
 
@@ -161,6 +164,7 @@ export async function transcribeLocal(frames: PcmFrame[], fetchImpl: typeof fetc
 	const data = (await res.json().catch(() => ({}))) as { text?: string; message?: string };
 	if (res.status === 503) throw new Error(LOCAL_STT_DOWN);
 	if (res.status === 504) throw new Error(LOCAL_STT_SLOW);
+	if (res.status === 409) throw new Error(LOCAL_STT_NO_MODEL);
 	if (!res.ok) throw new Error(data.message ?? "transkrypcja nie powiodła się");
 	return (data.text ?? "").trim();
 }
@@ -800,6 +804,9 @@ export function DictationBar({ dictation }: { dictation: Dictation }) {
 						if (keyless) {
 							clearError();
 							openSettings("keys", DEEPGRAM_KEY_ID);
+						} else if (error === LOCAL_STT_NO_MODEL) {
+							clearError();
+							openSettings("keys");
 						} else {
 							toggle();
 						}

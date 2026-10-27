@@ -6,7 +6,7 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { concatFrames, DG_URL, LOCAL_STT_DOWN, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
+import { concatFrames, DG_URL, LOCAL_STT_DOWN, LOCAL_STT_NO_MODEL, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
 
 type Call = { url: string; init?: RequestInit };
 
@@ -71,6 +71,12 @@ describe("transcribeLocal", () => {
 		const f = fakeFetch(() => Response.json({ text: "" }));
 		await transcribeLocal([new ArrayBuffer(MAX_LOCAL_BYTES), new ArrayBuffer(4096)], f.fetch);
 		assert.equal((f.calls[0]!.init?.body as Uint8Array).byteLength, MAX_LOCAL_BYTES);
+	});
+
+	it("no model downloaded yet points to Settings (desktop app)", async () => {
+		const f = fakeFetch(() => Response.json({ message: "stt-no-model" }, { status: 409 }));
+		await assert.rejects(transcribeLocal([frame(1)], f.fetch), { message: LOCAL_STT_NO_MODEL });
+		assert.equal(LOCAL_STT_NO_MODEL, "Pobierz model dyktowania w Ustawieniach");
 	});
 
 	it("another server failure keeps its message", async () => {
