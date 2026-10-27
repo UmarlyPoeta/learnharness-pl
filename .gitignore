@@ -16,3 +16,7 @@ auth.json
 
 # dev-fresh launcher scratch (fresh-user sim): disposable per launch
 .fresh-data/
+
+# whisper.cpp build tree and the bundled server (scripts/build-whisper.sh)
+build/whisper-src/
+resources/whisper/

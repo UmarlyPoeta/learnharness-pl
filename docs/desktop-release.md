@@ -1,18 +1,17 @@
 # Desktop builds and releases
 
-## Platforms
+## Platforms (LearnHarness PL)
 
 | Platform | Build runner | Packages | In-app update |
 |---|---|---|---|
-| macOS, Apple Silicon | `macos-26` (arm64) | signed/notarized DMG + ZIP | ZIP via Squirrel.Mac |
 | Windows, x64 | `windows-2025` | unsigned per-user NSIS installer | NSIS |
 | Linux, x64 | `ubuntu-24.04` | AppImage + `.deb` | AppImage replacement; `.deb` through dpkg/apt with elevation if needed |
 
-Windows signing is deliberately disabled for this first release. SmartScreen may warn about an unknown publisher on initial installation. AppImage is the primary Linux download because it is self-contained and updates without administrator permission. The installed `electron-updater` 6.8.9 also supports `.deb` updates; an update may request an administrator password. Both use the same download/restart banner.
+No macOS build: there is no Apple Developer account to sign and notarize it. Windows signing stays disabled; SmartScreen warns about an unknown publisher on first install (the README tells users "Więcej informacji → Uruchom mimo to"). The update feed is `UmarlyPoeta/learnharness-pl` releases. App identity: `appId com.umarlypoeta.LearnHarnessPL`, `productName LearnHarness PL` (its own userData directory — it never shares data with the original LearnHarness), artifacts `LearnHarness-PL-<version>-…`, Linux desktop identity `learnharness-pl.desktop`. Icons: `node scripts/make-icons.mjs` renders `build/icon.ico`/`build/icon.png` from `build/icon-flat.svg` plus the red "PL" badge.
 
-The custom app bar stays on all three platforms. macOS keeps its left-side traffic lights; Windows/Linux use Electron's native right-side Window Controls Overlay, with CSS space reserved from the overlay's actual geometry. Windows/Linux hide the native menu until Alt is pressed. macOS keeps its system menu.
+### Local dictation (whisper.cpp)
 
-Icons are per-platform (2026-10-13): macOS compiles the Icon Composer document `build/icon.icon` via actool into `Assets.car` (macOS 26 Liquid Glass) plus a fallback icns that `scripts/after-pack.cjs` replaces with the hand-packed full-res `build/icon.icns` (actool's caps at 256px); Windows embeds `build/icon.ico` and Linux uses `build/icon.png`, both generated from the flat design (`build/icon-flat.svg`) by `node scripts/make-icons.mjs`. Building the mac icon needs **macOS 26+ and Xcode 26+** (`actool`): Xcode 26's asset compiler crashes on macOS 15 because its host frameworks lack required symbols. `desktop:dist` injects `DEVELOPER_DIR` locally; release packaging uses `macos-26` and selects Xcode via setup-xcode. The older-OS fallback icon remains included. Linux's desktop identity is `learnharness.desktop`. Public package-maintainer metadata uses the owner's GitHub no-reply address; support goes through [GitHub Issues](https://github.com/amosblomqvist/learnharness/issues).
+Each packaging job sets up the Vulkan toolchain (Windows: `jakoch/install-vulkan-sdk-action@v1.7.0`; Linux: `libvulkan-dev glslc`) and runs `bash scripts/build-whisper.sh`, which builds whisper.cpp `v1.9.5`'s `whisper-server` with `GGML_VULKAN=ON`, `GGML_BACKEND_DL=ON` and every CPU variant into `resources/whisper/`. electron-builder ships it as `<resources>/whisper`; `electron/main.cjs` passes the binary to the server as `LH_WHISPER_BIN`, and `src/server/whisper-engine.ts` starts it on the first dictation. The ~550 MB model is downloaded by the user from Settings (`/api/stt/model`, SHA-256 checked). `scripts/build-whisper.sh --cpu-only` builds without the Vulkan toolchain for local smoke tests.
 
 ## Build pipeline
 
@@ -49,7 +48,7 @@ npx electron-builder --linux --x64 --publish never
 - **Manual / Run workflow:** unsigned rehearsal installers saved as workflow artifacts for 7 days. No signing secrets needed, no release created, and nothing published. macOS notarization is skipped. Use the Windows/Linux artifacts for the first human smoke pass. These are not production macOS installers.
 - **Push `v<package.json version>`:** gates first, then one job creates or reuses a **single draft GitHub Release** before the three OS jobs package/upload their artifacts and update metadata in parallel. This avoids competing draft creation. A published or ambiguous existing release fails the preparation step instead of being modified. Separate runs for the same ref are serialized, never cancelled mid-upload. The tag must match the package version. macOS must sign and notarize successfully; missing secrets fail loudly. The workflow never publishes the draft. After all three packaging jobs succeed, a final read-only **Verify draft release** job (below) fails the run unless that draft is complete and self-consistent.
 
-The three jobs upload distinct updater feeds: `latest-mac.yml`, `latest.yml`, `latest-linux.yml`, with the matching ZIP/NSIS/AppImage/deb assets and blockmaps. **A partially populated draft is never fit to publish — and the final job enforces it mechanically.** The app uses the baked GitHub feed without a token: **the repository must be public before end users can download updates.** Making the repository public and publishing the release remain the owner's actions.
+The three jobs upload distinct updater feeds: `latest-mac.yml`, `latest.yml`, `latest-linux.yml`, with the matching ZIP/NSIS/AppImage/deb assets and blockmaps. **A partially populated draft is never fit to publish — and the final job enforces it mechanically.** (LearnHarness PL: two jobs, two feeds — `latest.yml`, `latest-linux.yml`.) The app uses the baked GitHub feed without a token: **the repository must be public before end users can download updates.** Making the repository public and publishing the release remain the owner's actions.
 
 ### The verification job
 

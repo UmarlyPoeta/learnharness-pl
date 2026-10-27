@@ -145,6 +145,13 @@ describe("whisper engine", () => {
 		e.stop();
 	});
 
+	it("segments whisper.cpp splits across lines read as one line of text", async () => {
+		const f = fakes({ inference: () => Response.json({ text: " Pochodna funkcji złożonej.\n Sprawdźmy to.\n" }) });
+		const e = engine(f);
+		assert.equal(await e.transcribe(wav), "Pochodna funkcji złożonej. Sprawdźmy to.");
+		e.stop();
+	});
+
 	it("a failed inference is down and stops the process", async () => {
 		const f = fakes({ inference: () => new Response("boom", { status: 500 }) });
 		const e = engine(f);

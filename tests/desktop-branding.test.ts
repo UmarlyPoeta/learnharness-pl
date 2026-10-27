@@ -23,3 +23,17 @@ describe("desktop branding", () => {
 		}
 	});
 });
+
+describe("bundled whisper.cpp wiring", () => {
+	it("the packaged server is told where whisper-server lives", () => {
+		assert.match(main, /LH_WHISPER_BIN/);
+		assert.match(main, /path\.join\(process\.resourcesPath, "whisper", process\.platform === "win32" \? "whisper-server\.exe" : "whisper-server"\)/);
+	});
+
+	it("electron-builder ships resources/whisper as <resources>/whisper", async () => {
+		const { createRequire } = await import("node:module");
+		const yaml = createRequire(import.meta.url)("js-yaml") as { load(source: string): { extraResources: Array<{ from: string; to: string }> } };
+		const config = yaml.load(readFileSync(new URL("../electron-builder.yml", import.meta.url), "utf8"));
+		assert.ok(config.extraResources.some((entry) => entry.from === "resources/whisper" && entry.to === "whisper"));
+	});
+});

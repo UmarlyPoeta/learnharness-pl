@@ -132,7 +132,8 @@ export function createWhisperEngine(o: {
 		}
 		idle = setTimeout(stop, idleMs);
 		idle.unref?.();
-		return text.trim();
+		// whisper.cpp ends each segment with a newline — a dictated answer is one line.
+		return text.replace(/\s+/g, " ").trim();
 	}
 
 	return { ensure, transcribe, stop, running: () => child !== null };

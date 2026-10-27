@@ -99,6 +99,10 @@ extraResources:
     to: server
     filter:
       - "standalone/**/*"
+  # Local dictation (LearnHarness PL): whisper-server + its ggml backends,
+  # built by scripts/build-whisper.sh (Vulkan + CPU) before packaging.
+  - from: resources/whisper
+    to: whisper
 # No macOS build in LearnHarness PL (no Apple Developer account to sign
 # and notarize) — Windows + Linux only.
 afterPack: scripts/after-pack.cjs

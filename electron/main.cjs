@@ -54,6 +54,14 @@ app.setName(PRODUCT_NAME);
 const AUTH_FILE = () => path.join(app.getPath("userData"), "auth.json");
 const DATA_DIR = () => path.join(app.getPath("userData"), "data");
 
+/** The bundled whisper.cpp binary (extraResources → <resources>/whisper),
+ *  passed to the server as LH_WHISPER_BIN when it was packaged. */
+function whisperEnv() {
+	if (!app.isPackaged) return {};
+	const bin = path.join(process.resourcesPath, "whisper", process.platform === "win32" ? "whisper-server.exe" : "whisper-server");
+	return fs.existsSync(bin) ? { LH_WHISPER_BIN: bin } : {};
+}
+
 /** The packaged standalone server (extraResources → Resources/server).
  *  In dev LH_DEV_URL short-circuits everything: no spawn, no packaging —
  *  the window points at the running `next dev` server (full HMR). */
@@ -221,6 +229,9 @@ function startServer(port) {
 					LH_AUTH_FILE: AUTH_FILE(),
 					LH_DESKTOP_SERVER: "1",
 					LH_DESKTOP_API_SECRET: desktopAPISecret,
+					// Local dictation (LearnHarness PL): the bundled whisper.cpp
+					// server; the Next server starts it on the first dictation.
+					...whisperEnv(),
 				},
 				stdio: ["ignore", "pipe", "pipe", "ipc"],
 			},
