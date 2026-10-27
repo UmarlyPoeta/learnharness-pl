@@ -285,8 +285,8 @@ describe("keyStatusLine — the minimal at-a-glance state", () => {
 		);
 	});
 
-	it("absent key reads 'not set'", () => {
-		assert.equal(keyStatusLine({ id: "X", info: null, present: false, masked: null, source: "none", shadowedByEnv: false }), "not set");
+	it("absent key reads 'nie ustawiono'", () => {
+		assert.equal(keyStatusLine({ id: "X", info: null, present: false, masked: null, source: "none", shadowedByEnv: false }), "nie ustawiono");
 	});
 });
 
