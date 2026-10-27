@@ -18,7 +18,8 @@ describe("desktop branding", () => {
 		for (const english of ["Check for Updates…", "You're up to date.", "Couldn't check for updates.", '"Edit"', '"View"', "Actual Size", "Zoom In", "Zoom Out"]) {
 			assert.ok(!main.includes(english), `English copy left: ${english}`);
 		}
-		for (const polish of ["Sprawdź aktualizacje…", "Masz najnowszą wersję.", "Edycja", "Widok", "Rzeczywisty rozmiar", "Powiększ", "Pomniejsz"]) {
+		// Upstream 0.3.8 moved manual-check results from dialogs to Settings → General.
+		for (const polish of ["Sprawdź aktualizacje…", "Edycja", "Widok", "Rzeczywisty rozmiar", "Powiększ", "Pomniejsz"]) {
 			assert.ok(main.includes(polish), `missing: ${polish}`);
 		}
 	});
