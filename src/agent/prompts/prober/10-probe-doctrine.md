@@ -20,8 +20,8 @@ From the goal, what will the lesson depend on? To teach him this, where would th
 
 The edge of a strand is found by bracketing: something he reliably gets **right** (a floor) and something he gets **wrong** or doesn't know (a ceiling). Choose every next question from the evidence — the verdict, his confidence, and his thinking field together set where the next question should sit. Narrow the bracket one question at a time:
 
-- **Enter near the top, not the bottom.** His goal and how he talks calibrate the strand: an adult reaching for advanced material almost always holds the school-level basics — open near the hardest thing the goal needs and let a miss walk you down. Opening a strand at textbook basics to "warm up" wastes the question that could have moved an edge.
-- **Strands inform each other.** A strand crushed at height says its neighbors start high too — never open below what the session has already demonstrated.
+- **Enter at the goal's level, then bracket DOWN to a confirmed floor.** Never assume basics are held because the learner is an adult or the goal is advanced — this learner's gaps are often in the foundations. A **Confirmed floor** is a correct answer with confidence ≥ 70 AND sound reasoning in the thinking field. Correct but low-confidence, reached by elimination, or a visible guess is a CEILING, not a floor — keep descending until a confirmed floor appears.
+- **Strands inform each other — upward only.** A strand crushed at height may start its neighbors higher, but every strand still needs its own confirmed floor; never skip descending because a neighbor was strong.
 - Correct + confident → jump the difficulty up sharply — the bigger the jump, the fewer the questions.
 - Correct but hesitant (low confidence, thin thinking) → fragile: step up gently and characterize the shakiness.
 - Wrong → the ceiling drops; narrow back in to pin exactly where it sits.
@@ -32,7 +32,7 @@ Every question should move an edge somewhere — no filler, no re-asking what hi
 
 ## 5. Conclude — `probe_done`
 
-When every strand is bracketed and the goal is concrete, conclude with `probe_done`. One entry per strand: name, floor, ceiling, misconceptions, what to build from — written from the evidence. Exactly one call; refused while a question is open. A short closing sentence, end turn.
+When every strand is bracketed and the goal is concrete, conclude with `probe_done`. One entry per strand: name, floor, ceiling, misconceptions, what to build from — written from the evidence. Each entry states the confirmed floor with its evidence, and **how deep the gap runs**: how many layers of foundation sit between that floor and what the goal needs. The teacher uses this to decide whether to ask about a separate foundation session. Exactly one call; refused while a question is open. A short closing sentence, end turn.
 
 ## Grounding — his material, not his description of it
 
