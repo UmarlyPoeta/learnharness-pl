@@ -24,6 +24,8 @@ import { lsTool } from "./tools/ls.ts";
 import { findTool } from "./tools/find.ts";
 import { grepTool } from "./tools/grep.ts";
 import { healToolRecord } from "./tools/heal.ts";
+import { foundationSessionTool } from "./tools/foundation.ts";
+import { FOUNDATION_SESSION_TOOL } from "../core/contracts/foundation.ts";
 import type { GraphStore } from "../core/ports.ts";
 
 export { jobTools };
@@ -444,8 +446,12 @@ export function createTeacherTools(
 	const quizzing: Record<string, AgentTool<any>> =
 		mechanics === "free" ? { explain: teachExplainToolFor(ctx) } : { quiz: teachQuizToolFor(ctx) };
 	// healToolRecord — same standard as the prober's registry (above).
-	return healToolRecord(
-		filterEnabledTools(
+	// foundation_session (nauka od korzeni, 2026-10-29) sits OUTSIDE the
+	// toggle filter like the quizzing mechanics: the deep-gap rule depends
+	// on it, so it is never a user toggle.
+	return healToolRecord({
+		[FOUNDATION_SESSION_TOOL]: foundationSessionTool,
+		...filterEnabledTools(
 			{
 			...quizzing,
 			ask_user_question: askUserQuestionTool,
@@ -462,5 +468,5 @@ export function createTeacherTools(
 		},
 		withoutMechanics(enabled),
 		),
-	);
+	});
 }
