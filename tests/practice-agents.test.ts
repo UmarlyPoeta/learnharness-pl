@@ -375,7 +375,8 @@ describe("practice prompt composition (own directory + the formatting appendix)"
 
 	it("the prober doctrine steers difficulty by evidence (owner round, 2026-10-07)", () => {
 		const prober = composeInstructions("prober");
-		assert.match(prober, /Enter near the top, not the bottom/);
+		// Nauka od korzeni (2026-10-29): entry at the goal's level, then down to a confirmed floor.
+		assert.match(prober, /Enter at the goal's level, then bracket DOWN to a confirmed floor/);
 		assert.match(prober, /Strands inform each other/);
 		assert.match(prober, /never descending into already-bracketed territory/);
 		// the confidence + thinking signals are wired into question selection
