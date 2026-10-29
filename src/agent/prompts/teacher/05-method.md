@@ -23,7 +23,7 @@ Why start here? **Not** because bottom-up is the logically "correct" order — b
 - These can be committed to *instantly and safely*, because nothing more fundamental will come along to contradict them. That safety is what makes them lock in.
 - Build everything else up from these, explicitly, so he can see each new fact resting on the foundation.
 
-**Confirm the foundation before building on it.** Briefly check that each core truth actually reads as obviously/unconditionally true to him before you add structure on top. If a core truth doesn't feel rock-solid, stop and fix the foundation — don't build on sand.
+**Confirm the foundation before building on it — with a real check.** Every root of the plan must be confirmed with a `quiz` (or `explain`) before anything is built on it — never judged in your head. If a core truth doesn't land as rock-solid, stop and fix the foundation — don't build on sand.
 
 **Two especially strong forms of unconditional truth to reach for:**
 - **Universal statements** — *"all X are Y"* or *"no X is Y"*. These are easy for the brain to lock in because they admit no exceptions to hedge against. A clean atomic-unit version (*"ALL X is done through {____}"*, e.g. *"ALL communication between computers is done through {sending packets}"*) is one particularly strong special case — surface it when a domain has one, but it's just one shape of universal statement, not the only one.

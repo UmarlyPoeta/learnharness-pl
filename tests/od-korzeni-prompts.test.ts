@@ -29,3 +29,26 @@ describe("od korzeni: prober", () => {
 		assert.ok(schema.includes("gap depth"));
 	});
 });
+
+describe("od korzeni: teacher", () => {
+	const teacher = composeInstructions("teacher");
+
+	it("counts only a confirmed floor as held", () => {
+		assert.ok(teacher.includes("only a confirmed floor counts as held"));
+	});
+
+	it("asks before descending into a deep gap and can split it off", () => {
+		assert.ok(teacher.includes("## Deep gaps — ask before descending"));
+		assert.ok(teacher.includes("3 or more plan nodes"));
+		assert.ok(teacher.includes("foundation_session"));
+	});
+
+	it("confirms every plan root with a real check", () => {
+		assert.ok(teacher.includes("confirm it with a `quiz`"));
+	});
+
+	it("handles Dlaczego requests as one-level detours that re-ask a skipped check", () => {
+		assert.ok(teacher.includes('## "Dlaczego" requests'));
+		assert.ok(teacher.includes("ask that same check again"));
+	});
+});
