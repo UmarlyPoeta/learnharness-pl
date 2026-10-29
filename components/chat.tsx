@@ -79,6 +79,7 @@ import { ReadingThinkingField } from "@/components/reading-thinking";
 import { currentUserThinkingOpen, setAllUserThinkingOpen } from "@/components/thinking-block";
 import { slotsConfigured, type ModelsSettings } from "@/src/core";
 import { useSettingsSaved } from "@/components/settings-signal";
+import { runWhy, WhyButton } from "@/components/why-button";
 
 /** One width for everything: transcript, cards, and the bottom blob share this column. */
 /**
@@ -387,6 +388,32 @@ export function Chat({
 		window.addEventListener("lh:kbd-abort-turn", onAbort);
 		return () => window.removeEventListener("lh:kbd-abort-turn", onAbort);
 	}, []);
+	// From a pending question the dismiss is silent (A2, 2026-10-03):
+	// the skipped toolResult lands via the SILENT route, no turn, no
+	// wake — the next plain send is the wake. MID-TURN (owner,
+	// 2026-10-04 — the GLM loop): the question can only dangle because a
+	// turn is STILL RUNNING, so the discard ALSO kills that turn; the
+	// route parks the dismissal (202) and the settle applies it.
+	// `note` (nauka od korzeni, 2026-10-29): the "Dlaczego?" skip rides the
+	// reading-thinking field, under anything the learner already wrote there.
+	const dismissPendingQuestion = useCallback(
+		(note?: string): boolean => {
+			const p = pendingRef.current;
+			if (!p) return false;
+			const question = (p.input as { question?: string } | null)?.question ?? "";
+			const typed = readingThinkingRef.current.trim();
+			const reading = (note ? (typed ? `${typed}\n${note}` : note) : typed) || undefined;
+			clearReadingThinking();
+			const answer = dismissedAnswer(toolQuestionKind(p.tool), question);
+			void dismissQuestion(
+				p.toolCallId,
+				reading ? { ...answer, readingThinking: reading } : answer,
+			);
+			if (busyRef.current) abortInFlightTurn();
+			return true;
+		},
+		[abortInFlightTurn, dismissQuestion],
+	);
 	const confirmAbort = useCallback(
 		(mode: AbortMode) => {
 			setAbortAsk(null);
@@ -394,25 +421,7 @@ export function Chat({
 				abortInFlightTurn();
 				return;
 			}
-			// From a pending question the dismiss is silent (A2, 2026-10-03):
-			// the skipped toolResult lands via the SILENT route, no turn, no
-			// wake — the next plain send is the wake. MID-TURN (owner,
-			// 2026-10-04 — the GLM loop): the question can only dangle because a
-			// turn is STILL RUNNING, so the discard ALSO kills that turn; the
-			// route parks the dismissal (202) and the settle applies it.
-			const p = pendingRef.current;
-			if (p) {
-				const question = (p.input as { question?: string } | null)?.question ?? "";
-				const reading = readingThinkingRef.current.trim() || undefined;
-				clearReadingThinking();
-				const answer = dismissedAnswer(toolQuestionKind(p.tool), question);
-				void dismissQuestion(
-					p.toolCallId,
-					reading ? { ...answer, readingThinking: reading } : answer,
-				);
-				if (busyRef.current) abortInFlightTurn();
-				return;
-			}
+			if (dismissPendingQuestion()) return;
 			// The practice discard (owner, 2026-10-04): ask-style — the
 			// silent marker route; the conclude synthesis rides the user's
 			// next input. The composer returns immediately. Mid-turn the
@@ -423,7 +432,7 @@ export function Chat({
 				if (busyRef.current) abortInFlightTurn();
 			}
 		},
-		[abortInFlightTurn, dismissQuestion, dismissProblem],
+		[abortInFlightTurn, dismissPendingQuestion, dismissProblem],
 	);
 	// Mount continuation: if the stored transcript ends with a fulfilled tool
 	// (a job result landed while no client was open), resume the lesson — the
@@ -661,6 +670,17 @@ export function Chat({
 			composerInputRef.current?.focus();
 		}
 	}, [dictation.active]);
+	// "Dlaczego?" (nauka od korzeni, 2026-10-29): a pending check is skipped
+	// with the note, then the request fills the composer — which remounts
+	// once the skip lands, hence the focus on the next frame.
+	const onWhy = (fragment: string) =>
+		runWhy(fragment, {
+			hasPending: () => pendingRef.current !== null,
+			dismissPending: (note) => dismissPendingQuestion(note),
+			getText: () => textRef.current,
+			applyText,
+			focusComposer: () => requestAnimationFrame(() => composerInputRef.current?.focus()),
+		});
 
 	// Jobs never gate the composer (contracts.ts "THE ASYNC PROTOCOL" §4): job
 	// tools resolve with an ack mid-turn, so the learner can interject while
@@ -1189,6 +1209,7 @@ export function Chat({
 			}}
 		>
 		<JobsContext.Provider value={jobs}>
+		<WhyButton onWhy={onWhy} />
 		{/* The session surface: the transcript column (header + scroller) and
 		    the plan-tree panel as full-height SIBLINGS — the panel spans top to
 		    bottom exactly like the left sidebar, and the header (name + phase
