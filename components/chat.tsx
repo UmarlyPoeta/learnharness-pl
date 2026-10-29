@@ -1209,7 +1209,7 @@ export function Chat({
 			}}
 		>
 		<JobsContext.Provider value={jobs}>
-		<WhyButton onWhy={onWhy} />
+		<WhyButton onWhy={onWhy} active={!activeProblem} />
 		{/* The session surface: the transcript column (header + scroller) and
 		    the plan-tree panel as full-height SIBLINGS — the panel spans top to
 		    bottom exactly like the left sidebar, and the header (name + phase

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { whyDismissNote, whyFragment, whyRequestText } from "@/components/why-request";
 
 /**
@@ -16,10 +16,13 @@ const PASSAGE = ".lh-source-passage";
 
 type SelectionLike = { anchorNode: Node | null; focusNode: Node | null; isCollapsed: boolean };
 
-function passageOf(node: Node | null): Element | null {
+function passageElement(node: Node | null): Element | null {
 	if (!node) return null;
-	const el = node.nodeType === 1 ? (node as Element) : node.parentElement;
-	return el?.closest(PASSAGE) ?? null;
+	return node.nodeType === 1 ? (node as Element) : node.parentElement;
+}
+
+function passageOf(node: Node | null): Element | null {
+	return passageElement(node)?.closest(PASSAGE) ?? null;
 }
 
 /** The lesson passage a selection lives in — both ends inside the SAME one,
@@ -29,6 +32,37 @@ export function whySelectionScope(selection: SelectionLike | null): Element | nu
 	if (!selection || selection.isCollapsed) return null;
 	const a = passageOf(selection.anchorNode);
 	return a && a === passageOf(selection.focusNode) ? a : null;
+}
+
+type RangeLike = {
+	startContainer: Node;
+	endContainer: Node;
+	cloneRange(): RangeLike;
+	setStartBefore(node: Node): void;
+	setEndAfter(node: Node): void;
+};
+
+/** A copy of the range with each end that falls INSIDE a formula moved to
+ *  the formula's edge — cloneContents only keeps nodes below the common
+ *  ancestor, so a selection starting or living inside KaTeX would lose the
+ *  `.katex` wrapper (and its TeX annotation) and read as glyph soup. */
+export function widenToFormulas<R extends RangeLike>(range: R): R {
+	const wide = range.cloneRange() as R;
+	const startFormula = passageElement(range.startContainer)?.closest(".katex");
+	const endFormula = passageElement(range.endContainer)?.closest(".katex");
+	if (startFormula) wide.setStartBefore(startFormula);
+	if (endFormula) wide.setEndAfter(endFormula);
+	return wide;
+}
+
+type RectLike = { left: number; width: number; top: number; bottom: number };
+
+/** Where the button sits for a selection rect: above it, or below when too
+ *  close to the top edge — null once the selection left the viewport. */
+export function whyButtonPlacement(rect: RectLike, viewportHeight: number): { x: number; y: number } | null {
+	if (rect.bottom < 0 || rect.top > viewportHeight) return null;
+	const above = rect.top - 36;
+	return { x: rect.left + rect.width / 2, y: above > 8 ? above : rect.bottom + 6 };
 }
 
 export interface WhyDeps {
@@ -51,46 +85,69 @@ export function runWhy(fragment: string, deps: WhyDeps): boolean {
 
 type Shown = { fragment: string; x: number; y: number };
 
-export function WhyButton({ onWhy }: { onWhy: (fragment: string) => void }) {
+/** The one visibility gate: an in-passage, non-empty selection, and the
+ *  composer reachable (an open practice problem unmounts it — a click
+ *  would fill a hidden composer and look dead). */
+export function whyVisible({ active, scope, fragment }: { active: boolean; scope: Element | null; fragment: string }): boolean {
+	return active && scope !== null && fragment !== "";
+}
+
+export function WhyButton({ onWhy, active }: { onWhy: (fragment: string) => void; active: boolean }) {
 	const [shown, setShown] = useState<Shown | null>(null);
+	// The listeners are mount-scoped; `active` is render-scoped.
+	const activeRef = useRef(active);
+	activeRef.current = active;
+	useEffect(() => {
+		if (!active) setShown(null);
+	}, [active]);
 
 	useEffect(() => {
+		const place = (range: Range, fragment: string) => {
+			const at = whyButtonPlacement(range.getBoundingClientRect(), window.innerHeight);
+			setShown(at ? { fragment, ...at } : null);
+		};
 		// Shown on release (mouse or keyboard selection), not on every
 		// selectionchange — a drag in progress would make it jump around.
 		const evaluate = () => {
 			const sel = window.getSelection();
-			if (!sel || sel.rangeCount === 0 || !whySelectionScope(sel)) {
+			const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+			const scope = whySelectionScope(sel);
+			const fragment = range && scope ? whyFragment(widenToFormulas(range).cloneContents()) : "";
+			if (!range || !whyVisible({ active: activeRef.current, scope, fragment })) {
 				setShown(null);
 				return;
 			}
-			const range = sel.getRangeAt(0);
-			const fragment = whyFragment(range.cloneContents());
-			if (!fragment) {
-				setShown(null);
-				return;
-			}
-			const rect = range.getBoundingClientRect();
-			const above = rect.top - 36;
-			setShown({ fragment, x: rect.left + rect.width / 2, y: above > 8 ? above : rect.bottom + 6 });
+			place(range, fragment);
 		};
 		const onSelectionChange = () => {
 			const sel = window.getSelection();
 			if (!sel || sel.isCollapsed) setShown(null);
 		};
-		const hide = () => setShown(null);
+		// A streaming turn keeps scrolling the pinned transcript after the
+		// mouse is released — FOLLOW the live selection instead of hiding,
+		// or the button would vanish before it could be clicked mid-turn.
+		const onScroll = () => {
+			setShown((prev) => {
+				if (!prev) return prev;
+				const sel = window.getSelection();
+				if (!sel || sel.rangeCount === 0 || !whySelectionScope(sel)) return null;
+				const at = whyButtonPlacement(sel.getRangeAt(0).getBoundingClientRect(), window.innerHeight);
+				return at ? { fragment: prev.fragment, ...at } : null;
+			});
+		};
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === "Escape") hide();
+			if (e.key === "Escape") setShown(null);
 			else if (e.shiftKey) evaluate();
 		};
 		document.addEventListener("mouseup", evaluate);
 		document.addEventListener("keyup", onKey);
 		document.addEventListener("selectionchange", onSelectionChange);
-		window.addEventListener("scroll", hide, true);
+		window.addEventListener("scroll", onScroll, true);
 		return () => {
 			document.removeEventListener("mouseup", evaluate);
 			document.removeEventListener("keyup", onKey);
 			document.removeEventListener("selectionchange", onSelectionChange);
-			window.removeEventListener("scroll", hide, true);
+			window.removeEventListener("scroll", onScroll, true);
 		};
 	}, []);
 

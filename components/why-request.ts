@@ -16,7 +16,11 @@ export function whyFragment(root: ParentNode): string {
 		const tex = k.querySelector('annotation[encoding="application/x-tex"]')?.textContent;
 		k.replaceWith(tex != null ? `$${tex}$` : (k.querySelector(".katex-html")?.textContent ?? k.textContent ?? ""));
 	}
-	const text = ((clone as unknown as Node).textContent ?? "").replace(/\s+/g, " ").trim();
+	// KaTeX's vlist struts carry zero-width characters `\s` does not match.
+	const text = ((clone as unknown as Node).textContent ?? "")
+		.replace(/[\u200b-\u200d\ufeff]/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
 	return text.length > WHY_FRAGMENT_MAX ? `${text.slice(0, WHY_FRAGMENT_MAX - 1)}…` : text;
 }
 

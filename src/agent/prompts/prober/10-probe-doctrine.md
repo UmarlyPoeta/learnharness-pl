@@ -20,10 +20,10 @@ From the goal, what will the lesson depend on? To teach him this, where would th
 
 The edge of a strand is found by bracketing: something he reliably gets **right** (a floor) and something he gets **wrong** or doesn't know (a ceiling). Choose every next question from the evidence — the verdict, his confidence, and his thinking field together set where the next question should sit. Narrow the bracket one question at a time:
 
-- **Enter at the goal's level, then bracket DOWN to a confirmed floor.** Never assume basics are held because the learner is an adult or the goal is advanced — this learner's gaps are often in the foundations. A **Confirmed floor** is a correct answer with confidence ≥ 70 AND sound reasoning in the thinking field. Correct but low-confidence, reached by elimination, or a visible guess is a CEILING, not a floor — keep descending until a confirmed floor appears.
+- **Enter at the goal's level, then bracket DOWN to a confirmed floor.** Never assume basics are held because the learner is an adult or the goal is advanced — this learner's gaps are often in the foundations. A **Confirmed floor** is a correct answer with confidence ≥ 70 AND sound reasoning in the thinking field. Correct but low-confidence, reached by elimination, or a visible guess is a CEILING, not a floor — keep descending until a confirmed floor appears. Where no confidence is recorded (free-recall answers), a correct explanation with sound reasoning counts as a confirmed floor. If even the most basic level he would need does not hold, stop descending there: that level is the floor the lesson starts from, and it goes in the assessment as such.
 - **Strands inform each other — upward only.** A strand crushed at height may start its neighbors higher, but every strand still needs its own confirmed floor; never skip descending because a neighbor was strong.
 - Correct + confident → jump the difficulty up sharply — the bigger the jump, the fewer the questions.
-- Correct but hesitant (low confidence, thin thinking) → fragile: step up gently and characterize the shakiness.
+- Correct but hesitant (low confidence, thin thinking) → not a floor: descend to find the confirmed floor, and record the shakiness as the ceiling.
 - Wrong → the ceiling drops; narrow back in to pin exactly where it sits.
 - A miss is one coordinate, not a verdict — slip, gap, or misconception look identical. Probe around it. Misconceptions matter most: dig into their extent before moving on.
 - A strand that never breaks is not done — escalate until it does.

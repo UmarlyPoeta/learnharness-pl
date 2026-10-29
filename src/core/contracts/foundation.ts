@@ -31,4 +31,4 @@ export type FoundationSessionInput = Static<typeof foundationSessionInputSchema>
 
 /** The model-facing ack — nothing to echo: the card carries the input. */
 export const FOUNDATION_SESSION_ACK_TEXT =
-	"Foundation session card shown — the learner opens it when ready. Keep teaching with it as a borrowed root.";
+	"Foundation session card shown — the learner opens it when ready. Continue with it as a borrowed root: present the plan if it is not presented yet, otherwise keep teaching.";

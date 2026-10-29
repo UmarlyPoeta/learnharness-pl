@@ -15,7 +15,8 @@ export const foundationSessionTool: AgentTool<typeof foundationSessionInputSchem
 	description:
 		"Offer the learner a separate foundation session for a deep gap (a missing foundation needing 3 or more plan nodes). " +
 		"Call it ONLY after he chose the separate session in the deep-gap question. The learner sees a card with a button " +
-		"that opens the new session; `goal` becomes its first message. Then keep teaching with that foundation as a borrowed root.",
+		"that opens the new session; `goal` becomes its first message. Then continue with that foundation as a borrowed root — " +
+		"present the plan if it is not presented yet, otherwise keep teaching.",
 	parameters: foundationSessionInputSchema,
 	executionMode: "sequential",
 	execute: serverExecute(FOUNDATION_SESSION_TOOL, foundationSessionInputSchema, () => FOUNDATION_SESSION_ACK_TEXT),

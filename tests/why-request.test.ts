@@ -31,6 +31,10 @@ describe("whyFragment", () => {
 		assert.ok(out.endsWith("…"));
 	});
 
+	it("strips KaTeX's zero-width characters", () => {
+		assert.equal(whyFragment(root("<p>x\u200b2 +\ufeff y</p>")), "x2 + y");
+	});
+
 	it("returns an empty string for whitespace only", () => {
 		assert.equal(whyFragment(root("<p>   </p>")), "");
 	});

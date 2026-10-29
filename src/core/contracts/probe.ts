@@ -55,7 +55,8 @@ export const probeDoneInputSchema = Type.Object({
 					}),
 					assessment: Type.String({
 						description:
-							"Where his edge sits on this strand: the confirmed floor (correct, confidence ≥ 70, sound reasoning) with its evidence, " +
+							"Where his edge sits on this strand: the confirmed floor (correct, confidence ≥ 70, sound reasoning — or, where no confidence is recorded, " +
+							"a correct, well-reasoned explanation) with its evidence, " +
 							"the ceiling (where it runs out — low-confidence or guessed hits count here), the gap depth (how many layers of " +
 							"foundation lie between the floor and what the goal needs), misconceptions found, and what the lesson should build from.",
 					}),

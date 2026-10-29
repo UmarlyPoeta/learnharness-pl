@@ -10,6 +10,8 @@ import {
 	FoundationSessionCardView,
 	foundationWhyLine,
 	openFoundationSession,
+	rememberFoundationHref,
+	rememberedFoundationHref,
 } from "../components/artifacts/foundation-session-card.tsx";
 
 const INPUT = { title: "Macierze od zera", goal: "Chcę zrozumieć mnożenie macierzy. Potrzebne do LM." };
@@ -62,5 +64,39 @@ describe("openFoundationSession", () => {
 		const ok = await openFoundationSession("  ", fakeFetch, (href) => pushed.push(href));
 		assert.equal(ok, false);
 		assert.deepEqual(pushed, []);
+	});
+});
+
+describe("remembered foundation session (revisiting the parent)", () => {
+	function memStorage() {
+		const m = new Map<string, string>();
+		return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v) };
+	}
+
+	it("remembers the created session per tool call, without the first-message query", () => {
+		const st = memStorage();
+		rememberFoundationHref(st, "call_1", "/chat/chat_x?prompt=abc");
+		assert.equal(rememberedFoundationHref(st, "call_1"), "/chat/chat_x");
+		assert.equal(rememberedFoundationHref(st, "call_2"), null);
+	});
+
+	it("survives missing or throwing storage", () => {
+		const broken = {
+			getItem: () => {
+				throw new Error("blocked");
+			},
+			setItem: () => {
+				throw new Error("blocked");
+			},
+		};
+		assert.equal(rememberedFoundationHref(broken, "call_1"), null);
+		assert.doesNotThrow(() => rememberFoundationHref(broken, "call_1", "/chat/x"));
+		assert.equal(rememberedFoundationHref(null, "call_1"), null);
+	});
+
+	it("an opened card offers to go to the session instead of creating another", () => {
+		const html = renderToStaticMarkup(<FoundationSessionCardView input={INPUT} busy={false} opened onOpen={() => {}} />);
+		assert.ok(html.includes("Przejdź do sesji-korzenia"));
+		assert.ok(!html.includes("Otwórz sesję-korzeń"));
 	});
 });
