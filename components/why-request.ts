@@ -36,3 +36,14 @@ export function whyRequestText(fragment: string, existing: string): string {
 export function whyDismissNote(fragment: string): string {
 	return `Nie rozumiem: „${fragment}”`;
 }
+
+/** "Pokaż" (wyjaśnienia obrazowe): the composer request to SEE the fragment. */
+export function showRequestText(fragment: string, existing: string): string {
+	const request = `Pokaż „${fragment}”`;
+	return existing.trim() ? `${existing.replace(/\s+$/, "")}\n${request}` : request;
+}
+
+/** The note a pending check is skipped with when the learner asks to see. */
+export function showDismissNote(fragment: string): string {
+	return `Chcę zobaczyć: „${fragment}”`;
+}

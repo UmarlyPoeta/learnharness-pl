@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { whyDismissNote, whyFragment, whyRequestText } from "@/components/why-request";
+import { showDismissNote, showRequestText, whyDismissNote, whyFragment, whyRequestText } from "@/components/why-request";
 
 /**
  * The "Dlaczego?" button (nauka od korzeni, 2026-10-29 — spec §3): select
@@ -73,14 +73,22 @@ export interface WhyDeps {
 	focusComposer: () => void;
 }
 
+export type AskMode = "why" | "show";
+
 /** One click: skip a pending check with the note (variant b), then put the
  *  request in the composer. False — and nothing done — for an empty fragment. */
-export function runWhy(fragment: string, deps: WhyDeps): boolean {
+export function runAsk(mode: AskMode, fragment: string, deps: WhyDeps): boolean {
 	if (!fragment) return false;
-	if (deps.hasPending()) deps.dismissPending(whyDismissNote(fragment));
-	deps.applyText(whyRequestText(fragment, deps.getText()));
+	if (deps.hasPending()) deps.dismissPending(mode === "show" ? showDismissNote(fragment) : whyDismissNote(fragment));
+	const existing = deps.getText();
+	deps.applyText(mode === "show" ? showRequestText(fragment, existing) : whyRequestText(fragment, existing));
 	deps.focusComposer();
 	return true;
+}
+
+/** The "Dlaczego?" click (kept for its callers and tests). */
+export function runWhy(fragment: string, deps: WhyDeps): boolean {
+	return runAsk("why", fragment, deps);
 }
 
 type Shown = { fragment: string; x: number; y: number };
@@ -92,7 +100,7 @@ export function whyVisible({ active, scope, fragment }: { active: boolean; scope
 	return active && scope !== null && fragment !== "";
 }
 
-export function WhyButton({ onWhy, active }: { onWhy: (fragment: string) => void; active: boolean }) {
+export function WhyButton({ onAsk, active }: { onAsk: (mode: AskMode, fragment: string) => void; active: boolean }) {
 	const [shown, setShown] = useState<Shown | null>(null);
 	// The listeners are mount-scoped; `active` is render-scoped.
 	const activeRef = useRef(active);
@@ -152,23 +160,32 @@ export function WhyButton({ onWhy, active }: { onWhy: (fragment: string) => void
 	}, []);
 
 	if (!shown) return null;
-	return (
+	const item = (mode: AskMode, testid: string, label: string) => (
 		<button
 			type="button"
-			data-testid="why-button"
-			style={{ position: "fixed", left: shown.x, top: shown.y }}
-			className="z-50 -translate-x-1/2 rounded-md border bg-popover px-2 py-1 text-xs font-medium text-popover-foreground shadow-md hover:bg-accent"
-			// Keep the selection alive through the press.
-			onMouseDown={(e) => e.preventDefault()}
-			// The release must not re-evaluate the selection into a new button.
-			onMouseUp={(e) => e.stopPropagation()}
+			data-testid={testid}
+			className="px-2 py-1 text-xs font-medium text-popover-foreground hover:bg-accent"
 			onClick={() => {
-				onWhy(shown.fragment);
+				onAsk(mode, shown.fragment);
 				setShown(null);
 				window.getSelection()?.removeAllRanges();
 			}}
 		>
-			Dlaczego?
+			{label}
 		</button>
+	);
+	return (
+		<div
+			data-testid="ask-toolbar"
+			style={{ position: "fixed", left: shown.x, top: shown.y }}
+			className="z-50 flex -translate-x-1/2 divide-x overflow-hidden rounded-md border bg-popover shadow-md"
+			// Keep the selection alive through the press.
+			onMouseDown={(e) => e.preventDefault()}
+			// The release must not re-evaluate the selection into a new toolbar.
+			onMouseUp={(e) => e.stopPropagation()}
+		>
+			{item("why", "why-button", "Dlaczego?")}
+			{item("show", "show-button", "Pokaż")}
+		</div>
 	);
 }

@@ -209,6 +209,7 @@ describe("sanitizeUserSettings", () => {
 			"researcher",
 			"demoBuilder",
 			"visualMaker",
+			"walkthroughBuilder",
 			"extractor",
 			"auditor",
 		]);

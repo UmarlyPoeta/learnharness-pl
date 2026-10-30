@@ -44,6 +44,7 @@ export const BACKGROUND_MODEL_ROLES = [
 	"researcher",
 	"demoBuilder",
 	"visualMaker",
+	"walkthroughBuilder",
 	"extractor",
 	"auditor",
 ] as const;
@@ -225,6 +226,7 @@ export const ROLE_SLOT: Readonly<Record<ModelRole, ModelSlotName>> = {
 	extractor: "cheap",
 	auditor: "cheap",
 	visualMaker: "vision",
+	walkthroughBuilder: "vision",
 	pdfReader: "vision",
 };
 

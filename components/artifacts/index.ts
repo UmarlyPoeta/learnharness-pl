@@ -3,6 +3,7 @@ import type { ArtifactPartProps } from "@/src/core";
 import { DemoCard } from "@/components/artifacts/demo-card";
 import { JobCard, PdfJobCard } from "@/components/artifacts/job-card";
 import { VisualCard } from "@/components/artifacts/visual-card";
+import { WalkthroughCard } from "@/components/artifacts/walkthrough-card";
 import { ProbeDoneCard } from "@/components/artifacts/probe-done-card";
 import { FoundationSessionCard } from "@/components/artifacts/foundation-session-card";
 import { ToolCallCard } from "@/components/artifacts/tool-call-card";
@@ -29,6 +30,7 @@ export const artifactRenderers: Record<string, ComponentType<ArtifactPartProps>>
 	// Artifacts (W6 fills in the components):
 	demo: DemoCard,
 	visual: VisualCard,
+	walkthrough: WalkthroughCard,
 	// The probe conclusion: the assessment belongs to the learner as much as
 	// to the transcript (docs/probe-teach-split.md §2). Plain v1 card.
 	probe_done: ProbeDoneCard,

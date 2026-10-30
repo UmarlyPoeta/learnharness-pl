@@ -133,7 +133,7 @@ describe("AgentSection (thin SSR)", () => {
 	});
 
 	it("renders the owner's FINAL tool list — research, demo, visual, pdf", () => {
-		assert.deepEqual([...TOGGLE_TOOLS], ["research", "demo", "visual", "pdf"]);
+		assert.deepEqual([...TOGGLE_TOOLS], ["research", "demo", "visual", "pdf", "walkthrough"]);
 		const html = renderToStaticMarkup(<AgentSection agent={undefined} models={undefined} graph={undefined} onSectionChange={() => {}} onModelsChange={() => {}} />);
 		for (const id of TOGGLE_TOOLS) assert.ok(html.includes(`data-testid="tool-row-${id}"`), id);
 	});

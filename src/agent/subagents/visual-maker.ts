@@ -303,7 +303,7 @@ export async function runVisualMaker(input: VisualMakerInput, opts: VisualMakerO
 	return { svg: "", notes: `FAILED: iteration limit (${maxIterations}) reached without a verified SVG.` };
 }
 
-function toolText(toolCallId: string, toolName: string, value: string): ToolResultMessage {
+export function toolText(toolCallId: string, toolName: string, value: string): ToolResultMessage {
 	return {
 		role: "toolResult",
 		toolCallId,
@@ -317,7 +317,7 @@ function toolText(toolCallId: string, toolName: string, value: string): ToolResu
 /** One raw model call (no agent loop): drain the event stream to the final
  *  AssistantMessage; provider errors and aborts throw so the loop's catch
  *  path keeps its old generateText semantics. */
-async function streamOnce(
+export async function streamOnce(
 	engine: PiEngine,
 	systemPrompt: string,
 	messages: Message[],
@@ -353,7 +353,7 @@ async function streamOnce(
 /** A 3-line numbered context window around the closest fuzzy match for a
  *  failed edit — enough for the model to see what went wrong and retry
  *  (the pi svg_tools snippetAround semantics). */
-function snippetAround(svg: string, target: string): string {
+export function snippetAround(svg: string, target: string): string {
 	const words = target.trim().split(/\s+/).filter(Boolean);
 	if (words.length === 0) return "(empty old_text)";
 	const lines = svg.split("\n");

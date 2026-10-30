@@ -1,6 +1,6 @@
 import { Type, type Static } from "typebox";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { serverExecute } from "../tool-execute.ts";
+import { invalidInputResult, serverExecute } from "../tool-execute.ts";
 import type { JobRecord } from "../../core/contracts.ts";
 import type { JobStore } from "../../core/ports.ts";
 
@@ -22,12 +22,19 @@ export interface JobToolContext {
 	/** Fire the background runner for a fresh job — fire-and-forget. The
 	 *  input rides along because the spawn happens MID-STREAM, before
 	 *  onFinish persists the tool part — a transcript scan would race it. */
-	spawn: (job: JobRecord, input: ResearchInput | DemoInput | VisualInput | PdfInput) => void;
+	spawn: (job: JobRecord, input: ResearchInput | DemoInput | VisualInput | PdfInput | WalkthroughInput) => void;
 	/** Search-provider availability, retained for existing composition seams.
 	 *  Research dispatch does not depend on it: web_fetch is keyless and
 	 *  web_search reports a missing provider as a recoverable tool result. */
 	searchAvailable?: () => boolean;
+	/** The live plan-map check for a graphic's optional `nodeId` (teacher
+	 *  only; the problem text, or null when the id names a plan node). */
+	nodeIdProblem?: (nodeId: string) => string | null;
 }
+
+const NODE_ID_FIELD = Type.Optional(
+	Type.String({ description: "The plan node this graphic serves — one of your plan_init slugs, exactly." }),
+);
 
 export const researchInputSchema = Type.Object({
 	question: Type.String({
@@ -47,6 +54,7 @@ export const demoInputSchema = Type.Object({
 			"Precise brief for the builder: the concept, the parameters/controls and what each does, the interactions, and the visual style. " +
 			"The builder sees NOTHING else of the lesson — include everything it needs, including necessary formulas and constants.",
 	}),
+	nodeId: NODE_ID_FIELD,
 });
 
 export const visualInputSchema = Type.Object({
@@ -55,6 +63,17 @@ export const visualInputSchema = Type.Object({
 			"Precise brief for ONE static figure: exactly what it must show — coordinates, labels, proportions, orientation. " +
 			"The maker sees NOTHING else of the lesson; a wrong or vague brief produces a wrong figure.",
 	}),
+	nodeId: NODE_ID_FIELD,
+});
+
+export const walkthroughInputSchema = Type.Object({
+	title: Type.String({ description: "Short title for the walkthrough card, e.g. 'Jakobian odwzorowania elementu'." }),
+	brief: Type.String({
+		description:
+			"Precise brief for the builder: the objects and their coordinates, what changes in EACH step (3–12 steps) and what each " +
+			"step's one-sentence caption says. The builder sees NOTHING else of the lesson — include every formula and number it needs.",
+	}),
+	nodeId: NODE_ID_FIELD,
 });
 
 export const pdfInputSchema = Type.Object({
@@ -75,7 +94,7 @@ function dispatch(
 	kind: JobRecord["kind"],
 	toolCallId: string,
 	ack: string,
-	input: ResearchInput | DemoInput | VisualInput | PdfInput,
+	input: ResearchInput | DemoInput | VisualInput | PdfInput | WalkthroughInput,
 ): string {
 	const existing = ctx.jobStore.findJobByToolCallId(ctx.chatId, toolCallId);
 	const job = existing ?? ctx.jobStore.createJob({ kind, chatId: ctx.chatId, toolCallId, input });
@@ -92,6 +111,9 @@ const DEMO_ACK =
 const VISUAL_ACK =
 	"This call is fire-and-forget: continue your turn and keep teaching — do not wait, poll, or mention waiting. " +
 	"The verified figure arrives as a new message when ready and is rendered in the lesson; reference it then.";
+const WALKTHROUGH_ACK =
+	"This call is fire-and-forget: continue your turn and keep teaching — do not wait, poll, or mention waiting. " +
+	"The tested walkthrough arrives as a new message when ready and is rendered in the lesson; teach with it then — point at its steps by number.";
 const PDF_ACK =
 	"This call is fire-and-forget: continue your turn and keep teaching — do not wait, poll, or mention waiting. " +
 	"The document brief arrives as a new message when ready; weave it into the lesson and cite its pages.";
@@ -103,8 +125,8 @@ const RESEARCH_DESCRIPTION =
 	"NEVER use it for things you know cold, internal reasoning, or math.";
 const DEMO_DESCRIPTION =
 	"Dispatch a background sub-agent that BUILDS and headlessly TESTS an interactive teaching instrument — a single-file HTML " +
-	"demo (parameter sweep, simulation, animation, sampling) rendered live in the lesson. Use it when the concept is DYNAMIC: " +
-	"something to sweep, animate, or sample is better experienced than described. " +
+	"demo (parameter sweep, simulation, sampling) rendered live in the lesson. Use it for dependence on a parameter — " +
+	"something to sweep or sample is better operated than described. " +
 	"The call is ASYNC and fire-and-forget — it resolves immediately and your turn continues; the tested demo arrives later " +
 	"as a new message. Write a precise brief: concept, controls, interactions, style.";
 const VISUAL_DESCRIPTION =
@@ -113,12 +135,32 @@ const VISUAL_DESCRIPTION =
 	"function plots, physical layouts. For flows/relations/taxonomies write mermaid inline instead. " +
 	"The call is ASYNC and fire-and-forget — it resolves immediately and your turn continues; the verified figure arrives later " +
 	"as a new message.";
+const WALKTHROUGH_DESCRIPTION =
+	"Dispatch a background sub-agent that BUILDS an animated, step-by-step walkthrough (3–12 steps, one caption each) on a fixed " +
+	"scene engine and checks every step by running and looking at it. Use it for a derivation or process with stages: a mapping " +
+	"deforming, a sum building up, an optimizer stepping. The call is ASYNC and fire-and-forget — it resolves immediately and your " +
+	"turn continues; the walkthrough arrives later as a new message listing its captions by step number.";
 const PDF_DESCRIPTION =
 	"Dispatch a background sub-agent that READS a learner-provided PDF on your behalf (triage, targeted extraction, visual page " +
 	"reading for equations and diagrams) and returns a brief with page citations. Use it when the learner gives you a PDF path " +
 	"and you need its CONTENT for the lesson. The call is ASYNC and fire-and-forget — it resolves immediately and your turn " +
 	"continues; the brief arrives later as a new message. For quick looks at plain text or image files, use the read tool " +
 	"directly instead of dispatching.";
+
+/** A graphic tool's execute with the optional `nodeId` checked against the
+ *  live plan map first — a wrong id dispatches nothing. */
+function graphicExecute<I extends { nodeId?: string }>(
+	ctx: JobToolContext,
+	name: string,
+	run: AgentTool<any>["execute"],
+): AgentTool<any>["execute"] {
+	return (toolCallId, input, ...rest) => {
+		const nodeId = (input as I | undefined)?.nodeId;
+		const problem = nodeId && ctx.nodeIdProblem ? ctx.nodeIdProblem(nodeId) : null;
+		if (problem) return Promise.resolve(invalidInputResult(name, [problem]));
+		return run(toolCallId, input, ...rest);
+	};
+}
 
 /**
  * Per-request job tool registry: each tool closes over the composition root's
@@ -144,15 +186,36 @@ export function jobTools(ctx: JobToolContext): Record<string, AgentTool<any>> {
 			label: "demo",
 			description: DEMO_DESCRIPTION,
 			parameters: demoInputSchema,
-			execute: serverExecute("demo", demoInputSchema, (input, { toolCallId }) => dispatch(ctx, "demo", toolCallId, DEMO_ACK, input)),
+			execute: graphicExecute(
+				ctx,
+				"demo",
+				serverExecute("demo", demoInputSchema, (input, { toolCallId }) => dispatch(ctx, "demo", toolCallId, DEMO_ACK, input)),
+			),
 		},
 		visual: {
 			name: "visual",
 			label: "visual",
 			description: VISUAL_DESCRIPTION,
 			parameters: visualInputSchema,
-			execute: serverExecute("visual", visualInputSchema, (input, { toolCallId }) =>
-				dispatch(ctx, "visual", toolCallId, VISUAL_ACK, input),
+			execute: graphicExecute(
+				ctx,
+				"visual",
+				serverExecute("visual", visualInputSchema, (input, { toolCallId }) =>
+					dispatch(ctx, "visual", toolCallId, VISUAL_ACK, input),
+				),
+			),
+		},
+		walkthrough: {
+			name: "walkthrough",
+			label: "walkthrough",
+			description: WALKTHROUGH_DESCRIPTION,
+			parameters: walkthroughInputSchema,
+			execute: graphicExecute(
+				ctx,
+				"walkthrough",
+				serverExecute("walkthrough", walkthroughInputSchema, (input, { toolCallId }) =>
+					dispatch(ctx, "walkthrough", toolCallId, WALKTHROUGH_ACK, input),
+				),
 			),
 		},
 		pdf: {
@@ -169,3 +232,4 @@ export type ResearchInput = Static<typeof researchInputSchema>;
 export type DemoInput = Static<typeof demoInputSchema>;
 export type VisualInput = Static<typeof visualInputSchema>;
 export type PdfInput = Static<typeof pdfInputSchema>;
+export type WalkthroughInput = Static<typeof walkthroughInputSchema>;

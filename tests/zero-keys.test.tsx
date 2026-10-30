@@ -129,6 +129,7 @@ const catalog = (strongProvider: string | null, ...keyedProviders: string[]): Mo
 		researcher: null,
 		demoBuilder: null,
 		visualMaker: null,
+		walkthroughBuilder: null,
 		extractor: null,
 		auditor: null,
 	},

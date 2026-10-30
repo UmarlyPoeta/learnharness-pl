@@ -79,7 +79,7 @@ import { ReadingThinkingField } from "@/components/reading-thinking";
 import { currentUserThinkingOpen, setAllUserThinkingOpen } from "@/components/thinking-block";
 import { slotsConfigured, type ModelsSettings } from "@/src/core";
 import { useSettingsSaved } from "@/components/settings-signal";
-import { runWhy, WhyButton } from "@/components/why-button";
+import { runAsk, WhyButton, type AskMode } from "@/components/why-button";
 
 /** One width for everything: transcript, cards, and the bottom blob share this column. */
 /**
@@ -673,8 +673,8 @@ export function Chat({
 	// "Dlaczego?" (nauka od korzeni, 2026-10-29): a pending check is skipped
 	// with the note, then the request fills the composer — which remounts
 	// once the skip lands, hence the focus on the next frame.
-	const onWhy = (fragment: string) =>
-		runWhy(fragment, {
+	const onAsk = (mode: AskMode, fragment: string) =>
+		runAsk(mode, fragment, {
 			hasPending: () => pendingRef.current !== null,
 			dismissPending: (note) => dismissPendingQuestion(note),
 			getText: () => textRef.current,
@@ -1209,7 +1209,7 @@ export function Chat({
 			}}
 		>
 		<JobsContext.Provider value={jobs}>
-		<WhyButton onWhy={onWhy} active={!activeProblem} />
+		<WhyButton onAsk={onAsk} active={!activeProblem} />
 		{/* The session surface: the transcript column (header + scroller) and
 		    the plan-tree panel as full-height SIBLINGS — the panel spans top to
 		    bottom exactly like the left sidebar, and the header (name + phase

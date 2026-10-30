@@ -12,7 +12,7 @@ import { newHandoffMessage } from "../native-messages.ts";
 
 // ─── Async sub-agent jobs (vision §2.5; plan.md Wave 0 protocol) ────────────
 
-export type JobKind = "research" | "demo" | "visual" | "pdf";
+export type JobKind = "research" | "demo" | "visual" | "pdf" | "walkthrough";
 export type JobStatus = "running" | "done" | "error";
 
 export interface JobRecord {
@@ -224,6 +224,27 @@ export interface VisualResult {
 	notes?: string;
 }
 
+/** An animated, stepped derivation (wyjaśnienia obrazowe, 2026-10-29):
+ *  the builder writes a scene script for the fixed walkthrough engine and
+ *  checks every step by running and looking before delivery. */
+export interface WalkthroughToolInput {
+	title: string;
+	/** Objects, coordinates, what changes per step and what each caption says. */
+	brief: string;
+	/** The plan node this graphic serves. */
+	nodeId?: string;
+}
+
+export interface WalkthroughResult {
+	title: string;
+	/** The complete walkthrough document (engine runtime + scene script). */
+	html: string;
+	/** One caption per step (markdown + $…$), rendered by the card. */
+	captions: string[];
+	tested: true;
+	notes?: string;
+}
+
 /** The pdf-reader (sources v0, 2026-09): reads a learner-provided PDF on
  *  the teacher's behalf — triage, targeted extraction, look-at-the-page
  *  renders inside its own loop — and returns a text brief with page
@@ -277,7 +298,7 @@ export interface SubagentResultMeta {
 /** The data-subagent-artifact part payload: what the UI renders. */
 export interface SubagentArtifactData {
 	kind: JobKind;
-	result: ResearchResult | DemoResult | VisualResult | PdfResult;
+	result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult;
 	/** The learner's pinned UI state (invert switch) riding the record. */
 	ui?: { inverted?: boolean };
 }
@@ -285,7 +306,7 @@ export interface SubagentArtifactData {
 /** A result steer's marker details: the UI's meta + artifact in one
  *  payload (the projection splits it into metadata + data part). */
 export interface SteerDetails extends SubagentResultMeta {
-	result: ResearchResult | DemoResult | VisualResult | PdfResult;
+	result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult;
 	/** LEARNER UI state pinned onto the artifact (owner, 2026-10-07): the
 	 *  invert switch's position, persisted so navigating away and back (or
 	 *  restarting) keeps it. A VIEW preference — never enters the teacher's
@@ -305,7 +326,7 @@ export function setSteerUiInverted(
 	return messages.map((m) => {
 		if (m.id !== messageId) return m;
 		const d = (m as LhMarkerMessage).details as Partial<SteerDetails> | undefined;
-		if (!d || (d.kind !== "demo" && d.kind !== "visual")) return m;
+		if (!d || (d.kind !== "demo" && d.kind !== "visual" && d.kind !== "walkthrough")) return m;
 		return { ...m, details: { ...d, ui: { ...d.ui, inverted } } } as LhMessage;
 	});
 }
@@ -316,7 +337,7 @@ export type SteerMessage = LhMarkerMessage;
 /** Whether a result is the failure shape (html/svg empty, failure brief). */
 export function isSubagentFailure(
 	kind: JobKind,
-	result: ResearchResult | DemoResult | VisualResult | PdfResult,
+	result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult,
 ): boolean {
 	if (kind === "research") {
 		const r = result as ResearchResult;
@@ -330,12 +351,16 @@ export function isSubagentFailure(
 		const r = result as PdfResult;
 		return /^PDF failed:/i.test(r.brief);
 	}
+	if (kind === "walkthrough") {
+		const r = result as WalkthroughResult;
+		return typeof r.html !== "string" || r.html.length === 0;
+	}
 	const r = result as VisualResult;
 	return typeof r.svg !== "string" || r.svg.length === 0;
 }
 
 /** The model-facing text of a steer: what the result IS, what to do with it. */
-function steerText(kind: JobKind, result: ResearchResult | DemoResult | VisualResult | PdfResult): string {
+function steerText(kind: JobKind, result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult): string {
 	if (isSubagentFailure(kind, result)) {
 		if (kind === "research")
 			return `${(result as ResearchResult).brief}\n\nContinue with what you can establish and flag the uncertainty to the learner.`;
@@ -345,12 +370,23 @@ function steerText(kind: JobKind, result: ResearchResult | DemoResult | VisualRe
 			}. Fall back to explaining in prose; if the brief was the problem, re-call demo with a tighter one.`;
 		if (kind === "pdf")
 			return `${(result as PdfResult).brief}\n\nContinue with what you can establish from the session and flag the gap to the learner.`;
+		if (kind === "walkthrough")
+			return `The walkthrough "${(result as WalkthroughResult).title}" could not be built: ${
+				(result as WalkthroughResult).notes ?? "unknown reason"
+			}. Fall back to prose, a visual or a demo; if the brief was the problem, re-call walkthrough with a tighter one.`;
 		return `The figure could not be made: ${(result as VisualResult).notes ?? "unknown reason"}. Fall back to prose or mermaid, or re-call visual with a tighter brief.`;
 	}
 	if (kind === "research")
 		return `Research complete — the researcher's full brief follows. Weave it into the lesson and cite its sources when you use its findings:\n\n${(result as ResearchResult).brief}`;
 	if (kind === "pdf")
 		return `PDF reading complete — the reader's brief on "${(result as PdfResult).path}" follows, with page citations. Weave it into the lesson and cite pages when you use it:\n\n${(result as PdfResult).brief}`;
+	if (kind === "walkthrough") {
+		const r = result as WalkthroughResult;
+		const steps = r.captions.map((c, i) => `${i + 1}. ${c}`).join("\n");
+		return `The animated walkthrough "${r.title}" (${r.captions.length} steps) is built, tested step by step and rendered in the lesson. Builder notes: ${
+			r.notes ?? "(none)"
+		}.\nSteps:\n${steps}\nTeach with it — point the learner at specific steps by number.`;
+	}
 	if (kind === "demo")
 		return `The demo "${(result as DemoResult).title}" is built, headlessly tested, and rendered in the lesson. Builder notes: ${
 			(result as DemoResult).notes ?? "(none)"
@@ -367,7 +403,7 @@ function steerText(kind: JobKind, result: ResearchResult | DemoResult | VisualRe
  */
 export function buildSubagentSteer(
 	job: Pick<JobRecord, "id" | "kind" | "toolCallId">,
-	result: ResearchResult | DemoResult | VisualResult | PdfResult,
+	result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult,
 ): SteerMessage {
 	return {
 		id: `steer_${job.id}`,
@@ -410,6 +446,8 @@ function abortText(kind: JobKind): string {
 		return "Research aborted — the learner aborted the research job, so no brief is coming. Acknowledge it in one line and continue teaching without it (or offer to re-dispatch it).";
 	if (kind === "demo")
 		return "The demo job was aborted by the learner — no demo is coming. Acknowledge it in one line and teach the topic in prose instead (a re-dispatch is fine if the learner wants it).";
+	if (kind === "walkthrough")
+		return "The walkthrough job was aborted by the learner — no animation is coming. Acknowledge it in one line and teach without it (a re-dispatch is fine if the learner wants it).";
 	if (kind === "pdf")
 		return "The PDF reading job was aborted by the learner — no brief is coming. Acknowledge it in one line and continue without it (a re-dispatch is fine if the learner wants it).";
 	return "The figure job was aborted by the learner — no figure is coming. Acknowledge it in one line and teach without it (a re-dispatch is fine if the learner wants it).";

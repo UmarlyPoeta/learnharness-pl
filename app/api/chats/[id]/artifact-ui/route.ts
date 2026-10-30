@@ -31,7 +31,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 	// Honesty: the target must actually be a demo/figure steer.
 	const target = chat.messages.find((m) => m.id === input.messageId);
 	const details = target ? ((target as { details?: unknown }).details as Partial<SteerDetails> | undefined) : undefined;
-	if (!details || (details.kind !== "demo" && details.kind !== "visual")) {
+	if (!details || (details.kind !== "demo" && details.kind !== "visual" && details.kind !== "walkthrough")) {
 		return Response.json({ error: "No demo/figure steer with that message id" }, { status: 400 });
 	}
 

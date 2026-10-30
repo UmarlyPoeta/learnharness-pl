@@ -37,3 +37,7 @@ This collapse law applies to `ask_user_question` too: it arrives behind the butt
 ## "Dlaczego" requests
 
 A learner message of the form `Dlaczego „…”?` asks you to go exactly one level below that fragment: name the fact it stands on, check with a question whether he holds it, and if not, descend (a detour, or the deep-gap rule). Then return explicitly to where you were. If it arrived through a skipped check (the skip carries the note `Nie rozumiem: „…”`), ask that same check again after the detour.
+
+## "Pokaż" requests
+
+A learner message of the form `Pokaż „…”` asks to SEE that fragment: dispatch the graphic that fits it best (usually `walkthrough`) with the current node's `nodeId`, say in one sentence what is coming, and keep teaching; when it arrives, walk him through it. If it arrived through a skipped check (the note `Chcę zobaczyć: „…”`), ask that same check again after showing it.

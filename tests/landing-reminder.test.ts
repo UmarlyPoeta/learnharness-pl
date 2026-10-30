@@ -15,3 +15,18 @@ test("a check that did not land gets the reminder; a landed one or a prediction 
 	assert.equal(landingReminder({ type: "predict", nodeId: "x" }, ans({ correct: false, confidence: 20 })), undefined);
 	assert.equal(landingReminder(check, ans({ dismissed: true })), undefined);
 });
+
+import { graphicReminder } from "../src/core/graphic-reminder.ts";
+import type { LhMessage } from "../src/core/native-messages.ts";
+
+test("graphicReminder: a check on a node without a graphic is nudged; with one, not", () => {
+	const quiz = { tool: "quiz", input: { type: "check", nodeId: "jakobian" } };
+	assert.match(graphicReminder([], quiz)!, /plan node "jakobian" has no graphic yet/);
+	const withGraphic = [
+		{ role: "assistant", content: [{ type: "toolCall", name: "walkthrough", arguments: { nodeId: "jakobian" } }] },
+	] as unknown as LhMessage[];
+	assert.equal(graphicReminder(withGraphic, quiz), null);
+	assert.equal(graphicReminder([], { tool: "quiz", input: { type: "predict", nodeId: "jakobian" } }), null);
+	assert.equal(graphicReminder([], { tool: "quiz", input: { type: "check" } }), null);
+	assert.equal(graphicReminder([], { tool: "probe", input: { type: "check", nodeId: "jakobian" } }), null);
+});

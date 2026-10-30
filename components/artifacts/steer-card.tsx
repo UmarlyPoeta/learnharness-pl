@@ -7,6 +7,7 @@ import { isSubagentFailure } from "@/src/core";
 import { DemoOutputCard } from "@/components/artifacts/demo-card";
 import { PdfBriefCard, ResearchBriefCard } from "@/components/artifacts/job-card";
 import { VisualOutputCard } from "@/components/artifacts/visual-card";
+import { WalkthroughOutputCard } from "@/components/artifacts/walkthrough-card";
 import { plural } from "@/lib/utils";
 
 /**
@@ -60,6 +61,10 @@ export function SubagentSteerCard({ message }: { message: LhViewMessage }) {
 			return <DemoOutputCard output={data.result} messageId={message.id} initialInverted={data.ui?.inverted ?? false} />;
 		case "visual":
 			return <VisualOutputCard output={data.result} messageId={message.id} initialInverted={data.ui?.inverted ?? false} />;
+		case "walkthrough":
+			return (
+				<WalkthroughOutputCard output={data.result} messageId={message.id} initialInverted={data.ui?.inverted ?? false} />
+			);
 	}
 }
 

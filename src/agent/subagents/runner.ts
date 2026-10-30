@@ -18,6 +18,8 @@ import {
 	type UsageStepLike,
 	type VisualResult,
 	type VisualToolInput,
+	type WalkthroughResult,
+	type WalkthroughToolInput,
 } from "../../core/contracts.ts";
 import { registerJobAbort, unregisterJobAbort } from "./aborts.ts";
 import * as fs from "node:fs/promises";
@@ -30,6 +32,7 @@ import { runDemoBuilder } from "./demo-builder.ts";
 import { runPdfReaderAgent } from "./pdf-reader.ts";
 import { runResearcherAgent } from "./researcher.ts";
 import { runVisualMaker } from "./visual-maker.ts";
+import { runWalkthroughBuilder } from "./walkthrough-builder.ts";
 
 /**
  * The background job runner (contracts.ts "THE ASYNC PROTOCOL" §2–3), created
@@ -60,9 +63,10 @@ export const researchModelOverride: { current?: PiEngine } = {};
 export const demoModelOverride: { current?: PiEngine } = {};
 export const visualModelOverride: { current?: PiEngine } = {};
 export const pdfModelOverride: { current?: PiEngine } = {};
+export const walkthroughModelOverride: { current?: PiEngine } = {};
 
 /** The dispatch-time tool input (from src/agent/tools/jobs.ts schemas). */
-type JobToolInput = ResearchToolInput | DemoToolInput | VisualToolInput | PdfToolInput;
+type JobToolInput = ResearchToolInput | DemoToolInput | VisualToolInput | PdfToolInput | WalkthroughToolInput;
 
 export interface JobRunnerDeps {
 	chatStore: ChatStore;
@@ -123,6 +127,7 @@ const KIND_ROLE: Record<JobKind, ModelRole> = {
 	demo: "demoBuilder",
 	visual: "visualMaker",
 	pdf: "pdfReader",
+	walkthrough: "walkthroughBuilder",
 };
 
 export function createJobRunner(deps: JobRunnerDeps): JobRunner {
@@ -174,6 +179,7 @@ export function createJobRunner(deps: JobRunnerDeps): JobRunner {
 			demoBuilder: demoModelOverride,
 			visualMaker: visualModelOverride,
 			pdfReader: pdfModelOverride,
+			walkthroughBuilder: walkthroughModelOverride,
 		};
 		return testOverride[KIND_ROLE[kind]]?.current ?? deps.engineFor?.(KIND_ROLE[kind]);
 	}
@@ -186,6 +192,7 @@ export function createJobRunner(deps: JobRunnerDeps): JobRunner {
 		demo: (jobId, engine, input, loop) => runDemoJob(jobId, engine, input, loop),
 		visual: (jobId, engine, input, loop) => runVisualJob(jobId, engine, input, loop),
 		pdf: (jobId, engine, input, loop) => runPdfJob(jobId, engine, input, loop),
+		walkthrough: (jobId, engine, input, loop) => runWalkthroughJob(jobId, engine, input, loop),
 	};
 
 	async function runJob(jobId: string, input?: JobToolInput): Promise<void> {
@@ -217,10 +224,23 @@ export function createJobRunner(deps: JobRunnerDeps): JobRunner {
 				| DemoToolInput
 				| VisualToolInput
 				| PdfToolInput
+				| WalkthroughToolInput
 				| undefined;
 			const pdf = resolved as PdfToolInput | undefined;
-			const failure: ResearchResult | DemoResult | VisualResult | PdfResult =
-				job.kind === "research"
+			const failure: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult =
+				job.kind === "walkthrough"
+					? {
+							title:
+								typeof (resolved as WalkthroughToolInput | undefined)?.title === "string" &&
+								(resolved as WalkthroughToolInput).title.trim()
+									? (resolved as WalkthroughToolInput).title
+									: "Animowane wyjaśnienie",
+							html: "",
+							captions: [],
+							tested: true,
+							notes: `FAILED: ${reason}`,
+						}
+					: job.kind === "research"
 					? { brief: `Research failed: ${reason}`, sources: [] }
 					: job.kind === "demo"
 						? {
@@ -300,7 +320,7 @@ export function createJobRunner(deps: JobRunnerDeps): JobRunner {
 	 * Save the computation outcome and session delivery obligation together.
 	 * Worker liveness ends after cleanup, not after a lesson consumes the result.
 	 */
-	async function finishJob(jobId: string, result: ResearchResult | DemoResult | VisualResult | PdfResult): Promise<void> {
+	async function finishJob(jobId: string, result: ResearchResult | DemoResult | VisualResult | PdfResult | WalkthroughResult): Promise<void> {
 		const job = jobStore.getJob(jobId);
 		if (!job) return;
 		// Aborted mid-run (abortJob flips the record before
@@ -475,6 +495,42 @@ export function createJobRunner(deps: JobRunnerDeps): JobRunner {
 			const reason = err instanceof Error ? err.message : String(err);
 			if (stillRunning(jobId)) jobStore.updateJob(jobId, { error: reason });
 			await finishJob(jobId, { svg: "", notes: `FAILED: ${reason}` });
+		}
+	}
+
+	// ─── walkthroughs (wyjaśnienia obrazowe) ──────────────────────────────────
+
+	async function runWalkthroughJob(
+		jobId: string,
+		model: PiEngine | undefined,
+		passedInput: JobToolInput | undefined,
+		loop: LoopContext,
+	): Promise<void> {
+		const ctx = jobContext(jobId);
+		if (!ctx) return;
+		const input = (passedInput ?? resolveInput(ctx.job, passedInput)) as WalkthroughToolInput | undefined;
+		const title = typeof input?.title === "string" ? input.title : "";
+		const brief = typeof input?.brief === "string" ? input.brief : "";
+		try {
+			jobStore.updateJob(jobId, { activity: "building walkthrough" });
+			const result = await runWalkthroughBuilder(
+				{ title, brief },
+				{
+					engine: model,
+					abortSignal: loop.abortSignal,
+					chatId: loop.chatId,
+					onUsage: (usage) => loop.onUsage(piUsageToStep(usage)),
+					onActivity: (line) => jobStore.updateJob(jobId, { activity: line }),
+				},
+			);
+			if (isSubagentFailure("walkthrough", result) && stillRunning(jobId))
+				jobStore.updateJob(jobId, { error: result.notes ?? "walkthrough build failed" });
+			await finishJob(jobId, result);
+		} catch (err) {
+			if (loop.abortSignal.aborted) return;
+			const reason = err instanceof Error ? err.message : String(err);
+			if (stillRunning(jobId)) jobStore.updateJob(jobId, { error: reason });
+			await finishJob(jobId, { title: title || "Animowane wyjaśnienie", html: "", captions: [], tested: true, notes: `FAILED: ${reason}` });
 		}
 	}
 

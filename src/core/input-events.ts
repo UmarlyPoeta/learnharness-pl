@@ -28,6 +28,7 @@
 import type { QuestionAnswerData } from "./question-core.ts";
 import type { LhMessage } from "./native-messages.ts";
 import { landingReminder } from "./landing-reminder.ts";
+import { graphicReminder } from "./graphic-reminder.ts";
 import {
 	activeProblemOf,
 	concludedByDismissalPair,
@@ -207,8 +208,13 @@ export function inputAppends(
 			if (!pending || pending.toolCallId !== input.toolCallId) {
 				throw new ChatInputError("answer input targets no pending question call");
 			}
-			const reminder = pending.tool === "quiz" ? landingReminder(pending.input, input.answer) : undefined;
-			return [newAnswerResult(input.toolCallId, pending.tool, input.answer, reminder)];
+			const reminders = [
+				pending.tool === "quiz" ? landingReminder(pending.input, input.answer) : undefined,
+				input.answer.dismissed ? null : graphicReminder(record.messages, pending),
+			].filter((r): r is string => typeof r === "string");
+			return [
+				newAnswerResult(input.toolCallId, pending.tool, input.answer, reminders.length ? reminders.join("\n") : undefined),
+			];
 		}
 		case "continue":
 			return dismissalConclusion(record);
