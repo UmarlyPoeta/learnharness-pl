@@ -18,6 +18,7 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
+		"build:walkthrough": "node scripts/build-walkthrough-runtime.mjs",
 		"start": "next start",
 		"test": "bash scripts/test-isolated.sh",
 		"lint": "eslint .",

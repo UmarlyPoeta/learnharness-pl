@@ -777,7 +777,12 @@ export function dismissedAnswer(kind: QuestionKind, questionText: string): Quest
 }
 
 export function compactAnswerForModel(ad: QuestionAnswerData): Record<string, unknown> {
-	if (ad.dismissed) return { kind: ad.kind, dismissed: true };
+	// A skip still carries the learner's note (the "Dlaczego?"/"Pokaż"
+	// detour: `Nie rozumiem: „…”`) — the model needs it to ask again later.
+	if (ad.dismissed)
+		return ad.readingThinking
+			? { kind: ad.kind, dismissed: true, thinkingWhileReading: ad.readingThinking }
+			: { kind: ad.kind, dismissed: true };
 	const out: Record<string, unknown> = { kind: ad.kind };
 	if (ad.dontKnow) out.dontKnow = true;
 	// Array.isArray: the seam is called with `unknown` answers (test
