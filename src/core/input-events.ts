@@ -27,6 +27,7 @@
 
 import type { QuestionAnswerData } from "./question-core.ts";
 import type { LhMessage } from "./native-messages.ts";
+import { landingReminder } from "./landing-reminder.ts";
 import {
 	activeProblemOf,
 	concludedByDismissalPair,
@@ -206,7 +207,8 @@ export function inputAppends(
 			if (!pending || pending.toolCallId !== input.toolCallId) {
 				throw new ChatInputError("answer input targets no pending question call");
 			}
-			return [newAnswerResult(input.toolCallId, pending.tool, input.answer)];
+			const reminder = pending.tool === "quiz" ? landingReminder(pending.input, input.answer) : undefined;
+			return [newAnswerResult(input.toolCallId, pending.tool, input.answer, reminder)];
 		}
 		case "continue":
 			return dismissalConclusion(record);
