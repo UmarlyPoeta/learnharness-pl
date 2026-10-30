@@ -186,13 +186,17 @@ export function newAnswerResult(
 	toolCallId: string,
 	toolName: string,
 	answer: unknown,
+	reminder?: string,
 ): LhMessage & ToolResultMessage {
 	return {
 		id: newMessageId(),
 		role: "toolResult",
 		toolCallId,
 		toolName,
-		content: [{ type: "text", text: JSON.stringify(compactAnswerForModel(answer as QuestionAnswerData)) }],
+		content: [
+			{ type: "text", text: JSON.stringify(compactAnswerForModel(answer as QuestionAnswerData)) },
+			...(reminder ? [{ type: "text" as const, text: reminder }] : []),
+		],
 		// 0.87.1 narrowed ToolResultMessage.details to JsonRepresentation —
 		// our payloads are JSON-safe answer structures, so the cast is honest.
 		details: answer as ToolResultMessage["details"],
