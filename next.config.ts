@@ -1,22 +1,26 @@
 import { readFileSync } from "node:fs";
 import type { NextConfig } from "next";
+import { MAX_IMPORT_BODY_BYTES } from "./lib/notes-import-limits.ts";
 
 const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string; homepage: string };
 
 const nextConfig: NextConfig = {
 	// Public build metadata only; no new runtime Electron version API.
 	env: { LH_VERSION: pkg.version, LH_HOMEPAGE: pkg.homepage },
+	// One proxy body cap serves both large uploads. Notes import: multipart
+	// headroom above the 25 MiB file allowance (a proxy buffer, not a
+	// rejection gate: the import route also bounds reads, validates actual
+	// file bytes and handles incomplete multipart bodies). Local dictation
+	// (final review C1): the proxy (proxy.ts, matcher /api/:path*) clones
+	// request bodies and TRUNCATES past this cap — /api/stt/local takes up to
+	// 10 minutes (19.2 MB).
+	experimental: { proxyClientMaxBodySize: Math.max(MAX_IMPORT_BODY_BYTES, 20 * 1024 * 1024) },
 	// Desktop target (Electron wrapper, 2026-09-17): standalone output = a
 	// self-contained .next/standalone/server.js the Electron shell spawns
 	// on 127.0.0.1. Harmless for plain web deploys (extra build output).
 	// The manual copies the docs require — public/ and .next/static — are
 	// done by scripts/build-server.mjs.
 	output: "standalone",
-	// Local dictation (final review C1): the proxy (proxy.ts, matcher
-	// /api/:path*) clones request bodies and TRUNCATES past this cap
-	// (default 10 MiB ≈ 5.5 min of 16 kHz PCM) — /api/stt/local takes up to
-	// 10 minutes (19.2 MB), so the cap sits above that.
-	experimental: { proxyClientMaxBodySize: 20 * 1024 * 1024 },
 	// SAFETY (empirically verified 2026-09-17): without this, output file
 	// tracing sweeps the repo's real data/ — chat records, graph ledgers —
 	// INTO the standalone bundle. A shipped desktop app would carry the
@@ -83,6 +87,11 @@ const nextConfig: NextConfig = {
 			// npm installs only the current platform's binary, so this glob
 			// resolves to exactly one Skia binary per build.
 			"node_modules/@napi-rs/canvas-*/**/*",
+			// Pi-compatible image resizing runs in an unbundled worker. Photon
+			// loads its colocated WASM through Node, also in packaged Electron.
+			"src/agent/image-processing/*.mjs",
+			"src/agent/image-processing/LICENSE",
+			"node_modules/@silvia-odwyer/photon-node/**/*",
 			// Wave E stage 2: resvg rasterizes visual-maker SVGs natively; same
 			// per-platform-binary story as the canvas above (one per build).
 			"node_modules/@resvg/resvg-js-*/**/*",
@@ -111,6 +120,7 @@ const nextConfig: NextConfig = {
 		"@earendil-works/pi-agent-core",
 		"pdfjs-dist", // sources v0: bundling breaks its node fake-worker path
 		"@napi-rs/canvas", // native binding — bundling breaks the .node require
+		"@silvia-odwyer/photon-node", // CJS loads its adjacent WASM from disk
 		"@resvg/resvg-js", // native binding — same
 	],
 };

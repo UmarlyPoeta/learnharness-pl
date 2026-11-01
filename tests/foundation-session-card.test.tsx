@@ -13,6 +13,7 @@ import {
 	rememberFoundationHref,
 	rememberedFoundationHref,
 } from "../components/artifacts/foundation-session-card.tsx";
+import { readOpeningPrompt } from "../components/opening-prompt.ts";
 
 const INPUT = { title: "Macierze od zera", goal: "Chcę zrozumieć mnożenie macierzy. Potrzebne do LM." };
 
@@ -49,11 +50,26 @@ describe("foundationWhyLine", () => {
 
 describe("openFoundationSession", () => {
 	it("creates the session from the goal and navigates to it", async () => {
-		const pushed: string[] = [];
-		const fakeFetch = (async () => new Response(JSON.stringify({ id: "chat_x" }))) as typeof fetch;
-		const ok = await openFoundationSession(INPUT.goal, fakeFetch, (href) => pushed.push(href));
-		assert.equal(ok, true);
-		assert.deepEqual(pushed, [`/chat/chat_x?prompt=${encodeURIComponent(INPUT.goal)}`]);
+		// Upstream 0.4.1 hands the opening text over through sessionStorage,
+		// never the navigation URL.
+		const store = new Map<string, string>();
+		const original = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+		Object.defineProperty(globalThis, "sessionStorage", { configurable: true, value: {
+			getItem: (k: string) => store.get(k) ?? null,
+			setItem: (k: string, v: string) => { store.set(k, v); },
+			removeItem: (k: string) => { store.delete(k); },
+		} });
+		try {
+			const pushed: string[] = [];
+			const fakeFetch = (async () => new Response(JSON.stringify({ id: "chat_x" }))) as typeof fetch;
+			const ok = await openFoundationSession(INPUT.goal, fakeFetch, (href) => pushed.push(href));
+			assert.equal(ok, true);
+			assert.deepEqual(pushed, ["/chat/chat_x"]);
+			assert.equal(readOpeningPrompt("chat_x"), INPUT.goal);
+		} finally {
+			if (original) Object.defineProperty(globalThis, "sessionStorage", original);
+			else Reflect.deleteProperty(globalThis, "sessionStorage");
+		}
 	});
 
 	it("does nothing for a blank goal", async () => {

@@ -52,15 +52,22 @@ Pola „Twój tok myślenia” pozwalają opisać rozumowanie, wątpliwości i r
 
 ![Graf wiedzy LearnHarness](docs/assets/knowledge-graph.png)
 
+Poza kluczami API dostawców możesz użyć połączeń z subskrypcjami (w aplikacji desktopowej), zainstalowanego [Claude Code CLI](docs/claude-code.md) albo [własnego endpointu zgodnego z OpenAI](docs/custom-providers.md), w tym lokalnego serwera modeli. Dyktowanie przez Deepgram i research w sieci używają osobnych kluczy.
+
+Zaawansowani mogą ustawić [retencję cache promptów](docs/compaction-accounting.md#prompt-cache-retention) dla każdego poziomu modeli w **Ustawienia → Agent → Modele → Pokaż ustawienia zaawansowane**. Wartość **Pi default** zachowuje dotychczasowe zachowanie dostawcy; dłuższa retencja może zwiększyć koszt zapisu do cache.
+
 ## Dyktowanie po polsku
 
 Dyktowanie działa lokalnie, na Twoim komputerze — bez wysyłania głosu do chmury i bez opłat. Za pierwszym razem wejdź w **Ustawienia → Dostawcy AI → Dyktowanie** i kliknij **Pobierz model (ok. 550 MB)**. Model `large-v3-turbo` ([whisper.cpp](https://github.com/ggml-org/whisper.cpp)) korzysta z karty graficznej przez Vulkan, a bez niej działa na procesorze (wolniej). Zamiast lokalnego silnika możesz wybrać Deepgram (wymaga klucza API).
 
+**Deepgram:** utwórz [klucz API Deepgrama](https://console.deepgram.com/) z rolą **Member lub wyższą** ([wymaganą do wydawania tokenów](https://developers.deepgram.com/reference/auth/tokens/grant)) i dodaj go w **Ustawienia → Dostawcy AI → Dyktowanie**. Język wybierasz pod kluczem (domyślnie polski); **Wielojęzyczny** rozpoznaje język automatycznie, także w mowie mieszanej. Błąd `403 Insufficient permissions` przy wydawaniu tokenu zwykle oznacza zbyt niską rolę klucza.
+
 ## Twoje klucze, Twoje dane
 
-- **Bez abonamentu.** Płacisz bezpośrednio dostawcy modeli za faktyczne użycie; licznik kosztów pokazuje wydatki na bieżąco.
+- **Bez abonamentu.** Żadnej subskrypcji ani marży LearnHarness. Płacisz dostawcy modeli, za subskrypcję albo nic (model lokalny) — zależnie od konfiguracji. Licznik kosztów szacuje znane koszty API; nie obejmuje subskrypcji, CLI ani własnych endpointów.
 - **Dane lokalnie.** Sesje, graf, ustawienia i klucze API zostają na Twoim komputerze, w zwykłych plikach.
 - **Usługi zewnętrzne.** Modele działają u wybranego dostawcy, więc treść potrzebna do zadania jest do niego wysyłana. Research w sieci i Deepgram też łączą się z internetem; lokalne dyktowanie — nie.
+- **Przejrzystość.** Prompty systemowe są widoczne i edytowalne. Aplikacja jest open source na licencji AGPL-3.0.
 
 ## Rozwój
 
@@ -69,6 +76,8 @@ npm install
 npm run dev        # http://localhost:3000
 npm test           # testy w izolowanym katalogu danych, bez sieci i bez LLM
 ```
+
+Szczegóły (po angielsku): [przewodnik deweloperski](docs/development.md), [architektura](docs/architecture.md), [skróty klawiszowe](docs/keyboard.md), [wydania desktopowe](docs/desktop-release.md).
 
 Lokalne dyktowanie w trybie deweloperskim (serwer Pythona z faster-whisper):
 

@@ -6,7 +6,8 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { concatFrames, DG_URL, LOCAL_STT_APP_DOWN, LOCAL_STT_DOWN, LOCAL_STT_NO_MODEL, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
+import { deepgramListenUrl, FACTORY_SETTINGS } from "../src/core/index.ts";
+import { concatFrames, LOCAL_STT_APP_DOWN, LOCAL_STT_DOWN, LOCAL_STT_NO_MODEL, LOCAL_STT_SLOW, MAX_LOCAL_BYTES, transcribeLocal } from "../components/dictation.tsx";
 
 type Call = { url: string; init?: RequestInit };
 
@@ -96,7 +97,7 @@ describe("limits and the Deepgram fix", () => {
 		assert.equal(MAX_LOCAL_BYTES, 19_200_000);
 	});
 
-	it("Deepgram transcribes Polish", () => {
-		assert.match(DG_URL, /[?&]language=pl(&|$)/);
+	it("Deepgram transcribes Polish by default", () => {
+		assert.match(deepgramListenUrl(FACTORY_SETTINGS.dictation.language), /[?&]language=pl(&|$)/);
 	});
 });

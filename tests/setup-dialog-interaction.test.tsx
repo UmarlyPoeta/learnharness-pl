@@ -172,10 +172,15 @@ describe("setup polish interactions", () => {
 		assert.equal(closed, 0);
 	});
 
-	it("the empty vision list gives the approved next action without an em dash", async () => {
+	it("the vision slot filters out built-in text-only models (image-capable or custom only)", async () => {
 		await mount({ keyed: true });
 		await click(element('[data-testid="setup-trigger-vision"]'));
-		assert.ok(element('[data-testid="setup-menu-vision"]').textContent?.includes("Brak modeli obsługujących obrazy. Dodaj klucz dostawcy z dostępem do modelu wizyjnego."));
+		// The text-only openrouter fixture is neither image-capable nor a custom-
+		// endpoint model, so the vision slot filters it out (built-ins must report
+		// image input; only custom models stay selectable when capability is unknown).
+		const menu = element('[data-testid="setup-menu-vision"]');
+		assert.ok(!menu.textContent?.includes("fixture-text"));
+		assert.ok(menu.textContent?.includes("Brak pasujących modeli."));
 	});
 
 	it("catalog failure uses the approved two-sentence error", async () => {
