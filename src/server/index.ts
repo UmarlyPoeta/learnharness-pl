@@ -48,3 +48,4 @@ export { sessionCost } from "./pricing.ts";
 export { transcribeTimeoutMs } from "./stt-local.ts";
 export { createWhisperEngine, whisperEngine, modelPath, MODEL_FILE, WhisperError, __setSttForTests, type WhisperEngine, type SpawnLike, type ChildLike } from "./whisper-engine.ts";
 export { createModelDownloader, modelDownloader, __setModelDownloaderForTests, MODEL_URL, MODEL_SIZE, MODEL_SHA256, type ModelStatus } from "./stt-model.ts";
+export { listBoards, readBoard, createBoard, saveBoard, deleteBoard, boardAssist, BoardAssistError, type AssistMode, type BoardMeta, type BoardRecord } from "./board.ts";
