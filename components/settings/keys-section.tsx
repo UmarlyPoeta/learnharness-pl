@@ -41,6 +41,7 @@ import { SubscriptionConnections } from "./subscription-connections.tsx";
 import { ClaudeCodeInstallationStatus } from "./claude-code-status.tsx";
 import { ProviderMenuList } from "./model-menu.tsx";
 import { MenuShell } from "@/components/menu-shell";
+import { plural } from "@/lib/utils";
 import { notifySettingsSaved } from "@/components/settings-signal";
 import { DictationLanguageSetting } from "@/components/dictation-language";
 
@@ -73,7 +74,7 @@ interface CustomStatus {
 
 async function readCustomStatus(inspectKey = false): Promise<CustomStatus> {
 	const response = await fetch(`/api/custom-provider${inspectKey ? "?authMode=apiKey" : ""}`);
-	if (!response.ok) throw new Error("Unable to load custom configuration.");
+	if (!response.ok) throw new Error("Nie udało się wczytać konfiguracji własnego endpointu.");
 	const cp = await response.json() as Partial<CustomStatus>;
 	return { keyReuseRequired: Boolean(cp.keyReuseRequired), revision: response.headers.get("etag") ?? "", authMode: cp.authMode ?? "keyless", keySource: cp.keySource ?? "none", baseUrl: cp.baseUrl ?? "", models: cp.models ?? [], overrides: cp.overrides ?? {}, manualModels: cp.manualModels ?? [], keyPresent: Boolean(cp.keyPresent) };
 }
@@ -610,7 +611,7 @@ export function KeysSection({
 	 *  deleteKey: fire, re-read, broadcast so the catalog narrows everywhere. */
 	async function disconnectCustom(revision: string): Promise<string | null> {
 		const res = await fetch("/api/custom-provider", { method: "DELETE", headers: { "content-type": "application/json", "if-match": revision }, body: JSON.stringify({}) }).catch(() => null);
-		if (!res?.ok) return res ? ((await res.json().catch(() => ({}))).error ?? "Disconnect failed.") : "Disconnect failed. Check your connection.";
+		if (!res?.ok) return res ? ((await res.json().catch(() => ({}))).error ?? "Rozłączenie nie powiodło się.") : "Rozłączenie nie powiodło się. Sprawdź połączenie.";
 		setAddingCustom(false);
 		await reload();
 		notifySettingsSaved("keys");
@@ -824,7 +825,7 @@ export function CustomEndpointSetup({ onSaved }: { onSaved: () => void | Promise
 		catch { setError(true); }
 	}
 	useEffect(() => { void reload(); }, []);
-	if (!status || error) return <div className="text-xs">{error ? "Unable to load custom configuration." : "Loading custom configuration…"}{error && <button onClick={() => void reload()}>Retry</button>}</div>;
+	if (!status || error) return <div className="text-xs">{error ? "Nie udało się wczytać konfiguracji własnego endpointu." : "Wczytywanie konfiguracji własnego endpointu…"}{error && <button onClick={() => void reload()}>Ponów</button>}</div>;
 	return <CustomEndpointEditor key={status.revision} setup revision0={status.revision} authMode0={status.authMode} keySource0={status.keySource} keyReuseRequired0={status.keyReuseRequired} baseUrl0={status.baseUrl} keyPresent={status.keyPresent} models={status.models} overrides={status.overrides} manualModels0={status.manualModels} onSaved={onSaved} onPinsSaved={reload} onReload={reload} onCancel={reload} />;
 }
 
@@ -839,7 +840,7 @@ function CustomEndpointRow({
 	onToggle: () => void;
 }) {
 	const count = status.models.length;
-	const line = `${status.baseUrl} · ${count} model${count === 1 ? "" : "s"} · ${status.authMode === "keyless" ? "keyless" : status.keyPresent ? "API key" : "API key missing"}`;
+	const line = `${status.baseUrl} · ${count} ${plural(count, "model", "modele", "modeli")} · ${status.authMode === "keyless" ? "bez klucza" : status.keyPresent ? "klucz API" : "brak klucza API"}`;
 	return (
 		<div data-testid="custom-endpoint-row">
 			<button
@@ -849,7 +850,7 @@ function CustomEndpointRow({
 				onClick={onToggle}
 				className="flex w-full items-center justify-between gap-3 rounded-sm px-1 py-1.5 text-left cursor-pointer transition-colors hover:bg-accent/50"
 			>
-				<span className="font-ui text-xs text-foreground">Custom endpoint</span>
+				<span className="font-ui text-xs text-foreground">Własny endpoint</span>
 				<span data-testid="custom-endpoint-status" className="max-w-[60%] truncate font-mono text-[11px] text-muted-foreground">
 					{line}
 				</span>
@@ -950,7 +951,7 @@ function CustomEndpointEditor({
 			setKeyPresent(status.keyPresent);
 			setKeyReuseRequired(status.keyReuseRequired);
 			if (status.keySource === "env") setKey("");
-		}).catch(() => { if (!cancelled) setError("Unable to inspect effective key. Reload configuration and retry."); })
+		}).catch(() => { if (!cancelled) setError("Nie udało się sprawdzić używanego klucza. Wczytaj konfigurację ponownie i spróbuj jeszcze raz."); })
 			.finally(() => { if (!cancelled) setAuthLoading(false); });
 		return () => { cancelled = true; };
 	}, [authMode]);
@@ -986,7 +987,7 @@ function CustomEndpointEditor({
 		}).catch(() => null);
 		if (!res || !res.ok) {
 			const b = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
-			setPinsError(res ? (b?.error ?? `Save failed (${res.status})`) : "Save failed. Check your connection.");
+			setPinsError(res ? (b?.error ?? `Zapis nie powiódł się (${res.status})`) : "Zapis nie powiódł się. Sprawdź połączenie.");
 			setPinsBusy(false);
 			return;
 		}
@@ -1011,7 +1012,7 @@ function CustomEndpointEditor({
 		}).catch(() => null);
 		if (!res || !res.ok) {
 			const b = (await res?.json().catch(() => ({}))) as { error?: string } | undefined;
-			setError(res ? (b?.error ?? `Connect failed (${res.status})`) : "Connect failed. Check your connection.");
+			setError(res ? (b?.error ?? `Połączenie nie powiodło się (${res.status})`) : "Połączenie nie powiodło się. Sprawdź połączenie z siecią.");
 			setBusy(false);
 			return;
 		}
@@ -1022,12 +1023,12 @@ function CustomEndpointEditor({
 	return (
 		<div data-testid="custom-endpoint-editor" className="flex flex-col gap-2 rounded-sm px-1 py-1.5">
 			<div className="flex items-center gap-2">
-				<span className="shrink-0 font-ui text-xs text-foreground">Custom endpoint</span>
+				<span className="shrink-0 font-ui text-xs text-foreground">Własny endpoint</span>
 				<input
 					type="text"
 					value={baseUrl}
 					onChange={(e) => setBaseUrl(e.target.value)}
-					placeholder="Base URL, e.g. http://localhost:11434/v1"
+					placeholder="Bazowy URL, np. http://localhost:11434/v1"
 					aria-label="Custom endpoint base URL"
 					data-testid="custom-baseurl-input"
 					disabled={busy}
@@ -1039,19 +1040,19 @@ function CustomEndpointEditor({
 				type="text"
 				value={manualModels}
 				onChange={(e) => setManualModels(e.target.value)}
-				placeholder="Model IDs, comma-separated — optional, needed when the endpoint has no /models list"
+				placeholder="ID modeli po przecinku — opcjonalne, potrzebne, gdy endpoint nie ma listy /models"
 				aria-label="Custom endpoint model IDs"
 				data-testid="custom-models-input"
 				disabled={busy}
 				className="h-7 min-w-0 rounded-sm border border-border bg-background px-1.5 font-mono text-xs text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-muted-foreground/50"
 			/>
-			<label className="flex items-center gap-2 text-xs">Authentication
+			<label className="flex items-center gap-2 text-xs">Uwierzytelnianie
 				<select aria-label="Custom endpoint authentication" data-testid="custom-auth-mode" value={authMode} disabled={busy || pinsBusy} onChange={(e) => { setAuthMode(e.target.value as "keyless" | "apiKey"); setReuseKey(false); }}>
-					<option value="keyless">Keyless</option><option value="apiKey">API key</option>
+					<option value="keyless">Bez klucza</option><option value="apiKey">Klucz API</option>
 				</select>
 			</label>
-			{authMode === "apiKey" && keySource === "env" && <p className="text-[11px] text-muted-foreground" data-testid="custom-env-owned">Environment supplies the effective key. Change the environment to replace it.</p>}
-			{authMode === "apiKey" && keyPresent && (changedTarget || keyReuseRequired) && <label className="text-[11px]"><input type="checkbox" data-testid="custom-reuse-key" checked={reuseKey} onChange={(e) => setReuseKey(e.target.checked)} /> Allow reuse of the effective existing key for this URL</label>}
+			{authMode === "apiKey" && keySource === "env" && <p className="text-[11px] text-muted-foreground" data-testid="custom-env-owned">Używany klucz pochodzi ze zmiennych środowiskowych. Aby go zastąpić, zmień środowisko.</p>}
+			{authMode === "apiKey" && keyPresent && (changedTarget || keyReuseRequired) && <label className="text-[11px]"><input type="checkbox" data-testid="custom-reuse-key" checked={reuseKey} onChange={(e) => setReuseKey(e.target.checked)} /> Pozwól użyć istniejącego klucza dla tego URL-a</label>}
 			<div className="flex items-center gap-2">
 				{authMode === "apiKey" && <input
 					type="password"
@@ -1061,7 +1062,7 @@ function CustomEndpointEditor({
 						setKeyTouched(true);
 						if (!e.target.value.trim()) setAuthMode("keyless");
 					}}
-					placeholder={keyPresent ? "Leave blank to keep effective key" : "API key"}
+					placeholder={keyPresent ? "Zostaw puste, aby zachować obecny klucz" : "Klucz API"}
 					aria-label="Custom endpoint API key"
 					data-testid="custom-key-input"
 					disabled={busy || pinsBusy || keySource === "env"}
@@ -1074,7 +1075,7 @@ function CustomEndpointEditor({
 					data-testid="custom-save"
 					className="shrink-0 text-xs text-foreground underline-offset-2 hover:underline disabled:text-muted-foreground/40 disabled:no-underline"
 				>
-					{busy ? "Connecting…" : "Connect"}
+					{busy ? "Łączenie…" : "Połącz"}
 				</button>
 				<button
 					type="button"
@@ -1083,7 +1084,7 @@ function CustomEndpointEditor({
 					data-testid="custom-cancel"
 					className="shrink-0 text-xs text-muted-foreground/70 underline-offset-2 hover:text-foreground hover:underline"
 				>
-					Cancel
+					Anuluj
 				</button>
 				{/* Disconnect rides beside Connect, exactly the stored-key rows' Delete:
 				    quiet text, one click, no confirm — and only once there IS an
@@ -1096,7 +1097,7 @@ function CustomEndpointEditor({
 						data-testid="custom-delete"
 						className="shrink-0 text-xs text-muted-foreground/70 underline-offset-2 hover:text-red-500 hover:underline"
 					>
-						Disconnect
+						Rozłącz
 					</button>
 				)}
 			</div>
@@ -1109,7 +1110,7 @@ function CustomEndpointEditor({
 								<div key={m.id} className="flex items-center gap-2" data-testid={pinTestid("custom-pin-row", m.id)}>
 									<span className="min-w-0 flex-1 truncate font-mono text-[11px] text-foreground" title={m.id}>
 										{m.id}
-										<span className="block text-[10px] text-muted-foreground">Context: {d.context.trim() ? "user pin" : m.context ? `reported ${m.context}` : `fallback ${CUSTOM_MODEL_DEFAULT_CONTEXT_WINDOW}`} · Output: {d.maxTokens.trim() ? "user pin" : m.maxTokens ? `reported ${m.maxTokens}` : `fallback ${CUSTOM_MODEL_DEFAULT_MAX_TOKENS}`}</span>
+										<span className="block text-[10px] text-muted-foreground">Kontekst: {d.context.trim() ? "Twoje ustawienie" : m.context ? `zgłoszony ${m.context}` : `domyślny ${CUSTOM_MODEL_DEFAULT_CONTEXT_WINDOW}`} · Wyjście: {d.maxTokens.trim() ? "Twoje ustawienie" : m.maxTokens ? `zgłoszone ${m.maxTokens}` : `domyślne ${CUSTOM_MODEL_DEFAULT_MAX_TOKENS}`}</span>
 									</span>
 									<input
 										type="text"
@@ -1141,9 +1142,9 @@ function CustomEndpointEditor({
 										disabled={pinsBusy}
 										className="h-7 shrink-0 rounded-sm border border-border bg-background px-1 font-ui text-[11px] text-foreground outline-none focus:border-muted-foreground/50"
 									>
-										<option value="">Reasoning effort: Use reported</option>
-										<option value="on">Reasoning effort: Supported</option>
-										<option value="off">Reasoning effort: Not supported</option>
+										<option value="">Rozumowanie: wg endpointu</option>
+										<option value="on">Rozumowanie: obsługiwane</option>
+										<option value="off">Rozumowanie: nieobsługiwane</option>
 									</select>
 								</div>
 							);
@@ -1162,16 +1163,16 @@ function CustomEndpointEditor({
 							data-testid="custom-pins-save"
 							className="ml-auto shrink-0 text-xs text-foreground underline-offset-2 hover:underline disabled:text-muted-foreground/40 disabled:no-underline"
 						>
-							{pinsBusy ? "Saving…" : "Save limits"}
+							{pinsBusy ? "Zapisywanie…" : "Zapisz limity"}
 						</button>
 					</div>
 				</div>
 			)}
 			<div className="flex flex-col gap-1 text-[11px] text-muted-foreground" data-testid="custom-help">
-				{!setup && models.length > 0 && <p data-testid="custom-budget-help">Budget pins do not resize backend context. Blank uses reported limits, then fallback (8192 context / 4096 output). Custom pricing is unknown.</p>}
-				<p data-testid="custom-reasoning-help">Reasoning support is a capability declaration. The effort picker’s Off may not disable a custom backend’s default thinking.</p>
+				{!setup && models.length > 0 && <p data-testid="custom-budget-help">Limity nie zmieniają kontekstu po stronie serwera. Puste pole = limity zgłoszone przez endpoint, a w ich braku domyślne (8192 kontekstu / 4096 wyjścia). Ceny własnego endpointu są nieznane.</p>}
+				<p data-testid="custom-reasoning-help">Obsługa rozumowania to tylko deklaracja możliwości. Opcja „wyłączone” w wyborze wysiłku może nie wyłączyć domyślnego myślenia własnego backendu.</p>
 			</div>
-			{(error || pinsError) && <button type="button" data-testid="custom-reload" onClick={() => void onReload()} className="text-left text-xs underline">Reload configuration</button>}
+			{(error || pinsError) && <button type="button" data-testid="custom-reload" onClick={() => void onReload()} className="text-left text-xs underline">Wczytaj konfigurację ponownie</button>}
 			{error && (
 				<p role="alert" data-testid="custom-error" className="text-xs text-red-500">
 					{error}

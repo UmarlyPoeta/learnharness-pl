@@ -74,6 +74,9 @@ beforeEach(async () => {
 	}) as typeof fetch;
 	root = createRoot(document.getElementById("root")!);
 	await act(async () => root.render(<Harness />));
+	// The engine rides the window-lifetime preference store: invalidate the
+	// previous test's record (a mid-run switch leaves "deepgram" cached).
+	await act(async () => notifySettingsSaved("dictation"));
 	await flush();
 });
 

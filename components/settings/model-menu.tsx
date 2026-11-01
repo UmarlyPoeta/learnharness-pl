@@ -26,7 +26,7 @@ import { formatTokens } from "@/components/usage-format";
 import { SearchMenuList } from "./search-menu-list";
 
 function priceLabel(cost: ModelCatalogEntry["cost"]): string {
-	if (!cost) return "Unpriced";
+	if (!cost) return "Bez ceny";
 	const fmt = (n: number) => `$${n < 1 ? n.toFixed(2).replace(/0$/, "") : n.toFixed(2)}`;
 	return `${fmt(cost.input)}/${fmt(cost.output)}`;
 }

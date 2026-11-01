@@ -46,7 +46,7 @@ it("unsupported-only directories are never sent; picker .DS_Store is ignored and
 	queue.append([file(".DS_Store", "Root/.DS_Store"), file("a.png", "Root/Images/a.png"), file("notes.md", "Root/Sub/notes.md"), file("bad.txt", "../bad.txt")]);
 	await tick();
 	assert.deepEqual(paths, ["Root/Sub/notes.md"]);
-	assert.deepEqual(queue.getSnapshot().errors, ["Root/Images/a.png: Unsupported format or unsafe relative path.", "../bad.txt: Unsupported format or unsafe relative path."]);
+	assert.deepEqual(queue.getSnapshot().errors, ["Root/Images/a.png: nieobsługiwany format albo niebezpieczna ścieżka względna.", "../bad.txt: nieobsługiwany format albo niebezpieczna ścieżka względna."]);
 });
 
 it("synchronous transport failures settle one wave once without reentrant pump recursion", async () => {

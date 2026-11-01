@@ -727,7 +727,7 @@ export function ChainTableOverlay({
 		const version = ++requestVersion.current;
 		try {
 			const response = await fetch("/api/graph/sources", { cache: "no-store" });
-			if (!response.ok) throw new Error("Could not read source organization.");
+			if (!response.ok) throw new Error("Nie udało się wczytać organizacji źródeł.");
 			const body = await response.json() as SourceDirectory;
 			if (version === requestVersion.current) { setDirectory(body); setDirectoryFailure(""); }
 		} catch (error) { if (version === requestVersion.current) setDirectoryFailure(error instanceof Error ? error.message : String(error)); }
@@ -745,7 +745,7 @@ export function ChainTableOverlay({
 			try {
 				const response = await fetch("/api/graph/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action) });
 				const body = await response.json();
-				if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Could not save source organization.");
+				if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Nie udało się zapisać organizacji źródeł.");
 				requestVersion.current++;
 				setDirectory(body as SourceDirectory);
 				setDirectoryFailure("");
@@ -868,7 +868,7 @@ export function ChainTableOverlay({
 							const response = await fetch("/api/graph/sources", { method: "DELETE", headers: { "Content-Type": "application/json" },
 								body: JSON.stringify({ sourceIds: deletion?.sources.map((s) => s.id) ?? [], folderIds: deletion?.folders.map((f) => f.id) ?? [], deleteSessions }) });
 							const body = await response.json();
-							if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Could not delete sources.");
+							if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Nie udało się usunąć źródeł.");
 							graphRevision = body.graphRevision;
 							requestVersion.current++; setDirectory(body as SourceDirectory); setDirectoryFailure("");
 							setEntrySelection({ sources: new Set(), folders: new Set() });

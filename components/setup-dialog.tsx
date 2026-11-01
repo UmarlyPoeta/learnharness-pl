@@ -516,7 +516,7 @@ function OpenSetupDialog({ onClose, onDone }: SetupDialogProps) {
 									{slot !== "strong" && <><ChatGPTBackgroundAccess provider={entry?.provider} /><NativeSubscriptionBackgroundAccess provider={entry?.provider} /></>}
 									<div className="flex items-center gap-2">
 										<div className="relative flex-1">
-											<Hint label={entry ? `${entry.provider}:${entry.id}` : "Pick a model…"}>
+											<Hint label={entry ? `${entry.provider}:${entry.id}` : "Wybierz model…"}>
 											<button
 												type="button"
 												aria-label={`${SLOT_META[slot].label} model`}

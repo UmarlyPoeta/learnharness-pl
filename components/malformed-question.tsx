@@ -12,10 +12,10 @@ export function MalformedQuestion({ onRetry, disabled, reason }: {
 }) {
 	return (
 		<div data-testid="malformed-question" className="my-2 rounded-xl border border-dashed bg-card/60 p-3 text-sm text-muted-foreground">
-			<p>This question could not be displayed.{onRetry ? " Retry it or send a message to continue." : ""}</p>
+			<p>Nie udało się wyświetlić tego pytania.{onRetry ? " Ponów je albo wyślij wiadomość, aby kontynuować." : ""}</p>
 			{onRetry && <Button type="button" variant="outline" size="xs" className="mt-2" disabled={disabled}
-				title={reason ?? "Requests a replacement from the model."} data-testid="retry-malformed-question" onClick={onRetry}>
-				Retry question
+				title={reason ?? "Prosi model o nową wersję pytania."} data-testid="retry-malformed-question" onClick={onRetry}>
+				Ponów pytanie
 			</Button>}
 			{reason && <p className="mt-1 text-xs">{reason}</p>}
 		</div>

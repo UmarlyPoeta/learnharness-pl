@@ -52,7 +52,7 @@ test("initial render is collapsed and off, with no setup prose or version probe 
 	const html = renderToStaticMarkup(<ClaudeCodeInstallationStatus />);
 	assert.match(html, /Claude Code/); assert.match(html, /aria-checked="false"/);
 	assert.equal((html.match(/<button/g) ?? []).length, 1);
-	assert(!html.includes("Check again")); assert(!html.includes("Authenticate")); assert(!html.includes("Setup ↗"));
+	assert(!html.includes("Sprawdź ponownie")); assert(!html.includes("Authenticate")); assert(!html.includes("Setup ↗"));
 });
 
 test("off by default; enabling persists before probing and reveals the version/action row below the toggle", async () => {
@@ -61,15 +61,15 @@ test("off by default; enabling persists before probing and reveals the version/a
 	assert.equal(toggle().getAttribute("aria-checked"), "false"); assert(!button());
 	assert.deepEqual(calls, ["GET /api/settings"]);
 	await act(async () => toggle().click());
-	assert.equal(toggle().getAttribute("aria-checked"), "true"); assert.equal(label(), "Not found");
+	assert.equal(toggle().getAttribute("aria-checked"), "true"); assert.equal(label(), "Nie znaleziono");
 	assert(calls.indexOf("PUT /api/settings/claudeCode") < calls.indexOf("GET /api/claude-code"));
 	assert.notEqual(toggle().parentElement, button().parentElement);
 	assert.equal(document.querySelector('[role="status"]')?.parentElement, button().parentElement);
-	assert.match(document.body.textContent ?? "", /no background process required/);
-	assert.match(document.body.textContent ?? "", /not authentication, model access, or quota/);
-	assert.match(document.body.textContent ?? "", /Claude Code controls billing/);
-	assert.match(document.body.textContent ?? "", /Verify AI claims independently—they may be inaccurate, incomplete, misleading, or outdated\./);
-	assert(document.querySelector("strong")?.textContent?.includes("Install and authenticate"));
+	assert.match(document.body.textContent ?? "", /bez procesu w tle/);
+	assert.match(document.body.textContent ?? "", /nie logowanie, dostęp do modeli ani limity/);
+	assert.match(document.body.textContent ?? "", /Rozliczeniami zarządza Claude Code/);
+	assert.match(document.body.textContent ?? "", /Weryfikuj twierdzenia AI samodzielnie — mogą być nieścisłe, niepełne, mylące lub nieaktualne\./);
+	assert(document.querySelector("strong")?.textContent?.includes("Zainstaluj Claude Code i zaloguj się"));
 	assert.equal(document.querySelector("a")?.getAttribute("href"), "https://code.claude.com/docs/en/setup");
 	await act(async () => toggle().click());
 	assert.equal(toggle().getAttribute("aria-checked"), "false"); assert(!button()); assert.equal(label(), undefined);
@@ -79,23 +79,23 @@ test("off by default; enabling persists before probing and reveals the version/a
 test("recheck matches Connect styling; Manage remains ghost", async () => {
 	fixture(async () => Response.json(status("not-found"))); await mount();
 	const row = (action: string) => parseHTML(renderToStaticMarkup(<ConnectionRow label="Fixture" action={action} disabled={false} onAction={() => {}} />)).document.querySelector("button")!;
-	assert.equal(button().getAttribute("class"), row("Connect").getAttribute("class"));
+	assert.equal(button().getAttribute("class"), row("Połącz").getAttribute("class"));
 	assert.equal(button().getAttribute("data-variant"), "outline");
-	assert.equal(row("Manage").getAttribute("data-variant"), "ghost");
+	assert.equal(row("Zarządzaj…").getAttribute("data-variant"), "ghost");
 });
 
 for (const [value, text] of [
-	[status("not-found"), "Not found"],
-	[status("meets-minimum", "2.1.310"), "Version 2.1.310 · meets minimum"],
-	[status("update-required", "2.1.258"), "Version 2.1.258 · update required"],
-	[status("version-unchecked"), "Version could not be checked"],
+	[status("not-found"), "Nie znaleziono"],
+	[status("meets-minimum", "2.1.310"), "Wersja 2.1.310 · spełnia minimum"],
+	[status("update-required", "2.1.258"), "Wersja 2.1.258 · wymagana aktualizacja"],
+	[status("version-unchecked"), "Nie udało się sprawdzić wersji"],
 ] as const) test(`installation display: ${text}`, () => assert.equal(claudeCodeStatusLabel(value), text));
 
 test("enabled mount checks once; outlined Check again refreshes without probing authentication", async () => {
 	let probes = 0;
 	const calls = fixture(async () => Response.json(++probes === 1 ? status("not-found") : status("meets-minimum", "2.1.310")));
-	await mount(); assert.equal(label(), "Not found");
-	await act(async () => button().click()); assert.equal(label(), "Version 2.1.310 · meets minimum");
+	await mount(); assert.equal(label(), "Nie znaleziono");
+	await act(async () => button().click()); assert.equal(label(), "Wersja 2.1.310 · spełnia minimum");
 	assert.equal(calls.filter((call) => call === "GET /api/claude-code").length, 2);
 });
 
@@ -103,7 +103,7 @@ test("failed opt-in save stays collapsed/off and never probes", async () => {
 	const calls = fixture(async () => assert.fail("must not probe"), false, true);
 	await mount(); await act(async () => toggle().click());
 	assert.equal(toggle().getAttribute("aria-checked"), "false"); assert(!button());
-	assert.match(document.querySelector('[role="alert"]')?.textContent ?? "", /Could not save/);
+	assert.match(document.querySelector('[role="alert"]')?.textContent ?? "", /Nie udało się zapisać/);
 	assert(!calls.includes("GET /api/claude-code"));
 });
 
@@ -111,7 +111,7 @@ test("slow checks disable recheck; switching off aborts pending version work wit
 	let signal: AbortSignal | null | undefined;
 	let resolve!: (response: Response) => void;
 	fixture((init) => { signal = init?.signal; return new Promise<Response>((done) => { resolve = done; }); });
-	await mount(); assert.equal(label(), "Checking…"); assert(button().disabled); assert(!toggle().disabled);
+	await mount(); assert.equal(label(), "Sprawdzanie…"); assert(button().disabled); assert(!toggle().disabled);
 	await act(async () => toggle().click()); assert(signal?.aborted); assert(!button());
 	await act(async () => resolve(Response.json(status("meets-minimum", "2.1.310")))); assert.equal(label(), undefined);
 });
@@ -123,8 +123,8 @@ for (const failure of ["network", "http", "payload"] as const) test(`${failure} 
 		if (failure === "network") throw new Error("offline");
 		return failure === "http" ? new Response(null, { status: 503 }) : Response.json({ state: "authenticated" });
 	});
-	await mount(); assert.equal(label(), "Version 2.1.310 · meets minimum");
-	await act(async () => button().click()); assert.equal(label(), "Version could not be checked"); assert(!button().disabled);
+	await mount(); assert.equal(label(), "Wersja 2.1.310 · spełnia minimum");
+	await act(async () => button().click()); assert.equal(label(), "Nie udało się sprawdzić wersji"); assert(!button().disabled);
 });
 
 function CatalogReader() {

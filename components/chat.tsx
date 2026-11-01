@@ -1612,7 +1612,7 @@ export function Chat({
 													case "tool-recall": {
 														const malformed = !busy && malformedQuestions.find(call => call.messageId === part.sourceMessageId && call.contentIndex === part.sourceContentIndex && call.toolCallId === part.toolCallId);
 														if (malformed) return <MalformedQuestion key={pi} disabled={!!pending || compacting}
-															reason={pending ? "Answer or discard the remaining question first." : undefined}
+															reason={pending ? "Najpierw odpowiedz na pozostałe pytanie albo je odrzuć." : undefined}
 															onRetry={() => {
 																draftRef.current = null;
 																void send({ type: "retry-question", messageId: malformed.messageId, contentIndex: malformed.contentIndex, toolCallId: malformed.toolCallId });

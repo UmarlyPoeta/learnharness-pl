@@ -97,7 +97,7 @@ afterEach(async () => { await dispose?.(); restore?.(); dispose = undefined; res
 test("an initial load failure is visible and opening the menu again can retry", async () => {
 	const f = await fixture(true);
 	await click(trigger());
-	assert.match(menu()!.querySelector('[role="alert"]')!.textContent!, /Could not load/);
+	assert.match(menu()!.querySelector('[role="alert"]')!.textContent!, /Nie udało się wczytać/);
 	f.state.failRead = false;
 	await click(trigger());
 	await click(trigger());
@@ -154,7 +154,7 @@ test("empty results cannot save; Escape and outside click close the menu without
 	const f = await fixture();
 	await click(trigger());
 	await search("zzzz-no-language");
-	assert.match(menu()!.textContent!, /No languages match/);
+	assert.match(menu()!.textContent!, /Brak pasujących języków/);
 	await key(input(), "Enter");
 	assert.deepEqual(f.state.writes, []);
 	await key(input(), "Escape");
@@ -176,7 +176,7 @@ test("failed saves retain the confirmed choice and the same menu can retry", asy
 	await search("Polish");
 	await key(input(), "Enter");
 	assert.match(trigger().textContent!, /English/);
-	assert.match(menu()!.querySelector('[role="alert"]')!.textContent!, /Could not save/);
+	assert.match(menu()!.querySelector('[role="alert"]')!.textContent!, /Nie udało się zapisać/);
 	f.state.failWrite = false;
 	await click(byTest("dictation-language-pl"));
 	assert.equal(menu(), null);

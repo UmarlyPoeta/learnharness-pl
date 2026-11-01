@@ -131,7 +131,7 @@ test("desktop drop inserts quoted paths at the focused editor caret instead of t
 test("a successful drop clears an earlier failure without replacing it with a confirmation bubble", async () => {
 	const f = await fixture();
 	await f.event("drop", f.transfer([f.file("virtual.pdf")]));
-	assert.match(f.status, /No local file paths were available/);
+	assert.match(f.status, /Brak dostępnych ścieżek do plików lokalnych/);
 	await f.event("drop", f.transfer([f.file("valid.pdf", "/existing/valid.pdf")]));
 	assert.deepEqual(f.appends, ["`/existing/valid.pdf`"]);
 	assert.equal(f.doc.querySelector('[role="status"]'), null);
@@ -154,14 +154,14 @@ test("browser drop prevents navigation, explains desktop-only local paths and ne
 	const transfer = f.transfer([f.file("/not/a/backing/path.pdf")]);
 	const enter = await f.event("dragenter", transfer);
 	assert.equal(enter.defaultPrevented, true);
-	assert.match(f.doc.querySelector('[data-testid="file-path-drop-indicator"]')!.textContent!, /desktop app/);
+	assert.match(f.doc.querySelector('[data-testid="file-path-drop-indicator"]')!.textContent!, /aplikacji desktopowej/);
 	const over = await f.event("dragover", transfer);
 	assert.equal(over.defaultPrevented, true);
 	assert.equal(transfer.dropEffect, "copy");
 	const drop = await f.event("drop", transfer);
 	assert.equal(drop.defaultPrevented, true);
-	assert.match(f.status, /Local file paths can only be attached in the desktop app/);
-	assert.match(f.status, /paste a full path instead/);
+	assert.match(f.status, /Ścieżki do plików lokalnych można dołączać tylko w aplikacji desktopowej/);
+	assert.match(f.status, /wkleić pełną ścieżkę/);
 	assert.equal(f.doc.querySelector('[data-testid="file-path-drop-indicator"]'), null);
 	assert.equal(f.value, "readthis");
 	assert.deepEqual(f.appends, []);
@@ -179,7 +179,7 @@ test("invalid, virtual and directory items are skipped while valid backing paths
 	await f.event("drop", f.transfer(files, [3]));
 	assert.deepEqual(f.appends, ["`/existing/valid.pdf`"]);
 	assert.equal(f.resolved.includes(files[3]!), false, "directory metadata prevents resolving a folder");
-	assert.match(f.status, /Some dropped items had no available file path/);
+	assert.match(f.status, /Część upuszczonych elementów nie miała dostępnej ścieżki/);
 	f.assertPathOnly();
 });
 
@@ -187,9 +187,9 @@ test("a drop with no backing paths or no destination has a truthful notice and s
 	const f = await fixture({ claimed: false });
 	const missing = await f.event("drop", f.transfer([f.file("virtual.pdf")]));
 	assert.equal(missing.defaultPrevented, true);
-	assert.match(f.status, /No local file paths were available/);
+	assert.match(f.status, /Brak dostępnych ścieżek do plików lokalnych/);
 	await f.event("drop", f.transfer([f.file("valid.pdf", "/existing/valid.pdf")]));
-	assert.match(f.status, /Open a chat to attach file paths/);
+	assert.match(f.status, /Otwórz czat, aby dołączyć ścieżki do plików/);
 	assert.deepEqual(f.appends, []);
 	assert.equal(f.value, "readthis");
 	f.assertPathOnly();

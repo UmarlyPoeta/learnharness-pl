@@ -34,7 +34,7 @@ export function createNotesImportQueue(post: (files: readonly File[]) => Promise
 			void (async () => {
 				try {
 					const [r] = await send(file);
-					if (!r) throw new Error("Invalid import response. Check the graph before retrying.");
+					if (!r) throw new Error("Nieprawidłowa odpowiedź importu. Sprawdź graf przed ponowną próbą.");
 					if (!r.ok) {
 						const details = [r.provider, r.missing?.join(", "), r.slots?.join(", ")].filter(Boolean);
 						failures.set(index, `${r.filePath}: ${r.error}${r.code ? `\n${[r.code, ...details].join(" — ")}` : ""}`);
@@ -60,8 +60,8 @@ export function createNotesImportQueue(post: (files: readonly File[]) => Promise
 				const index = sequence++;
 				const path = notesPath(file);
 				if (file.webkitRelativePath && file.name === ".DS_Store") continue;
-				if (!IMPORT_EXTENSIONS.test(path) || !validNotesPath(path, file.name)) failures.set(index, `${path}: Unsupported format or unsafe relative path.`);
-				else if (file.size > MAX_IMPORT_BYTES) failures.set(index, `${path}: Too big. Max 25 MB.`);
+				if (!IMPORT_EXTENSIONS.test(path) || !validNotesPath(path, file.name)) failures.set(index, `${path}: nieobsługiwany format albo niebezpieczna ścieżka względna.`);
+				else if (file.size > MAX_IMPORT_BYTES) failures.set(index, `${path}: Za duży. Maks. 25 MB.`);
 				else pending.push({ file, index });
 			}
 			const hadWork = active > 0 || pending.length > 0;

@@ -26,7 +26,7 @@ export interface NotesImportResult {
 /** Contributor's strict attribution: validate the complete response before
  * applying any row, even when several files have identical basenames. */
 export function parseNotesImportResults(body: unknown, files: readonly File[]): NotesImportResult[] {
-	const invalid = () => new Error("Invalid import response. Check the graph before retrying.");
+	const invalid = () => new Error("Nieprawidłowa odpowiedź importu. Sprawdź graf przed ponowną próbą.");
 	if (!body || typeof body !== "object" || !("results" in body) || !Array.isArray(body.results) || body.results.length !== files.length) throw invalid();
 	const seen = new Set<number>();
 	for (const raw of body.results) {
@@ -53,10 +53,10 @@ export async function postNotesImport(files: readonly File[]): Promise<NotesImpo
 	const response = await fetch("/api/graph/import", { method: "POST", body: form });
 	let body: unknown;
 	try { body = await response.json(); }
-	catch { throw new Error("Invalid import response. Check the graph before retrying."); }
+	catch { throw new Error("Nieprawidłowa odpowiedź importu. Sprawdź graf przed ponowną próbą."); }
 	if (!response.ok) {
 		const detail = body && typeof body === "object" && "error" in body && typeof body.error === "string" ? `: ${body.error}` : "";
-		throw new Error(`Import request failed (HTTP ${response.status})${detail}${/[.!?]$/.test(detail) ? "" : "."} Check the graph before retrying.`);
+		throw new Error(`Import nie powiódł się (HTTP ${response.status})${detail}${/[.!?]$/.test(detail) ? "" : "."} Sprawdź graf przed ponowną próbą.`);
 	}
 	return parseNotesImportResults(body, files);
 }
@@ -95,17 +95,17 @@ export function NotesImportControl({ importing, onImportFiles }: { importing: bo
 		onImportFiles(event.target.files);
 		event.target.value = "";
 	};
-	const choices = [["Files", filesRef], ["Folder", folderRef]] as const;
+	const choices = [["Pliki", filesRef], ["Folder", folderRef]] as const;
 	return (
 		<div className="relative shrink-0 rounded-xl border bg-card/85 px-1 py-[3px] shadow-lg backdrop-blur"
 			onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}
 			onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}>
 			<input ref={filesRef} type="file" multiple accept=".md,.markdown,.txt,.pdf" className="hidden" onChange={onChange} />
 			<input ref={folderRef} type="file" {...{ webkitdirectory: "" }} className="hidden" onChange={onChange} />
-			<Hint label="Import notes into the graph" side="bottom">
+			<Hint label="Importuj notatki do grafu" side="bottom">
 				<button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="menu" data-testid="import-notes"
 					className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent">
-					<UploadIcon className="size-3" />{importing ? "Importing…" : "Import notes…"}
+					<UploadIcon className="size-3" />{importing ? "Importowanie…" : "Importuj notatki…"}
 				</button>
 			</Hint>
 			{open && (

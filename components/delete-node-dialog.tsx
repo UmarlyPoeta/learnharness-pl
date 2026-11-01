@@ -81,7 +81,7 @@ export function DeleteNodeBody({
 					</code>
 				)}
 			</div>
-			{folders.length > 0 && <p className="mt-2 text-sm" data-testid="folder-removal-names">Empty folders: {folders.map((f) => f.name).join(", ")}</p>}
+			{folders.length > 0 && <p className="mt-2 text-sm" data-testid="folder-removal-names">Puste foldery: {folders.map((f) => f.name).join(", ")}</p>}
 			{nodes.length > 0 && <p className="mt-2 text-sm text-muted-foreground" data-testid="node-permanence-line">
 				{nodes.length === 1
 					? "To trwale usunie węzeł — tej operacji nie można cofnąć."
@@ -221,7 +221,7 @@ export function DeleteNodeDialog({
 				revision = body.graphRevision ?? revision;
 			}
 			for (const folder of folders) {
-				if (!onRemoveFolder) throw new Error("Folder removal is unavailable.");
+				if (!onRemoveFolder) throw new Error("Usuwanie folderów jest niedostępne.");
 				await onRemoveFolder(folder.id);
 				removedFolders.push(folder.id);
 			}

@@ -90,7 +90,7 @@ it("source and folder names are searchable without needing any extracted nodes",
 });
 it("source confirmation explains shared-node survival and makes conversation deletion an unchecked opt-in", () => {
 	const html = renderToStaticMarkup(<DeleteSourceBody sources={directory.sources} folders={[]} deleteSessions={false} onDeleteSessions={() => {}} busy={false} failure="" onClose={() => {}} onRun={() => {}} />);
-	assert.match(html, /Knowledge supported by other sources survives/); assert.match(html, /can be extracted again/);
-	assert.match(html, /graph contributions and extraction coverage are cleared/); assert.match(html, /Also delete the 1 selected session/);
+	assert.match(html, /Wiedza poparta innymi źródłami zostaje/); assert.match(html, /można je ponownie wyodrębnić/);
+	assert.match(html, /ich wkład w graf i pokrycie ekstrakcji są czyszczone/); assert.match(html, /Usuń też zaznaczone sesje \(1\)/);
 	assert.doesNotMatch(html.match(/<input[^>]+>/)?.[0] ?? "", /checked/);
 });

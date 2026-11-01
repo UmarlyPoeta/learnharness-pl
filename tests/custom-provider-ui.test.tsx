@@ -42,10 +42,10 @@ test("model controls use approved effort labels, right-align Save limits, and gr
 	await mount();
 	const select = element("custom-pin-reasoning-fixture-model");
 	assert.equal(select.getAttribute("aria-label"), "fixture-model reasoning effort support");
-	assert.deepEqual(Array.from(select.children).map(option => option.textContent), ["Reasoning effort: Use reported", "Reasoning effort: Supported", "Reasoning effort: Not supported"]);
+	assert.deepEqual(Array.from(select.children).map(option => option.textContent), ["Rozumowanie: wg endpointu", "Rozumowanie: obsługiwane", "Rozumowanie: nieobsługiwane"]);
 	assert.deepEqual(Array.from(select.children).map(option => option.getAttribute("value")), ["", "on", "off"], "capability values unchanged");
 	const save = element("custom-pins-save"); assert.ok(save.classList.contains("ml-auto")); assert.equal(save.parentElement!.lastElementChild, save);
 	const help = element("custom-help"); assert.equal(element("custom-budget-help").parentElement, help); assert.equal(element("custom-reasoning-help").parentElement, help);
 	const children = Array.from(element("custom-endpoint-editor").children); assert.ok(children.indexOf(help) > children.indexOf(element("custom-pins")));
-	assert.match(help.textContent ?? "", /do not resize backend context/); assert.match(help.textContent ?? "", /Off may not disable/);
+	assert.match(help.textContent ?? "", /nie zmieniają kontekstu po stronie serwera/); assert.match(help.textContent ?? "", /może nie wyłączyć/);
 });

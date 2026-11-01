@@ -47,7 +47,7 @@ export function createDictationLanguageStore(request: typeof fetch, saved: () =>
 				return language;
 			} catch {
 				if (version !== revision) return getLanguage();
-				const message = "Could not load dictation language. Try again.";
+				const message = "Nie udało się wczytać języka dyktowania. Spróbuj ponownie.";
 				publish({ error: message });
 				throw new Error(message);
 			} finally {
@@ -78,7 +78,7 @@ export function createDictationLanguageStore(request: typeof fetch, saved: () =>
 				saved();
 				return true;
 			} catch {
-				publish({ error: "Could not save dictation language. Try again." });
+				publish({ error: "Nie udało się zapisać języka dyktowania. Spróbuj ponownie." });
 				return false;
 			} finally {
 				writing = null;

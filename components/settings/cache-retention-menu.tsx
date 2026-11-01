@@ -3,10 +3,10 @@
 import type { CacheRetention } from "@earendil-works/pi-ai";
 
 const OPTIONS = [
-	{ value: undefined, compact: "default", label: "Pi default", description: "Leave the option unset. Pi’s normal behavior and environment override apply." },
-	{ value: "none", compact: "not requested", label: "Don’t request caching", description: "Pass Pi’s native none preference. Providers may still cache automatically." },
-	{ value: "short", compact: "short", label: "Short retention", description: "Pass Pi’s native short preference. The duration depends on the provider and model." },
-	{ value: "long", compact: "long", label: "Long retention", description: "Pass Pi’s native long preference. Cache-write costs may be higher." },
+	{ value: undefined, compact: "domyślnie", label: "Pi default", description: "Opcja nieustawiona. Obowiązuje zwykłe zachowanie Pi i nadpisanie ze zmiennych środowiskowych." },
+	{ value: "none", compact: "bez żądania", label: "Nie żądaj cache", description: "Przekazuje do Pi natywną preferencję none. Dostawcy mogą nadal cache’ować automatycznie." },
+	{ value: "short", compact: "krótka", label: "Krótka retencja", description: "Przekazuje do Pi natywną preferencję short. Czas zależy od dostawcy i modelu." },
+	{ value: "long", compact: "długa", label: "Długa retencja", description: "Przekazuje do Pi natywną preferencję long. Koszt zapisu do cache może być wyższy." },
 ] as const;
 
 export function cacheRetentionLabel(value: CacheRetention | undefined): string {
@@ -19,8 +19,8 @@ export function CacheRetentionMenu({ value, onPick }: {
 }) {
 	return <>
 		<div className="border-b border-border px-2 pb-2">
-			<p className="text-card-foreground">Cache retention</p>
-			<p className="mt-1 text-muted-foreground">Controls the cache-retention preference sent to Pi. Support and duration depend on the provider and model. This does not guarantee a cache hit.</p>
+			<p className="text-card-foreground">Retencja cache</p>
+			<p className="mt-1 text-muted-foreground">Ustala preferencję retencji cache przekazywaną do Pi. Obsługa i czas zależą od dostawcy i modelu. Nie gwarantuje trafienia w cache.</p>
 		</div>
 		{OPTIONS.map((option) => <button
 			key={option.value ?? "default"}

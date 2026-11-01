@@ -5,7 +5,7 @@ import { useBackdropDismiss } from "@/components/backdrop-dismiss";
 import { Button } from "@/components/ui/button";
 
 export function ConnectionRow({ label, action, actionVariant, disabled, onAction, children, testid, actionTestid, labelClassName }: { label: string; action: string; actionVariant?: "outline" | "ghost"; disabled: boolean; onAction: () => void; children?: React.ReactNode; testid?: string; actionTestid?: string; labelClassName?: string }) {
-	const variant = actionVariant ?? (action === "Connect" ? "outline" : "ghost");
+	const variant = actionVariant ?? (action === "Połącz" ? "outline" : "ghost");
 	return <div className="flex flex-wrap items-center gap-3" data-testid={testid}>
 		<span className={labelClassName ?? "font-ui text-xs text-foreground"}>{label}</span>
 		{children}

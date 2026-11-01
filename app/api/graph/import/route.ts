@@ -60,15 +60,15 @@ async function readNotesFile(file: File): Promise<NotesFile> {
 	const pdf = await convertPdf(bytes, MAX_PDF_PAGES);
 	switch (pdf.kind) {
 		case "unreadable":
-			return { kind: "refused", error: "Could not open this PDF." };
+			return { kind: "refused", error: "Nie udało się otworzyć tego PDF-a." };
 		case "too-long":
-			return { kind: "refused", error: "Too long. Max 1,000 pages." };
+			return { kind: "refused", error: "Za długi. Maks. 1000 stron." };
 		case "converted": {
 			const text = joinPages(pdf.pages);
-			if (!text) return { kind: "refused", error: "OCR not supported yet." };
+			if (!text) return { kind: "refused", error: "OCR nie jest jeszcze obsługiwany." };
 			const skipped = pdf.pages.filter((page) => page.kind === "image-only").length;
-			const omission = skipped > 0 ? ` Skipped ${skipped} image-only ${skipped === 1 ? "page" : "pages"}; OCR is not supported.` : "";
-			return { kind: "notes", text, notice: `Scanned pages may have errors.${omission}` };
+			const omission = skipped > 0 ? ` Pominięto strony zawierające tylko obraz (${skipped}); OCR nie jest obsługiwany.` : "";
+			return { kind: "notes", text, notice: `Zeskanowane strony mogą zawierać błędy.${omission}` };
 		}
 	}
 }
@@ -116,12 +116,12 @@ export async function POST(request: Request) {
 	} catch (err) {
 		const oversized = err instanceof ImportBodyLimitError;
 		return Response.json({ results: [] as ImportResult[], error: oversized
-			? "Import request is too large. Select fewer files."
-			: "Could not read the upload. It may be incomplete; please select the files again." }, { status: oversized ? 413 : 400 });
+			? "Żądanie importu jest za duże. Wybierz mniej plików."
+			: "Nie udało się odczytać przesłanych plików. Mogą być niekompletne; wybierz je ponownie." }, { status: oversized ? 413 : 400 });
 	}
 	const files = form.getAll("files").filter((f): f is File => f instanceof File);
 	if (files.reduce((total, file) => total + file.size, 0) > MAX_IMPORT_BYTES) {
-		return Response.json({ results: [] as ImportResult[], error: "Too big. Max 25 MB." }, { status: 413 });
+		return Response.json({ results: [] as ImportResult[], error: "Za duży. Maks. 25 MB." }, { status: 413 });
 	}
 	if (files.length === 0) {
 		return Response.json({ results: [] as ImportResult[], error: "no files" }, { status: 400 });

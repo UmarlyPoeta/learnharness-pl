@@ -233,7 +233,7 @@ describe("render smoke tests", () => {
 			input: { question: "q?", options: JSON.stringify([{ label: "a" }, { label: "b" }]) } as never,
 		});
 		assert.ok(html.includes('data-testid="malformed-question"'));
-		assert.match(html, /niepoprawn/);
+		assert.match(html, /Nie udało się wyświetlić tego pytania/);
 	});
 
 	it("phase scales the thinking field: teaching invites depth, probing stays quick", () => {

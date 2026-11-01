@@ -48,8 +48,8 @@ test("a failed external refresh invalidates the cache until a successful retry",
 		: Response.json({ settings: { version: 1, dictation: { language: "pl" } } }));
 	await store.load();
 	fail = true;
-	await assert.rejects(store.load(true), /Could not load/);
-	await assert.rejects(store.getLanguage(), /Could not load/);
+	await assert.rejects(store.load(true), /Nie udało się wczytać/);
+	await assert.rejects(store.getLanguage(), /Nie udało się wczytać/);
 	fail = false;
 	assert.equal(await store.getLanguage(), "pl");
 	assert.equal(store.getSnapshot().error, null);

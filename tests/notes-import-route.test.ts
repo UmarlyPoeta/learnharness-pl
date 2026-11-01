@@ -120,7 +120,7 @@ it("a PDF reaches the pipeline as page-marked Markdown and reports skipped image
 	assert.deepEqual(received.sort(), ["# plain notes", "--- Page 2 ---\n\n# Week 3\n\nPlants make sugar."]);
 	const byName = (name: string) => results.find((r: { filePath: string }) => r.filePath === name);
 	assert.equal(byName("lecture.pdf").outcome, "completed");
-	assert.equal(byName("lecture.pdf").notice, "Scanned pages may have errors. Skipped 1 image-only page; OCR is not supported.");
+	assert.equal(byName("lecture.pdf").notice, "Zeskanowane strony mogą zawierać błędy. Pominięto strony zawierające tylko obraz (1); OCR nie jest obsługiwany.");
 	assert.equal(byName("notes.md").notice, undefined, "text files carry no notice");
 });
 
@@ -143,7 +143,7 @@ it("PDFs with nothing to import are refused before any model call", async () => 
 	const { results } = await response.json();
 	assert.equal(calls, 0);
 	const errorOf = (name: string) => results.find((r: { filePath: string }) => r.filePath === name);
-	for (const [name, error] of [["scan.pdf", "OCR not supported yet."], ["broken.pdf", "Could not open this PDF."], ["huge.pdf", "Too long. Max 1,000 pages."]] as const) {
+	for (const [name, error] of [["scan.pdf", "OCR nie jest jeszcze obsługiwany."], ["broken.pdf", "Nie udało się otworzyć tego PDF-a."], ["huge.pdf", "Za długi. Maks. 1000 stron."]] as const) {
 		assert.equal(errorOf(name).ok, false);
 		assert.equal(errorOf(name).outcome, "failed");
 		assert.equal(errorOf(name).error, error);
@@ -159,8 +159,8 @@ it("PDF notices count only image-only pages, not blanks, and preserve the scanne
 	]));
 	const { results } = await response.json();
 	assert.equal(results.find((r: { filePath: string }) => r.filePath === "mixed.pdf").notice,
-		"Scanned pages may have errors. Skipped 2 image-only pages; OCR is not supported.");
-	assert.equal(results.find((r: { filePath: string }) => r.filePath === "text.pdf").notice, "Scanned pages may have errors.");
+		"Zeskanowane strony mogą zawierać błędy. Pominięto strony zawierające tylko obraz (2); OCR nie jest obsługiwany.");
+	assert.equal(results.find((r: { filePath: string }) => r.filePath === "text.pdf").notice, "Zeskanowane strony mogą zawierać błędy.");
 	assert.ok(results.every((r: { ok: boolean }) => r.ok));
 });
 
@@ -171,7 +171,7 @@ for (const image of ["mask", "inline"] as const) it(`mixed PDF notices include t
 	]) }]));
 	const { results } = await response.json();
 	assert.equal(results[0].outcome, "completed");
-	assert.equal(results[0].notice, "Scanned pages may have errors. Skipped 1 image-only page; OCR is not supported.");
+	assert.equal(results[0].notice, "Zeskanowane strony mogą zawierać błędy. Pominięto strony zawierające tylko obraz (1); OCR nie jest obsługiwany.");
 });
 
 for (const split of [false, true]) it(`server refuses actual file bytes over 25 MiB (${split ? "aggregate" : "single file"}) before the pipeline`, async () => {
@@ -184,7 +184,7 @@ for (const split of [false, true]) it(`server refuses actual file bytes over 25 
 	req.headers.set("content-length", "1"); // not a trustworthy bound
 	const response = await POST(req);
 	assert.equal(response.status, 413);
-	assert.deepEqual(await response.json(), { results: [], error: "Too big. Max 25 MB." });
+	assert.deepEqual(await response.json(), { results: [], error: "Za duży. Maks. 25 MB." });
 	assert.equal(calls, 0);
 });
 
@@ -211,7 +211,7 @@ for (const declared of [undefined, "1"]) it(`server bounds streamed body bytes w
 	} as RequestInit);
 	const response = await POST(req);
 	assert.equal(response.status, 413);
-	assert.deepEqual(await response.json(), { results: [], error: "Import request is too large. Select fewer files." });
+	assert.deepEqual(await response.json(), { results: [], error: "Żądanie importu jest za duże. Wybierz mniej plików." });
 	assert.equal(chunks, MAX_IMPORT_BODY_BYTES / (1024 * 1024) + 1);
 	assert.equal(cancelled, true);
 	assert.equal(calls, 0);
@@ -242,7 +242,7 @@ it("malformed or proxy-truncated multipart is refused before any file enters the
 	]) {
 		const response = await POST(req);
 		assert.equal(response.status, 400);
-		assert.deepEqual(await response.json(), { results: [], error: "Could not read the upload. It may be incomplete; please select the files again." });
+		assert.deepEqual(await response.json(), { results: [], error: "Nie udało się odczytać przesłanych plików. Mogą być niekompletne; wybierz je ponownie." });
 	}
 	assert.equal(calls, 0);
 });

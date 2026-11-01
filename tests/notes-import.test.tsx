@@ -47,7 +47,7 @@ for (const [name, results] of [
 	["invalid error", [{ ...completed(), error: 42 }, completed(1)]],
 	["invalid notice", [{ ...completed(), notice: 42 }, completed(1)]],
 	["missing failure error", [{ ...completed(), ok: false, outcome: "failed" }, completed(1)]],
-] as const) it(`malformed response (${name}) warns to inspect before retrying`, () => { assert.throws(() => parseNotesImportResults({ results }, files), /Check the graph before retrying/); });
+] as const) it(`malformed response (${name}) warns to inspect before retrying`, () => { assert.throws(() => parseNotesImportResults({ results }, files), /Sprawdź graf przed ponowną próbą/); });
 
 it("POST includes captured files and relative identities, preserving provider details", async () => {
 	const file = new File(["two"], "same.md"); Object.defineProperty(file, "webkitRelativePath", { value: "Course/Week/same.md" });
@@ -104,7 +104,7 @@ for (const kind of ["network", "non-JSON", "non-2xx", "malformed", "duplicate in
 		return Response.json({ results: kind === "duplicate index" ? [completed(), completed()] : [] });
 	};
 	await mount(); await submit();
-	const message = kind === "network" ? "synthetic offline" : kind === "non-2xx" ? "Import request failed (HTTP 503): synthetic refused. Check the graph before retrying." : "Invalid import response. Check the graph before retrying.";
+	const message = kind === "network" ? "synthetic offline" : kind === "non-2xx" ? "Import nie powiódł się (HTTP 503): synthetic refused. Sprawdź graf przed ponowną próbą." : "Nieprawidłowa odpowiedź importu. Sprawdź graf przed ponowną próbą.";
 	assert.deepEqual(current.errors, files.map((file) => `${file.name}: ${message}`));
 	assert.equal(calls, 2); assert.equal(finishes, 1); assert.equal(current.importing, false);
 });
@@ -120,15 +120,15 @@ it("PDF notices and failures survive per-file requests, in selection order", asy
 	globalThis.fetch = async (_url, init) => {
 		const file = (init!.body as FormData).get("files") as File;
 		return Response.json({ results: [{ ...completed(0, file.name), notice: file.name === "c.pdf" ? "Scanned pages may have errors." : undefined,
-			...(file.name === "a.pdf" ? { ok: false, outcome: "failed", error: "OCR not supported yet." } : {}) }] });
+			...(file.name === "a.pdf" ? { ok: false, outcome: "failed", error: "OCR nie jest jeszcze obsługiwany." } : {}) }] });
 	};
 	await mount(); await submit([new File(["a"], "a.pdf"), new File(["b"], "b.md"), new File(["c"], "c.pdf")]);
-	assert.deepEqual(current.notices, ["c.pdf: Scanned pages may have errors."]); assert.deepEqual(current.errors, ["a.pdf: OCR not supported yet."]);
+	assert.deepEqual(current.notices, ["c.pdf: Scanned pages may have errors."]); assert.deepEqual(current.errors, ["a.pdf: OCR nie jest jeszcze obsługiwany."]);
 });
-for (const [status, error] of [[413, "Too big. Max 25 MB."], [413, "Import request is too large. Select fewer files."], [400, "Could not read the upload. It may be incomplete; please select the files again."]] as const) it(`server refusal remains readable (${error})`, async () => {
+for (const [status, error] of [[413, "Za duży. Maks. 25 MB."], [413, "Żądanie importu jest za duże. Wybierz mniej plików."], [400, "Nie udało się odczytać przesłanych plików. Mogą być niekompletne; wybierz je ponownie."]] as const) it(`server refusal remains readable (${error})`, async () => {
 	globalThis.fetch = async () => Response.json({ results: [], error }, { status });
 	await mount(); await submit();
-	assert.deepEqual(current.errors, files.map((file) => `${file.name}: Import request failed (HTTP ${status}): ${error} Check the graph before retrying.`));
+	assert.deepEqual(current.errors, files.map((file) => `${file.name}: Import nie powiódł się (HTTP ${status}): ${error} Sprawdź graf przed ponowną próbą.`));
 	assert.deepEqual(current.notices, []); assert.equal(current.importing, false);
 });
 it("25 MiB is per file, not per selection; oversized files fail locally while smaller siblings upload", async () => {
@@ -137,7 +137,7 @@ it("25 MiB is per file, not per selection; oversized files fail locally while sm
 	await mount();
 	const half = new Uint8Array(MAX_IMPORT_BYTES / 2 + 1);
 	await submit([new File([new Uint8Array(MAX_IMPORT_BYTES + 1)], "textbook.pdf"), new File([half], "a.pdf"), new File([half], "b.pdf")]);
-	assert.deepEqual(sent, ["a.pdf", "b.pdf"]); assert.deepEqual(current.errors, ["textbook.pdf: Too big. Max 25 MB."]);
+	assert.deepEqual(sent, ["a.pdf", "b.pdf"]); assert.deepEqual(current.errors, ["textbook.pdf: Za duży. Maks. 25 MB."]);
 });
 it("picker stays enabled during imports, offers Files/Folder, and keeps PDF support", () => {
 	const html = renderToStaticMarkup(<NotesImportControl importing onImportFiles={() => {}} />);

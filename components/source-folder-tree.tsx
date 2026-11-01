@@ -81,14 +81,14 @@ export function EditableSourceName({ name, onSave, onCancel, initiallyEditing = 
 		finally { submitting.current = false; }
 	};
 	return <span className="min-w-0 flex-1">
-		{editing ? <input ref={input} value={draft} placeholder="Folder name" aria-label="Source or folder name" data-testid="source-name-input"
+		{editing ? <input ref={input} value={draft} placeholder="Nazwa folderu" aria-label="Source or folder name" data-testid="source-name-input"
 			className="block h-5 w-full min-w-0 border-0 bg-transparent p-0 text-sm font-medium leading-5 outline-none shadow-none focus:ring-0"
 			onChange={(e) => setDraft(e.target.value)} onBlur={() => { void commit(); }}
 			onKeyDown={(e) => {
 				if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cancelled.current = true; setEditing(false); setFailure(""); onCancel?.(); }
 				if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); void commit(); }
 			}} onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }} />
-			: <button type="button" className="block max-w-full truncate rounded-sm text-left text-sm font-medium leading-5 transition-colors hover:bg-accent" title="Rename"
+			: <button type="button" className="block max-w-full truncate rounded-sm text-left text-sm font-medium leading-5 transition-colors hover:bg-accent" title="Zmień nazwę"
 				onClick={() => { cancelled.current = false; setDraft(name); setEditing(true); }}>{name}</button>}
 		{failure && <span role="alert" className="block text-xs text-red-400">{failure}</span>}
 	</span>;

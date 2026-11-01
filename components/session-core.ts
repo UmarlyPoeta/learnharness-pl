@@ -734,7 +734,7 @@ export class SessionModel {
 				// Keep model/key refusal envelopes verbatim: the page's refusal
 				// flow parses them. Retry's 400s are ordinary user-facing
 				// guidance, so show their error text without JSON syntax.
-				let message = (await res.text()) || `The send failed (${res.status}).`;
+				let message = (await res.text()) || `Wysyłanie nie powiodło się (${res.status}).`;
 				if ((input.type === "retry" || input.type === "retry-question") && res.status === 400) {
 					try {
 						const refusal = JSON.parse(message) as { error?: unknown } | null;

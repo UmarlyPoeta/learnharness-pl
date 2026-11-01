@@ -308,9 +308,9 @@ test("cache retention is hidden by default, slot-specific, resettable, and prese
 	assert.equal(changes.length, 0, "mounting untouched controls writes nothing");
 	await click("models-advanced");
 	assert.equal(element("models-advanced").textContent, "Ukryj ustawienia zaawansowane");
-	assert.equal(element("slot-cache-strong").textContent, "Cache: long▾");
-	assert.equal(element("slot-cache-cheap").textContent, "Cache: default▾");
-	assert.equal(element("slot-cache-vision").textContent, "Cache: not requested▾");
+	assert.equal(element("slot-cache-strong").textContent, "Cache: długa▾");
+	assert.equal(element("slot-cache-cheap").textContent, "Cache: domyślnie▾");
+	assert.equal(element("slot-cache-vision").textContent, "Cache: bez żądania▾");
 	await click("slot-cache-strong");
 	const escape = new dom.window.Event("keydown", { bubbles: true, cancelable: true });
 	Object.assign(escape, { key: "Escape" });
@@ -319,8 +319,8 @@ test("cache retention is hidden by default, slot-specific, resettable, and prese
 	assert.equal(escape.defaultPrevented, true, "Escape is claimed before the outer dialog's document listener");
 	for (const value of ["short", "none", "long", "default"]) {
 		await click("slot-cache-strong");
-		assert.match(element("slot-cache-menu-strong").textContent ?? "", /Providers may still cache automatically/);
-		assert.match(element("slot-cache-menu-strong").textContent ?? "", /does not guarantee a cache hit/);
+		assert.match(element("slot-cache-menu-strong").textContent ?? "", /Dostawcy mogą nadal cache’ować automatycznie/);
+		assert.match(element("slot-cache-menu-strong").textContent ?? "", /Nie gwarantuje trafienia w cache/);
 		await click(`cache-retention-option-${value}`);
 		assert.equal(changes.at(-1)?.strong?.cacheRetention, value === "default" ? undefined : value);
 		assert.deepEqual(changes.at(-1)?.cheap, initial.cheap);
@@ -336,7 +336,7 @@ test("cache retention is hidden by default, slot-specific, resettable, and prese
 	await click("models-advanced");
 	assert.equal(document.querySelector('[data-testid="slot-cache-menu-strong"]'), null, "collapse also closes the portaled menu");
 	await click("models-advanced");
-	assert.equal(element("slot-cache-strong").textContent, "Cache: long▾", "hiding did not reset the preference");
+	assert.equal(element("slot-cache-strong").textContent, "Cache: długa▾", "hiding did not reset the preference");
 	await render(<Settings key="new-open" />);
 	assert.equal(document.querySelector('[data-testid="slot-cache-strong"]'), null, "a new settings mount starts collapsed");
 });

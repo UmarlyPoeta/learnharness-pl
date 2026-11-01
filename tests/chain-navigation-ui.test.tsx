@@ -102,7 +102,7 @@ it("removing the active row by filtering safely restarts on the first visible re
 });
 it("rename arrows stay in the input, and modal-owned keyboard focus disables both Find and navigation", async () => {
 	await mount(); await point('[data-source-drag-row="b"]');
-	await act(async () => { (document.querySelector('[data-source-drag-row="b"] button[title="Rename"]') as HTMLElement).click(); });
+	await act(async () => { (document.querySelector('[data-source-drag-row="b"] button[title="Zmień nazwę"]') as HTMLElement).click(); });
 	const input = document.querySelector('[data-testid="source-name-input"]')!;
 	for (const arrow of ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]) assert.equal((await key(arrow, input)).defaultPrevented, false);
 	assert.equal(focused, input); await act(async () => { setEnabled(false); });

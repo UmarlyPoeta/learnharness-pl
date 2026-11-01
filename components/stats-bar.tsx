@@ -167,7 +167,7 @@ export function StatsBar({
 								</span>
 							</div>
 							{selectedModel?.startsWith(`${CLAUDE_CODE_PROVIDER}:`) && (
-								<p>Window reported by Claude Code; may be lower for auto-compaction.</p>
+								<p>Okno zgłoszone przez Claude Code; przy automatycznej kompaktacji może być mniejsze.</p>
 							)}
 							<div className="flex justify-between gap-2">
 								<span>{subscription ? "Zużycie" : "Łączny koszt"}</span>
