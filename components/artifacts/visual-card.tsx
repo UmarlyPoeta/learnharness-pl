@@ -9,7 +9,8 @@ import { useSessionMermaid } from "@/components/session-overlay";
 import { downloadFile } from "@/components/artifacts/download";
 import { DispatchCard } from "@/components/artifacts/dispatch-card";
 import { SvgImage } from "@/components/artifacts/svg-image";
-import type { ArtifactPartProps, VisualResult } from "@/src/core";
+import { JobsContext } from "@/components/jobs-context";
+import { isSubagentFailure, type ArtifactPartProps, type JobRecord, type VisualResult } from "@/src/core";
 
 /**
  * Visual artifact card (W6 → ack protocol): the tool part's output is the
@@ -35,9 +36,32 @@ export function svgNaturalWidth(svg: string): number | null {
 	return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/** A finished visual whose result still waits for session delivery (an open
+ *  quiz holds the wake until it is answered): its SVG, so the learner sees
+ *  the figure as soon as the worker is done. Once delivered, the steer card
+ *  renders it and this returns null. Pure. */
+export function undeliveredVisual(job: JobRecord | null | undefined): VisualResult | null {
+	if (!job || job.kind !== "visual" || job.status !== "done") return null;
+	if (job.delivery?.kind !== "result" || job.delivery.status !== "pending") return null;
+	const result = job.result as VisualResult | undefined;
+	if (!result || typeof result.svg !== "string") return null;
+	return isSubagentFailure("visual", result) ? null : result;
+}
+
 export function VisualCard({ part }: ArtifactPartProps) {
+	const jobs = useContext(JobsContext);
 	if (part.state !== "output-available") return null;
-	return <DispatchCard toolCallId={part.toolCallId} kind="visual" />;
+	const early = undeliveredVisual(jobs.find((j) => j.toolCallId === part.toolCallId));
+	return (
+		<>
+			<DispatchCard toolCallId={part.toolCallId} kind="visual" />
+			{early && (
+				<div className="mt-2" data-testid="visual-early">
+					<VisualOutputCard output={early} />
+				</div>
+			)}
+		</>
+	);
 }
 
 /** The figure itself — exported: the steer card renders the delivered artifact. */

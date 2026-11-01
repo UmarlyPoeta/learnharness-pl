@@ -57,3 +57,4 @@ export { claudeCodeInstallationResponse } from "./claude-code.ts";
 // No import side effects; the boot sync lives in stores.ts.
 export * from "./custom-provider.ts";
 export { customProviderGet, customProviderMutation } from "./custom-provider-http.ts";
+export { listBoards, readBoard, createBoard, saveBoard, deleteBoard, boardAssist, BoardAssistError, type AssistMode, type BoardMeta, type BoardRecord } from "./board.ts";

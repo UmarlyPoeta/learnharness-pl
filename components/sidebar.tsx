@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { MenuShell } from "@/components/menu-shell";
 import { DeleteSessionDialog } from "@/components/delete-session-dialog";
 import type { ChatDeleteMode } from "@/src/core";
-import { DumbbellIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { DumbbellIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, PresentationIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { ActivitySection } from "@/components/activity-dock";
 import { CoverageMenuBlock } from "@/components/extraction-coverage";
 import { LhMark } from "@/components/lh-mark";
@@ -716,6 +716,16 @@ function SessionsSidebar() {
 						<DumbbellIcon className="size-3" />
 						Ćwiczenia
 						<span className="sr-only">utwórz nową sesję ćwiczeń</span>
+					</button>
+					<button
+						type="button"
+						data-testid="open-board"
+						onClick={() => router.push("/board")}
+						className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+					>
+						<PresentationIcon className="size-3" />
+						Tablica
+						<span className="sr-only">otwórz tablicę z notatkami</span>
 					</button>
 				</div>
 

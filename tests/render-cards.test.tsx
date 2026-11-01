@@ -20,6 +20,7 @@ import { QuestionDock } from "../components/question-dock.tsx";
 import { ProbeDoneCard } from "../components/artifacts/probe-done-card.tsx";
 import { DispatchCard } from "../components/artifacts/dispatch-card.tsx";
 import { JobsContext } from "../components/jobs-context.ts";
+import { VisualCard, undeliveredVisual } from "../components/artifacts/visual-card.tsx";
 import { ChatActionsContext } from "../components/chat.tsx";
 import type { JobRecord } from "../src/core/contracts.ts";
 import { AnsweredCard } from "../components/answered-card.tsx";
@@ -159,6 +160,49 @@ describe("DispatchCard — the BYOK refusal tone (owner, 2026-09-22)", () => {
 	it("a finished worker reads finished, independently of delivery", () => {
 		const html = renderToStaticMarkup(inJobs([job({ status: "done", error: undefined })]));
 		assert.ok(html.includes("zakończono"));
+	});
+});
+
+describe("VisualCard: the figure shows before delivery (an open quiz holds the wake)", () => {
+	const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>';
+	const job = (over: Partial<JobRecord>): JobRecord => ({
+		id: "j1",
+		kind: "visual",
+		chatId: "c1",
+		toolCallId: "t1",
+		status: "done",
+		activity: "finished",
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+		result: { svg },
+		delivery: { kind: "result", status: "pending" },
+		...over,
+	});
+	const render = (jobs: JobRecord[]) =>
+		renderToStaticMarkup(
+			<JobsContext.Provider value={jobs}>
+				<VisualCard part={{ type: "tool-visual", toolCallId: "t1", state: "output-available", input: {}, output: "ack" } as never} />
+			</JobsContext.Provider>,
+		);
+
+	it("a done visual with pending delivery renders the figure under the dispatch line", () => {
+		assert.equal(undeliveredVisual(job({}))?.svg, svg);
+		const html = render([job({})]);
+		assert.ok(html.includes('data-testid="dispatch-settled"'));
+		assert.ok(html.includes('data-testid="visual-early"'));
+	});
+
+	it("once delivered, the steer card owns the figure: no duplicate", () => {
+		assert.equal(undeliveredVisual(job({ delivery: { kind: "result", status: "delivered" } })), null);
+		assert.ok(!render([job({ delivery: { kind: "result", status: "delivered" } })]).includes("visual-early"));
+	});
+
+	it("running, failed, legacy (no delivery) and empty-svg jobs show no early figure", () => {
+		assert.equal(undeliveredVisual(job({ status: "running" })), null);
+		assert.equal(undeliveredVisual(job({ status: "error" })), null);
+		assert.equal(undeliveredVisual(job({ delivery: undefined })), null);
+		assert.equal(undeliveredVisual(job({ result: { svg: "" } })), null);
+		assert.equal(undeliveredVisual(job({ delivery: { kind: "abort", status: "pending" } })), null);
 	});
 });
 
